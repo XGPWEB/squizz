@@ -1,85 +1,448 @@
 export const questionTypes = [
-  {id:'quiz',label:'Quiz',group:'Tester les connaissances',hint:'Choisir une ou plusieurs bonnes réponses.'},
-  {id:'truefalse',label:'Vrai ou faux',group:'Tester les connaissances',hint:'Deux choix, une bonne réponse.'},
-  {id:'text',label:'Réponse libre',group:'Tester les connaissances',hint:'Écrire une réponse corrigée automatiquement.'},
-  {id:'slider',label:'Curseur',group:'Tester les connaissances',hint:'Trouver une valeur sur une échelle numérique.'},
-  {id:'pin',label:'Réponse par pin’s',group:'Tester les connaissances',hint:'Placer un repère sur la bonne zone d’une image.'},
-  {id:'puzzle',label:'Puzzle',group:'Tester les connaissances',hint:'Remettre les éléments dans le bon ordre.'},
-  {id:'poll',label:'Sondage',group:'Collecter des avis',hint:'Choisir parmi plusieurs propositions, sans correction.'},
-  {id:'scale',label:'Échelle',group:'Collecter des avis',hint:'Donner une note sur une échelle.'},
-  {id:'nps',label:'Échelle NPS',group:'Collecter des avis',hint:'Une note de recommandation de 0 à 10.'},
-  {id:'pinpoll',label:'Place le pin’s',group:'Collecter des avis',hint:'Recueillir les repères de chacun sur une image.'},
-  {id:'wordcloud',label:'Nuage de mots',group:'Collecter des avis',hint:'Faire ressortir les mots les plus cités.'},
-  {id:'open',label:'Question ouverte',group:'Collecter des avis',hint:'Recueillir des réponses rédigées.'},
-  {id:'brainstorm',label:'Brainstorming',group:'Collecter des avis',hint:'Rassembler jusqu’à trois idées par personne.'},
-  {id:'slide',label:'Diapo',group:'Présenter des infos',hint:'Afficher du texte et des médias entre deux questions.'},
+  {
+    id: "quiz",
+    label: "Quiz",
+    group: "Tester les connaissances",
+    hint: "Choisir une ou plusieurs bonnes réponses.",
+  },
+  {
+    id: "truefalse",
+    label: "Vrai ou faux",
+    group: "Tester les connaissances",
+    hint: "Deux choix, une bonne réponse.",
+  },
+  {
+    id: "text",
+    label: "Réponse libre",
+    group: "Tester les connaissances",
+    hint: "Écrire une réponse corrigée automatiquement.",
+  },
+  {
+    id: "slider",
+    label: "Curseur",
+    group: "Tester les connaissances",
+    hint: "Trouver une valeur sur une échelle numérique.",
+  },
+  {
+    id: "pin",
+    label: "Réponse par pin’s",
+    group: "Tester les connaissances",
+    hint: "Placer un repère sur la bonne zone d’une image.",
+  },
+  {
+    id: "puzzle",
+    label: "Puzzle",
+    group: "Tester les connaissances",
+    hint: "Remettre les éléments dans le bon ordre.",
+  },
+  {
+    id: "poll",
+    label: "Sondage",
+    group: "Collecter des avis",
+    hint: "Choisir parmi plusieurs propositions, sans correction.",
+  },
+  { id: "scale", label: "Échelle", group: "Collecter des avis", hint: "Donner une note sur une échelle." },
+  {
+    id: "nps",
+    label: "Échelle NPS",
+    group: "Collecter des avis",
+    hint: "Une note de recommandation de 0 à 10.",
+  },
+  {
+    id: "pinpoll",
+    label: "Place le pin’s",
+    group: "Collecter des avis",
+    hint: "Recueillir les repères de chacun sur une image.",
+  },
+  {
+    id: "wordcloud",
+    label: "Nuage de mots",
+    group: "Collecter des avis",
+    hint: "Faire ressortir les mots les plus cités.",
+  },
+  {
+    id: "open",
+    label: "Question ouverte",
+    group: "Collecter des avis",
+    hint: "Recueillir des réponses rédigées.",
+  },
+  {
+    id: "brainstorm",
+    label: "Brainstorming",
+    group: "Collecter des avis",
+    hint: "Rassembler jusqu’à trois idées par personne.",
+  },
+  {
+    id: "slide",
+    label: "Diapo",
+    group: "Présenter des infos",
+    hint: "Afficher du texte et des médias entre deux questions.",
+  },
 ] as const;
-export type QuestionType=typeof questionTypes[number]['id'];
-export type Media={kind:'image'|'video'|'youtube'|'link';url:string;caption:string};
-export type Question={type:QuestionType;text:string;options:string[];correct:number;correctAnswers:number[];multiple:boolean;duration:number;points:'standard'|'double'|'none';accepted:string[];min:number;max:number;step:number;target:number;tolerance:number;pin:{x:number;y:number;radius:number};order:number[];body:string;media:Media[]};
-export type AnswerPayload={choices?:number[];text?:string;value?:number;x?:number;y?:number;order?:number[];ideas?:string[]};
-export const durations=[5,10,15,20,30,45,60,90,120,180,240];
-export const isScored=(type:QuestionType)=>['quiz','truefalse','text','slider','pin','puzzle'].includes(type);
-export function newQuestion(type:QuestionType='quiz'):Question{return {type,text:'',options:type==='truefalse'?['Vrai','Faux']:['','','',''],correct:0,correctAnswers:[0],multiple:false,duration:20,points:isScored(type)?'standard':'none',accepted:[''],min:type==='scale'?1:0,max:type==='nps'?10:type==='scale'?5:100,step:1,target:50,tolerance:0,pin:{x:.5,y:.5,radius:.1},order:[0,1,2,3],body:'',media:[]};}
-export function normalizeQuestion(value:Partial<Question>):Question{const base=newQuestion(value.type||'quiz');return {...base,...value,correctAnswers:value.correctAnswers??[value.correct??0],order:value.order??(value.options??base.options).map((_,i)=>i),media:value.media??[]};}
-export function youtubeId(raw:string):string|null{try{const u=new URL(raw);const host=u.hostname.toLowerCase().replace(/^www\./,'');let id:string|null=null;if(host==='youtu.be')id=u.pathname.split('/')[1];if(['youtube.com','m.youtube.com','youtube-nocookie.com'].includes(host))id=u.pathname==='/watch'?u.searchParams.get('v'):u.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/)?.[1]??null;return id&&/^[\w-]{11}$/.test(id)?id:null;}catch{return null;}}
-export function safeMediaUrl(url:string){if(/^\/api\/media\/[a-f0-9-]{36}$/.test(url))return true;try{const u=new URL(url);return ['http:','https:'].includes(u.protocol)&&!u.username&&!u.password;}catch{return false;}}
-export function validateQuestion(raw:unknown):Question{
- if(!raw||typeof raw!=='object')throw new Error('Question invalide.');
- const q=normalizeQuestion(raw as Partial<Question>);
- const check=(ok:unknown,message:string)=>{if(!ok)throw new Error(message);};
- check(questionTypes.some(t=>t.id===q.type),'Choisis un type de question.');
- check(typeof q.text==='string'&&q.text.trim()&&q.text.length<=300,'Chaque question doit avoir un titre de 1 à 300 caractères.');
- check(durations.includes(q.duration),'Temps imparti invalide.');
- check(['standard','double','none'].includes(q.points),'Barème invalide.');
- check(typeof q.multiple==='boolean','Limite de réponse invalide.');
- check(typeof q.body==='string'&&q.body.length<=4000,'Le texte de la diapo est limité à 4 000 caractères.');
- check(Array.isArray(q.media)&&q.media.length<=4,'Ajoute au maximum quatre médias.');
- for(const m of q.media){check(m&&['image','video','youtube','link'].includes(m.kind)&&typeof m.url==='string'&&m.url.length<=2000&&safeMediaUrl(m.url),'Adresse de média invalide (http ou https requis).');check(typeof m.caption==='string'&&m.caption.length<=200,'Légende limitée à 200 caractères.');if(m.kind==='youtube')check(youtubeId(m.url),'Lien YouTube invalide.');}
- if(['quiz','truefalse','poll','puzzle'].includes(q.type)){
- check(Array.isArray(q.options)&&q.options.length>=2&&q.options.length<=6&&q.options.every(o=>typeof o==='string'&&o.trim()&&o.length<=150),'Ajoute de 2 à 6 réponses non vides, de 150 caractères maximum.');
- if(q.type==='truefalse'){q.options=['Vrai','Faux'];q.multiple=false;}
- if(['quiz','truefalse'].includes(q.type)){check(Array.isArray(q.correctAnswers)&&q.correctAnswers.length>=1&&new Set(q.correctAnswers).size===q.correctAnswers.length&&q.correctAnswers.every(i=>Number.isInteger(i)&&i>=0&&i<q.options.length),'Sélectionne les bonnes réponses.');check(q.multiple||q.correctAnswers.length===1,'Une réponse unique nécessite une seule bonne réponse.');q.correct=q.correctAnswers[0];}
- if(q.type==='puzzle')check(Array.isArray(q.order)&&q.order.length===q.options.length&&new Set(q.order).size===q.options.length&&q.order.every(i=>Number.isInteger(i)&&i>=0&&i<q.options.length),'Ordre du puzzle invalide.');
- }
- if(q.type==='text')check(Array.isArray(q.accepted)&&q.accepted.length>=1&&q.accepted.length<=10&&q.accepted.every(t=>typeof t==='string'&&t.trim()&&t.length<=150),'Indique de 1 à 10 réponses acceptées.');
- if(['slider','scale','nps'].includes(q.type)){
- if(q.type==='nps'){q.min=0;q.max=10;q.step=1;}if(q.type==='scale'){q.min=1;q.step=1;check(Number.isInteger(q.max)&&q.max>=2&&q.max<=10,'L’échelle doit aller de 1 à une note de 2 à 10.');}
- check([q.min,q.max,q.step].every(Number.isFinite)&&q.min<q.max&&q.step>0&&q.step<=q.max-q.min&&Math.max(Math.abs(q.min),Math.abs(q.max))<=1000000&&(q.max-q.min)/q.step<=1000000,'Bornes ou pas du curseur invalides.');
- if(q.type==='slider')check(Number.isFinite(q.target)&&q.target>=q.min&&q.target<=q.max&&Number.isFinite(q.tolerance)&&q.tolerance>=0&&q.tolerance<=q.max-q.min,'Valeur cible ou tolérance invalide.');
- }
- if(['pin','pinpoll'].includes(q.type)){check(q.media.some(m=>m.kind==='image'),'Ajoute une image pour placer les repères.');if(q.type==='pin')check(q.pin&&[q.pin.x,q.pin.y,q.pin.radius].every(Number.isFinite)&&q.pin.x>=0&&q.pin.x<=1&&q.pin.y>=0&&q.pin.y<=1&&q.pin.radius>=.02&&q.pin.radius<=.5,'Zone de réponse invalide.');}
- if(!isScored(q.type))q.points='none';
- return {...q,text:q.text.trim()};
+export type QuestionType = (typeof questionTypes)[number]["id"];
+export type Media = { kind: "image" | "video" | "youtube" | "link"; url: string; caption: string };
+export type Question = {
+  type: QuestionType;
+  text: string;
+  options: string[];
+  correct: number;
+  correctAnswers: number[];
+  multiple: boolean;
+  duration: number;
+  points: "standard" | "double" | "none";
+  accepted: string[];
+  min: number;
+  max: number;
+  step: number;
+  target: number;
+  tolerance: number;
+  pin: { x: number; y: number; radius: number };
+  order: number[];
+  body: string;
+  media: Media[];
+};
+export type AnswerPayload = {
+  choices?: number[];
+  text?: string;
+  value?: number;
+  x?: number;
+  y?: number;
+  order?: number[];
+  ideas?: string[];
+};
+export const durations = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240];
+export const isScored = (type: QuestionType) =>
+  ["quiz", "truefalse", "text", "slider", "pin", "puzzle"].includes(type);
+export function newQuestion(type: QuestionType = "quiz"): Question {
+  return {
+    type,
+    text: "",
+    options: type === "truefalse" ? ["Vrai", "Faux"] : ["", "", "", ""],
+    correct: 0,
+    correctAnswers: [0],
+    multiple: false,
+    duration: 20,
+    points: isScored(type) ? "standard" : "none",
+    accepted: [""],
+    min: type === "scale" ? 1 : 0,
+    max: type === "nps" ? 10 : type === "scale" ? 5 : 100,
+    step: 1,
+    target: 50,
+    tolerance: 0,
+    pin: { x: 0.5, y: 0.5, radius: 0.1 },
+    order: [0, 1, 2, 3],
+    body: "",
+    media: [],
+  };
 }
-const normalizeText=(s:string)=>s.trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('fr').replace(/\s+/g,' ');
-export function evaluateAnswer(q:Question,raw:unknown):{payload:AnswerPayload;correct:boolean|null}{
- if(!raw||typeof raw!=='object'||Array.isArray(raw))throw new Error('Réponse invalide.');const a=raw as AnswerPayload;
- const fail=()=>{throw new Error('Réponse invalide pour cette question.');};
- if(q.type==='slide')return fail();
- if(['quiz','truefalse','poll'].includes(q.type)){
- if(!Array.isArray(a.choices)||!a.choices.length||a.choices.length>q.options.length||new Set(a.choices).size!==a.choices.length||a.choices.some(i=>!Number.isInteger(i)||i<0||i>=q.options.length)||(!q.multiple&&a.choices.length!==1))return fail();
- return {payload:{choices:a.choices},correct:q.type==='poll'?null:a.choices.length===q.correctAnswers.length&&q.correctAnswers.every(i=>a.choices!.includes(i))};}
- if(['text','open','wordcloud'].includes(q.type)){if(typeof a.text!=='string'||!a.text.trim()||a.text.length>(q.type==='open'?1000:q.type==='wordcloud'?40:150))return fail();return {payload:{text:a.text.trim()},correct:q.type==='text'?q.accepted.some(t=>normalizeText(t)===normalizeText(a.text!)):null};}
- if(['slider','scale','nps'].includes(q.type)){if(typeof a.value!=='number'||!Number.isFinite(a.value)||a.value<q.min||a.value>q.max||Math.abs((a.value-q.min)/q.step-Math.round((a.value-q.min)/q.step))>1e-6)return fail();return {payload:{value:a.value},correct:q.type==='slider'?Math.abs(a.value-q.target)<=q.tolerance+1e-9:null};}
- if(['pin','pinpoll'].includes(q.type)){if(typeof a.x!=='number'||typeof a.y!=='number'||![a.x,a.y].every(v=>Number.isFinite(v)&&v>=0&&v<=1))return fail();return {payload:{x:a.x,y:a.y},correct:q.type==='pin'?Math.hypot(a.x-q.pin.x,a.y-q.pin.y)<=q.pin.radius:null};}
- if(q.type==='puzzle'){if(!Array.isArray(a.order)||a.order.length!==q.options.length||new Set(a.order).size!==q.options.length||a.order.some(i=>!Number.isInteger(i)||i<0||i>=q.options.length))return fail();return {payload:{order:a.order},correct:a.order.every((v,i)=>v===q.order[i])};}
- if(q.type==='brainstorm'){if(!Array.isArray(a.ideas)||a.ideas.length<1||a.ideas.length>3||a.ideas.some(t=>typeof t!=='string'||!t.trim()||t.length>200))return fail();return {payload:{ideas:a.ideas.map(t=>t.trim())},correct:null};}
- return fail();
+export function normalizeQuestion(value: Partial<Question>): Question {
+  const base = newQuestion(value.type || "quiz");
+  return {
+    ...base,
+    ...value,
+    correctAnswers: value.correctAnswers ?? [value.correct ?? 0],
+    order: value.order ?? (value.options ?? base.options).map((_, i) => i),
+    media: value.media ?? [],
+  };
 }
-export function publicQuestion(q:Question,revealed:boolean,index=0){
- const {correct,correctAnswers,accepted,target,tolerance,pin,order,...visible}=q;
- // Stable shuffled indices for players; never send the answer order before reveal.
- const puzzleOrder=q.type==='puzzle'?q.options.map((_,i)=>i).sort((a,b)=>((a*7+index*3)%11)-((b*7+index*3)%11)):undefined;
- if(puzzleOrder&&puzzleOrder.every((v,i)=>v===q.order[i]))puzzleOrder.reverse();
- return {...visible,puzzleOrder,...(revealed?{correct,correctAnswers,accepted,target,tolerance,pin,order}:{})};
+export function youtubeId(raw: string): string | null {
+  try {
+    const u = new URL(raw);
+    const host = u.hostname.toLowerCase().replace(/^www\./, "");
+    let id: string | null = null;
+    if (host === "youtu.be") id = u.pathname.split("/")[1];
+    if (["youtube.com", "m.youtube.com", "youtube-nocookie.com"].includes(host))
+      id =
+        u.pathname === "/watch"
+          ? u.searchParams.get("v")
+          : (u.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/)?.[1] ?? null);
+    return id && /^[\w-]{11}$/.test(id) ? id : null;
+  } catch {
+    return null;
+  }
 }
-export function aggregateAnswers(q:Question,answers:AnswerPayload[]){
- const counts=q.options.map((label,i)=>({label,count:answers.filter(a=>a.choices?.includes(i)).length}));
- const values=answers.flatMap(a=>typeof a.value==='number'?[a.value]:[]);
- const terms=new Map<string,{label:string;count:number}>();
- for(const a of answers)for(const text of (q.type==='brainstorm'?a.ideas??[]:a.text?[a.text]:[])){const key=normalizeText(text);const old=terms.get(key);terms.set(key,{label:old?.label??text,count:(old?.count??0)+1});}
- return {responses:answers.length,counts,average:values.length?values.reduce((a,b)=>a+b,0)/values.length:null,nps:q.type==='nps'&&values.length?Math.round(100*(values.filter(v=>v>=9).length-values.filter(v=>v<=6).length)/values.length):null,values:values.map(value=>({value,count:values.filter(v=>v===value).length})).filter((v,i,all)=>all.findIndex(x=>x.value===v.value)===i).sort((a,b)=>a.value-b.value),texts:[...terms.values()].sort((a,b)=>b.count-a.count),pins:answers.filter(a=>typeof a.x==='number').map(a=>({x:a.x!,y:a.y!}))};
+export function safeMediaUrl(url: string) {
+  if (/^\/api\/media\/[a-f0-9-]{36}$/.test(url)) return true;
+  try {
+    const u = new URL(url);
+    return ["http:", "https:"].includes(u.protocol) && !u.username && !u.password;
+  } catch {
+    return false;
+  }
 }
-export type PublicQuestion=ReturnType<typeof publicQuestion>;
-export type Aggregate=ReturnType<typeof aggregateAnswers>;
+export function validateQuestion(raw: unknown): Question {
+  if (!raw || typeof raw !== "object") throw new Error("Question invalide.");
+  const q = normalizeQuestion(raw as Partial<Question>);
+  const check = (ok: unknown, message: string) => {
+    if (!ok) throw new Error(message);
+  };
+  check(
+    questionTypes.some((t) => t.id === q.type),
+    "Choisis un type de question.",
+  );
+  check(
+    typeof q.text === "string" && q.text.trim() && q.text.length <= 300,
+    "Chaque question doit avoir un titre de 1 à 300 caractères.",
+  );
+  check(durations.includes(q.duration), "Temps imparti invalide.");
+  check(["standard", "double", "none"].includes(q.points), "Barème invalide.");
+  check(typeof q.multiple === "boolean", "Limite de réponse invalide.");
+  check(
+    typeof q.body === "string" && q.body.length <= 4000,
+    "Le texte de la diapo est limité à 4 000 caractères.",
+  );
+  check(Array.isArray(q.media) && q.media.length <= 4, "Ajoute au maximum quatre médias.");
+  for (const m of q.media) {
+    check(
+      m &&
+        ["image", "video", "youtube", "link"].includes(m.kind) &&
+        typeof m.url === "string" &&
+        m.url.length <= 2000 &&
+        safeMediaUrl(m.url),
+      "Adresse de média invalide (http ou https requis).",
+    );
+    check(typeof m.caption === "string" && m.caption.length <= 200, "Légende limitée à 200 caractères.");
+    if (m.kind === "youtube") check(youtubeId(m.url), "Lien YouTube invalide.");
+  }
+  if (["quiz", "truefalse", "poll", "puzzle"].includes(q.type)) {
+    check(
+      Array.isArray(q.options) &&
+        q.options.length >= 2 &&
+        q.options.length <= 6 &&
+        q.options.every((o) => typeof o === "string" && o.trim() && o.length <= 150),
+      "Ajoute de 2 à 6 réponses non vides, de 150 caractères maximum.",
+    );
+    if (q.type === "truefalse") {
+      q.options = ["Vrai", "Faux"];
+      q.multiple = false;
+    }
+    if (["quiz", "truefalse"].includes(q.type)) {
+      check(
+        Array.isArray(q.correctAnswers) &&
+          q.correctAnswers.length >= 1 &&
+          new Set(q.correctAnswers).size === q.correctAnswers.length &&
+          q.correctAnswers.every((i) => Number.isInteger(i) && i >= 0 && i < q.options.length),
+        "Sélectionne les bonnes réponses.",
+      );
+      check(
+        q.multiple || q.correctAnswers.length === 1,
+        "Une réponse unique nécessite une seule bonne réponse.",
+      );
+      q.correct = q.correctAnswers[0];
+    }
+    if (q.type === "puzzle")
+      check(
+        Array.isArray(q.order) &&
+          q.order.length === q.options.length &&
+          new Set(q.order).size === q.options.length &&
+          q.order.every((i) => Number.isInteger(i) && i >= 0 && i < q.options.length),
+        "Ordre du puzzle invalide.",
+      );
+  }
+  if (q.type === "text")
+    check(
+      Array.isArray(q.accepted) &&
+        q.accepted.length >= 1 &&
+        q.accepted.length <= 10 &&
+        q.accepted.every((t) => typeof t === "string" && t.trim() && t.length <= 150),
+      "Indique de 1 à 10 réponses acceptées.",
+    );
+  if (["slider", "scale", "nps"].includes(q.type)) {
+    if (q.type === "nps") {
+      q.min = 0;
+      q.max = 10;
+      q.step = 1;
+    }
+    if (q.type === "scale") {
+      q.min = 1;
+      q.step = 1;
+      check(
+        Number.isInteger(q.max) && q.max >= 2 && q.max <= 10,
+        "L’échelle doit aller de 1 à une note de 2 à 10.",
+      );
+    }
+    check(
+      [q.min, q.max, q.step].every(Number.isFinite) &&
+        q.min < q.max &&
+        q.step > 0 &&
+        q.step <= q.max - q.min &&
+        Math.max(Math.abs(q.min), Math.abs(q.max)) <= 1000000 &&
+        (q.max - q.min) / q.step <= 1000000,
+      "Bornes ou pas du curseur invalides.",
+    );
+    if (q.type === "slider")
+      check(
+        Number.isFinite(q.target) &&
+          q.target >= q.min &&
+          q.target <= q.max &&
+          Number.isFinite(q.tolerance) &&
+          q.tolerance >= 0 &&
+          q.tolerance <= q.max - q.min,
+        "Valeur cible ou tolérance invalide.",
+      );
+  }
+  if (["pin", "pinpoll"].includes(q.type)) {
+    check(
+      q.media.some((m) => m.kind === "image"),
+      "Ajoute une image pour placer les repères.",
+    );
+    if (q.type === "pin")
+      check(
+        q.pin &&
+          [q.pin.x, q.pin.y, q.pin.radius].every(Number.isFinite) &&
+          q.pin.x >= 0 &&
+          q.pin.x <= 1 &&
+          q.pin.y >= 0 &&
+          q.pin.y <= 1 &&
+          q.pin.radius >= 0.02 &&
+          q.pin.radius <= 0.5,
+        "Zone de réponse invalide.",
+      );
+  }
+  if (!isScored(q.type)) q.points = "none";
+  return { ...q, text: q.text.trim() };
+}
+const normalizeText = (s: string) =>
+  s
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("fr")
+    .replace(/\s+/g, " ");
+export function evaluateAnswer(
+  q: Question,
+  raw: unknown,
+): { payload: AnswerPayload; correct: boolean | null } {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Réponse invalide.");
+  const a = raw as AnswerPayload;
+  const fail = () => {
+    throw new Error("Réponse invalide pour cette question.");
+  };
+  if (q.type === "slide") return fail();
+  if (["quiz", "truefalse", "poll"].includes(q.type)) {
+    if (
+      !Array.isArray(a.choices) ||
+      !a.choices.length ||
+      a.choices.length > q.options.length ||
+      new Set(a.choices).size !== a.choices.length ||
+      a.choices.some((i) => !Number.isInteger(i) || i < 0 || i >= q.options.length) ||
+      (!q.multiple && a.choices.length !== 1)
+    )
+      return fail();
+    return {
+      payload: { choices: a.choices },
+      correct:
+        q.type === "poll"
+          ? null
+          : a.choices.length === q.correctAnswers.length &&
+            q.correctAnswers.every((i) => a.choices!.includes(i)),
+    };
+  }
+  if (["text", "open", "wordcloud"].includes(q.type)) {
+    if (
+      typeof a.text !== "string" ||
+      !a.text.trim() ||
+      a.text.length > (q.type === "open" ? 1000 : q.type === "wordcloud" ? 40 : 150)
+    )
+      return fail();
+    return {
+      payload: { text: a.text.trim() },
+      correct: q.type === "text" ? q.accepted.some((t) => normalizeText(t) === normalizeText(a.text!)) : null,
+    };
+  }
+  if (["slider", "scale", "nps"].includes(q.type)) {
+    if (
+      typeof a.value !== "number" ||
+      !Number.isFinite(a.value) ||
+      a.value < q.min ||
+      a.value > q.max ||
+      Math.abs((a.value - q.min) / q.step - Math.round((a.value - q.min) / q.step)) > 1e-6
+    )
+      return fail();
+    return {
+      payload: { value: a.value },
+      correct: q.type === "slider" ? Math.abs(a.value - q.target) <= q.tolerance + 1e-9 : null,
+    };
+  }
+  if (["pin", "pinpoll"].includes(q.type)) {
+    if (
+      typeof a.x !== "number" ||
+      typeof a.y !== "number" ||
+      ![a.x, a.y].every((v) => Number.isFinite(v) && v >= 0 && v <= 1)
+    )
+      return fail();
+    return {
+      payload: { x: a.x, y: a.y },
+      correct: q.type === "pin" ? Math.hypot(a.x - q.pin.x, a.y - q.pin.y) <= q.pin.radius : null,
+    };
+  }
+  if (q.type === "puzzle") {
+    if (
+      !Array.isArray(a.order) ||
+      a.order.length !== q.options.length ||
+      new Set(a.order).size !== q.options.length ||
+      a.order.some((i) => !Number.isInteger(i) || i < 0 || i >= q.options.length)
+    )
+      return fail();
+    return { payload: { order: a.order }, correct: a.order.every((v, i) => v === q.order[i]) };
+  }
+  if (q.type === "brainstorm") {
+    if (
+      !Array.isArray(a.ideas) ||
+      a.ideas.length < 1 ||
+      a.ideas.length > 3 ||
+      a.ideas.some((t) => typeof t !== "string" || !t.trim() || t.length > 200)
+    )
+      return fail();
+    return { payload: { ideas: a.ideas.map((t) => t.trim()) }, correct: null };
+  }
+  return fail();
+}
+export function publicQuestion(q: Question, revealed: boolean, index = 0) {
+  const { correct, correctAnswers, accepted, target, tolerance, pin, order, ...visible } = q;
+  // Stable shuffled indices for players; never send the answer order before reveal.
+  const puzzleOrder =
+    q.type === "puzzle"
+      ? q.options.map((_, i) => i).sort((a, b) => ((a * 7 + index * 3) % 11) - ((b * 7 + index * 3) % 11))
+      : undefined;
+  if (puzzleOrder && puzzleOrder.every((v, i) => v === q.order[i])) puzzleOrder.reverse();
+  return {
+    ...visible,
+    puzzleOrder,
+    ...(revealed ? { correct, correctAnswers, accepted, target, tolerance, pin, order } : {}),
+  };
+}
+export function aggregateAnswers(q: Question, answers: AnswerPayload[]) {
+  const counts = q.options.map((label, i) => ({
+    label,
+    count: answers.filter((a) => a.choices?.includes(i)).length,
+  }));
+  const values = answers.flatMap((a) => (typeof a.value === "number" ? [a.value] : []));
+  const terms = new Map<string, { label: string; count: number }>();
+  for (const a of answers)
+    for (const text of q.type === "brainstorm" ? (a.ideas ?? []) : a.text ? [a.text] : []) {
+      const key = normalizeText(text);
+      const old = terms.get(key);
+      terms.set(key, { label: old?.label ?? text, count: (old?.count ?? 0) + 1 });
+    }
+  return {
+    responses: answers.length,
+    counts,
+    average: values.length ? values.reduce((a, b) => a + b, 0) / values.length : null,
+    nps:
+      q.type === "nps" && values.length
+        ? Math.round(
+            (100 * (values.filter((v) => v >= 9).length - values.filter((v) => v <= 6).length)) /
+              values.length,
+          )
+        : null,
+    values: values
+      .map((value) => ({ value, count: values.filter((v) => v === value).length }))
+      .filter((v, i, all) => all.findIndex((x) => x.value === v.value) === i)
+      .sort((a, b) => a.value - b.value),
+    texts: [...terms.values()].sort((a, b) => b.count - a.count),
+    pins: answers.filter((a) => typeof a.x === "number").map((a) => ({ x: a.x!, y: a.y! })),
+  };
+}
+export type PublicQuestion = ReturnType<typeof publicQuestion>;
+export type Aggregate = ReturnType<typeof aggregateAnswers>;

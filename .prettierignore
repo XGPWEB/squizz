@@ -1,0 +1,8 @@
+dist
+.next
+.vinext
+.wrangler
+node_modules
+vendor
+drizzle
+package-lock.json

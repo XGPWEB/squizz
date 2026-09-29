@@ -1,24 +1,63 @@
-import assert from 'node:assert/strict';
-import { newQuestion,validateQuestion,evaluateAnswer,publicQuestion,aggregateAnswers,youtubeId } from '../lib/question.ts';
-const make=(type,extra={})=>validateQuestion({...newQuestion(type),text:'Test',...extra});
-const quiz=make('quiz',{options:['A','B','C','D'],multiple:true,correctAnswers:[0,2]});
-assert(evaluateAnswer(quiz,{choices:[2,0]}).correct);
-assert(!evaluateAnswer(quiz,{choices:[0]}).correct);
-assert(!evaluateAnswer(quiz,{choices:[0,1,2]}).correct);
-assert.throws(()=>evaluateAnswer(quiz,{choices:[0,0]}));
-const tf=make('truefalse',{correctAnswers:[1]});assert(evaluateAnswer(tf,{choices:[1]}).correct);
-const text=make('text',{accepted:['Éléphant','elephant africain']});assert(evaluateAnswer(text,{text:'  ELEPHANT  '}).correct);
-const slider=make('slider',{target:50,tolerance:2});assert(evaluateAnswer(slider,{value:52}).correct);assert(!evaluateAnswer(slider,{value:53}).correct);assert.throws(()=>evaluateAnswer(slider,{value:3.5}));
-const image={kind:'image',url:'https://example.com/image.png',caption:'Carte'};
-const pin=make('pin',{media:[image]});assert(evaluateAnswer(pin,{x:.5,y:.5}).correct);assert(!evaluateAnswer(pin,{x:.1,y:.1}).correct);assert.throws(()=>evaluateAnswer(pin,{x:2,y:.5}));
-const puzzle=make('puzzle',{options:['A','B','C'],order:[1,0,2]});assert(evaluateAnswer(puzzle,{order:[1,0,2]}).correct);assert.throws(()=>evaluateAnswer(puzzle,{order:[1,1,2]}));
-for(const q of [quiz,tf,text,slider,pin,puzzle]){const visible=publicQuestion(q,false);for(const field of ['correct','correctAnswers','accepted','target','tolerance','pin','order'])assert(!(field in visible),`${q.type} leaked ${field}`);}
-for(const [type,extra,answer] of [['poll',{options:['A','B']},{choices:[0]}],['scale',{}, {value:3}],['nps',{}, {value:9}],['pinpoll',{media:[image]},{x:.1,y:.4}],['wordcloud',{}, {text:'Ensemble'}],['open',{}, {text:'Une idée'}],['brainstorm',{}, {ideas:['Une idée','Une autre']}]] ) {const q=make(type,extra);assert.equal(q.points,'none');assert.equal(evaluateAnswer(q,answer).correct,null);}
-assert.throws(()=>evaluateAnswer(make('slide'),{}));
-const nps=aggregateAnswers(make('nps'),[{value:10},{value:9},{value:8},{value:3}]);assert.equal(nps.nps,25);
-assert.deepEqual(aggregateAnswers(make('wordcloud'),[{text:'Équipe'},{text:'equipe'}]).texts,[{label:'Équipe',count:2}]);
-assert.equal(youtubeId('https://youtu.be/dQw4w9WgXcQ?t=30'),'dQw4w9WgXcQ');assert.equal(youtubeId('https://evil.com/watch?v=dQw4w9WgXcQ'),null);
-assert.throws(()=>make('slide',{media:[{kind:'link',url:'javascript:alert(1)',caption:''}]}));
-assert.throws(()=>make('quiz',{options:['A','B'],duration:7}));
-assert.throws(()=>make('pin'));
-console.log('PASS: 14 types, multiple-answer correctness, free text, tolerance, pins, puzzle, opinion aggregation, hidden solutions, and media validation.');
+import assert from "node:assert/strict";
+import {
+  newQuestion,
+  validateQuestion,
+  evaluateAnswer,
+  publicQuestion,
+  aggregateAnswers,
+  youtubeId,
+} from "../lib/question.ts";
+const make = (type, extra = {}) => validateQuestion({ ...newQuestion(type), text: "Test", ...extra });
+const quiz = make("quiz", { options: ["A", "B", "C", "D"], multiple: true, correctAnswers: [0, 2] });
+assert(evaluateAnswer(quiz, { choices: [2, 0] }).correct);
+assert(!evaluateAnswer(quiz, { choices: [0] }).correct);
+assert(!evaluateAnswer(quiz, { choices: [0, 1, 2] }).correct);
+assert.throws(() => evaluateAnswer(quiz, { choices: [0, 0] }));
+const tf = make("truefalse", { correctAnswers: [1] });
+assert(evaluateAnswer(tf, { choices: [1] }).correct);
+const text = make("text", { accepted: ["Éléphant", "elephant africain"] });
+assert(evaluateAnswer(text, { text: "  ELEPHANT  " }).correct);
+const slider = make("slider", { target: 50, tolerance: 2 });
+assert(evaluateAnswer(slider, { value: 52 }).correct);
+assert(!evaluateAnswer(slider, { value: 53 }).correct);
+assert.throws(() => evaluateAnswer(slider, { value: 3.5 }));
+const image = { kind: "image", url: "https://example.com/image.png", caption: "Carte" };
+const pin = make("pin", { media: [image] });
+assert(evaluateAnswer(pin, { x: 0.5, y: 0.5 }).correct);
+assert(!evaluateAnswer(pin, { x: 0.1, y: 0.1 }).correct);
+assert.throws(() => evaluateAnswer(pin, { x: 2, y: 0.5 }));
+const puzzle = make("puzzle", { options: ["A", "B", "C"], order: [1, 0, 2] });
+assert(evaluateAnswer(puzzle, { order: [1, 0, 2] }).correct);
+assert.throws(() => evaluateAnswer(puzzle, { order: [1, 1, 2] }));
+for (const q of [quiz, tf, text, slider, pin, puzzle]) {
+  const visible = publicQuestion(q, false);
+  for (const field of ["correct", "correctAnswers", "accepted", "target", "tolerance", "pin", "order"])
+    assert(!(field in visible), `${q.type} leaked ${field}`);
+}
+for (const [type, extra, answer] of [
+  ["poll", { options: ["A", "B"] }, { choices: [0] }],
+  ["scale", {}, { value: 3 }],
+  ["nps", {}, { value: 9 }],
+  ["pinpoll", { media: [image] }, { x: 0.1, y: 0.4 }],
+  ["wordcloud", {}, { text: "Ensemble" }],
+  ["open", {}, { text: "Une idée" }],
+  ["brainstorm", {}, { ideas: ["Une idée", "Une autre"] }],
+]) {
+  const q = make(type, extra);
+  assert.equal(q.points, "none");
+  assert.equal(evaluateAnswer(q, answer).correct, null);
+}
+assert.throws(() => evaluateAnswer(make("slide"), {}));
+const nps = aggregateAnswers(make("nps"), [{ value: 10 }, { value: 9 }, { value: 8 }, { value: 3 }]);
+assert.equal(nps.nps, 25);
+assert.deepEqual(aggregateAnswers(make("wordcloud"), [{ text: "Équipe" }, { text: "equipe" }]).texts, [
+  { label: "Équipe", count: 2 },
+]);
+assert.equal(youtubeId("https://youtu.be/dQw4w9WgXcQ?t=30"), "dQw4w9WgXcQ");
+assert.equal(youtubeId("https://evil.com/watch?v=dQw4w9WgXcQ"), null);
+assert.throws(() => make("slide", { media: [{ kind: "link", url: "javascript:alert(1)", caption: "" }] }));
+assert.throws(() => make("quiz", { options: ["A", "B"], duration: 7 }));
+assert.throws(() => make("pin"));
+console.log(
+  "PASS: 14 types, multiple-answer correctness, free text, tolerance, pins, puzzle, opinion aggregation, hidden solutions, and media validation.",
+);
