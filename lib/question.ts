@@ -75,11 +75,21 @@ export const questionTypes = [
   {
     id: "slide",
     label: "Diapo",
-    group: "Présenter des infos",
+    group: "Diapos multimédias",
     hint: "Afficher du texte et des médias entre deux questions.",
   },
 ] as const;
 export type QuestionType = (typeof questionTypes)[number]["id"];
+export const slideLayouts = [
+  { id: "classic", label: "Classique", hint: "Un titre, un texte et des médias." },
+  { id: "title", label: "Grand titre", hint: "Un titre en grand pour ouvrir une partie." },
+  { id: "titletext", label: "Titre et texte", hint: "Un titre et un texte côte à côte avec une image." },
+  { id: "bullets", label: "Liste à puces", hint: "Un titre et une liste de points clés." },
+  { id: "quote", label: "Citation", hint: "Une citation mise en valeur et son auteur." },
+  { id: "bigimage", label: "Grande image", hint: "Une image plein cadre et une légende." },
+] as const;
+export type SlideLayout = (typeof slideLayouts)[number]["id"];
+export const slideLayoutLabel = (layout: SlideLayout) => slideLayouts.find((l) => l.id === layout)?.label;
 export type Media = { kind: "image" | "video" | "youtube" | "link"; url: string; caption: string };
 export type Question = {
   type: QuestionType;
@@ -99,6 +109,7 @@ export type Question = {
   pin: { x: number; y: number; radius: number };
   order: number[];
   body: string;
+  layout: SlideLayout;
   media: Media[];
 };
 export type AnswerPayload = {
@@ -113,7 +124,7 @@ export type AnswerPayload = {
 export const durations = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240];
 export const isScored = (type: QuestionType) =>
   ["quiz", "truefalse", "text", "slider", "pin", "puzzle"].includes(type);
-export function newQuestion(type: QuestionType = "quiz"): Question {
+export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "classic"): Question {
   return {
     type,
     text: "",
@@ -132,6 +143,7 @@ export function newQuestion(type: QuestionType = "quiz"): Question {
     pin: { x: 0.5, y: 0.5, radius: 0.1 },
     order: [0, 1, 2, 3],
     body: "",
+    layout,
     media: [],
   };
 }
@@ -190,6 +202,10 @@ export function validateQuestion(raw: unknown): Question {
   check(
     typeof q.body === "string" && q.body.length <= 4000,
     "Le texte de la diapo est limité à 4 000 caractères.",
+  );
+  check(
+    slideLayouts.some((l) => l.id === q.layout),
+    "Mise en page de diapo invalide.",
   );
   check(Array.isArray(q.media) && q.media.length <= 4, "Ajoute au maximum quatre médias.");
   for (const m of q.media) {

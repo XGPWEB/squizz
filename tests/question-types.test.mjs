@@ -58,6 +58,10 @@ assert.equal(youtubeId("https://evil.com/watch?v=dQw4w9WgXcQ"), null);
 assert.throws(() => make("slide", { media: [{ kind: "link", url: "javascript:alert(1)", caption: "" }] }));
 assert.throws(() => make("quiz", { options: ["A", "B"], duration: 7 }));
 assert.throws(() => make("pin"));
+for (const layout of ["classic", "title", "titletext", "bullets", "quote", "bigimage"])
+  assert.equal(validateQuestion({ ...newQuestion("slide", layout), text: "Diapo" }).layout, layout);
+assert.equal(validateQuestion({ type: "slide", text: "Ancienne diapo" }).layout, "classic");
+assert.throws(() => validateQuestion({ ...newQuestion("slide"), text: "Diapo", layout: "wide" }));
 console.log(
-  "PASS: 14 types, multiple-answer correctness, free text, tolerance, pins, puzzle, opinion aggregation, hidden solutions, and media validation.",
+  "PASS: 14 types, 6 slide layouts, multiple-answer correctness, free text, tolerance, pins, puzzle, opinion aggregation, hidden solutions, and media validation.",
 );

@@ -6,12 +6,16 @@ import { Slider } from "@/components/ui/slider";
 import {
   newQuestion,
   questionTypes,
+  slideLayouts,
+  slideLayoutLabel,
   durations,
   isScored,
   validateQuestion,
   type Question,
   type QuestionType,
+  type SlideLayout,
 } from "@/lib/question";
+import { layoutIcons, typeIcons } from "./type-icons";
 import { Choice } from "./settings";
 import { MediaEditor, PinImage } from "./media";
 export function QuizEditor({
@@ -43,6 +47,11 @@ export function QuizEditor({
     setQuestions(questions.map((x, i) => (i === index ? { ...x, ...value } : x)));
   const setType = (type: QuestionType) =>
     patch({ ...newQuestion(type), text: q.text, media: q.media, duration: q.duration });
+  const add = (step: Question) => {
+    setQuestions([...questions, step]);
+    setActive(questions.length);
+    setPicker(false);
+  };
   function submit() {
     for (let i = 0; i < questions.length; i++) {
       try {
@@ -91,7 +100,11 @@ export function QuizEditor({
                   <b>{i + 1}</b>
                   <span>
                     {step.text || "Nouvelle question"}
-                    <small>{questionTypes.find((t) => t.id === step.type)?.label}</small>
+                    <small>
+                      {step.type === "slide"
+                        ? `Diapo · ${slideLayoutLabel(step.layout)}`
+                        : questionTypes.find((t) => t.id === step.type)?.label}
+                    </small>
                   </span>
                 </button>
               ))}
@@ -127,9 +140,27 @@ export function QuizEditor({
                 options={questionTypes.map((t) => [t.id, t.label])}
                 onChange={(v) => setType(v as QuestionType)}
               />
-              <p className="hint">{questionTypes.find((t) => t.id === q.type)?.hint}</p>
+              {q.type === "slide" ? (
+                <>
+                  <Choice
+                    label="Mise en page"
+                    value={q.layout}
+                    options={slideLayouts.map((l) => [l.id, l.label])}
+                    onChange={(v) => patch({ layout: v as SlideLayout })}
+                  />
+                  <p className="hint">{slideLayouts.find((l) => l.id === q.layout)?.hint}</p>
+                </>
+              ) : (
+                <p className="hint">{questionTypes.find((t) => t.id === q.type)?.hint}</p>
+              )}
               <label className="question-label">
-                {q.type === "slide" ? "Titre de la diapo" : "Ta question"}
+                {q.type !== "slide"
+                  ? "Ta question"
+                  : q.layout === "quote"
+                    ? "La citation"
+                    : q.layout === "bigimage"
+                      ? "Légende de l’image"
+                      : "Titre de la diapo"}
                 <textarea
                   value={q.text}
                   onChange={(e) => patch({ text: e.target.value })}
@@ -306,14 +337,20 @@ export function QuizEditor({
               )}
               {q.type === "slide" && (
                 <label className="stack">
-                  Texte de la diapo
+                  {slideBodyLabel[q.layout]}
                   <textarea
                     value={q.body}
                     maxLength={4000}
-                    rows={7}
+                    rows={q.layout === "quote" || q.layout === "title" ? 2 : 7}
+                    placeholder={
+                      q.layout === "bullets" ? "Premier point\nDeuxième point\nTroisième point" : ""
+                    }
                     onChange={(e) => patch({ body: e.target.value })}
                   />
                   <span className="hint">
+                    {q.layout === "bigimage" || q.layout === "titletext"
+                      ? "Ajoute une image ci-dessous : elle sera mise en avant. "
+                      : ""}
                     Sans chronomètre ni réponse. L’animateur décide quand poursuivre.
                   </span>
                 </label>
@@ -404,29 +441,38 @@ export function QuizEditor({
                   <X /> Fermer
                 </button>
               </div>
-              {["Tester les connaissances", "Collecter des avis", "Présenter des infos"].map((group) => (
+              {["Tester les connaissances", "Collecter des avis"].map((group) => (
                 <div key={group}>
                   <h3>{group}</h3>
                   <div className="type-grid">
                     {questionTypes
                       .filter((t) => t.group === group)
                       .map((t) => (
-                        <button
-                          type="button"
+                        <TypeCard
                           key={t.id}
-                          onClick={() => {
-                            setQuestions([...questions, newQuestion(t.id)]);
-                            setActive(questions.length);
-                            setPicker(false);
-                          }}
-                        >
-                          <strong>{t.label}</strong>
-                          <span>{t.hint}</span>
-                        </button>
+                          icon={typeIcons[t.id]}
+                          label={t.label}
+                          hint={t.hint}
+                          onPick={() => add(newQuestion(t.id))}
+                        />
                       ))}
                   </div>
                 </div>
               ))}
+              <div>
+                <h3>Diapos multimédias</h3>
+                <div className="type-grid">
+                  {slideLayouts.map((l) => (
+                    <TypeCard
+                      key={l.id}
+                      icon={layoutIcons[l.id]}
+                      label={l.label}
+                      hint={l.hint}
+                      onPick={() => add(newQuestion("slide", l.id))}
+                    />
+                  ))}
+                </div>
+              </div>
             </section>
           )}
           <div className="editor-save">
@@ -440,5 +486,36 @@ export function QuizEditor({
         </fieldset>
       </form>
     </section>
+  );
+}
+
+const slideBodyLabel: Record<SlideLayout, string> = {
+  classic: "Texte de la diapo",
+  title: "Sous-titre (facultatif)",
+  titletext: "Texte",
+  bullets: "Les puces, une par ligne",
+  quote: "Auteur (facultatif)",
+  bigimage: "Texte (facultatif)",
+};
+
+function TypeCard({
+  icon: Icon,
+  label,
+  hint,
+  onPick,
+}: {
+  icon: React.ComponentType<{ size?: number; "aria-hidden"?: boolean }>;
+  label: string;
+  hint: string;
+  onPick: () => void;
+}) {
+  return (
+    <button type="button" onClick={onPick}>
+      <span className="type-icon">
+        <Icon size={26} aria-hidden />
+      </span>
+      <strong>{label}</strong>
+      <span>{hint}</span>
+    </button>
   );
 }

@@ -594,7 +594,7 @@ export default function Home() {
               <>
                 <div className="row spaced" style={{ marginTop: 22 }}>
                   <span>
-                    Question {game.index + 1} / {game.total}
+                    {game.question?.type === "slide" ? "Étape" : "Question"} {game.index + 1} / {game.total}
                   </span>
                   <span className="timer">
                     {game.question?.type === "slide" ? "Diapo" : game.revealed ? "Terminé" : `${remaining} s`}
@@ -605,7 +605,7 @@ export default function Home() {
                   className="question-progress"
                   aria-label="Temps restant"
                 />
-                <h2 className="question-title">{game.question?.text}</h2>
+                {game.question?.type !== "slide" && <h2 className="question-title">{game.question?.text}</h2>}
                 {game.question && (
                   <QuestionPlay
                     key={`${code}-${game.index}`}

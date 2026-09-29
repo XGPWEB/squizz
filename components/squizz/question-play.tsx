@@ -2,7 +2,13 @@
 import { useState } from "react";
 import { ArrowUp, ArrowDown, Check } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { type AnswerPayload, type PublicQuestion, type Aggregate, isScored } from "@/lib/question";
+import {
+  type AnswerPayload,
+  type PublicQuestion,
+  type Aggregate,
+  isScored,
+  safeMediaUrl,
+} from "@/lib/question";
 import { MediaView, PinImage } from "./media";
 export function QuestionPlay({
   question: q,
@@ -29,229 +35,291 @@ export function QuestionPlay({
   const send = (answer: AnswerPayload) => {
     if (!locked) onSubmit(answer);
   };
+  if (q.type === "slide") return <SlideView slide={q} />;
   return (
     <>
       <MediaView media={pinMedia ? q.media.filter((m) => m !== pinMedia) : q.media} />
-      {q.type === "slide" ? (
-        <div className="slide-body">{q.body}</div>
-      ) : (
+
+      {["quiz", "truefalse", "poll"].includes(q.type) && (
         <>
-          {["quiz", "truefalse", "poll"].includes(q.type) && (
-            <>
-              <p className="hint center">
-                {q.multiple
-                  ? "Plusieurs choix possibles. Sélectionne tes réponses, puis valide."
-                  : "Sélectionne une réponse."}
-                {q.points === "double" ? " · Points doubles !" : q.points === "none" ? " · Sans points" : ""}
-              </p>
-              <div className="answers">
-                {q.options.map((opt, i) => (
-                  <button
-                    type="button"
-                    key={i}
-                    className={`answer ${selected.includes(i) ? "selected" : ""} ${revealed && q.correctAnswers?.includes(i) ? "correct" : ""}`}
-                    disabled={locked}
-                    aria-pressed={selected.includes(i)}
-                    onClick={() => {
-                      if (q.multiple)
-                        setChoices(selected.includes(i) ? selected.filter((x) => x !== i) : [...selected, i]);
-                      else send({ choices: [i] });
-                    }}
-                  >
-                    <span className="answer-letter">{String.fromCharCode(65 + i)}</span>
-                    <span>{opt}</span>
-                    {(selected.includes(i) || (revealed && q.correctAnswers?.includes(i))) && (
-                      <Check size={23} />
-                    )}
-                  </button>
-                ))}
-              </div>
-              {q.multiple && !submitted && !revealed && (
-                <button
-                  disabled={locked || !choices.length}
-                  className="button"
-                  onClick={() => send({ choices })}
-                >
-                  Valider {choices.length} réponse{choices.length > 1 ? "s" : ""}
-                </button>
-              )}
-            </>
-          )}
-          {["text", "open", "wordcloud"].includes(q.type) && (
-            <form
-              className="response-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                send({ text });
-              }}
-            >
-              <label>
-                {q.type === "wordcloud"
-                  ? "Ton mot ou ta courte expression"
-                  : q.type === "open"
-                    ? "Ton avis"
-                    : "Ta réponse"}
-                {q.type === "open" ? (
-                  <textarea
-                    rows={4}
-                    value={submitted?.text ?? text}
-                    disabled={locked}
-                    maxLength={1000}
-                    onChange={(e) => setText(e.target.value)}
-                    required
-                  />
-                ) : (
-                  <input
-                    value={submitted?.text ?? text}
-                    disabled={locked}
-                    maxLength={q.type === "wordcloud" ? 40 : 150}
-                    onChange={(e) => setText(e.target.value)}
-                    required
-                    autoComplete="off"
-                  />
-                )}
-              </label>
-              {!submitted && !revealed && (
-                <button className="button" disabled={locked || !text.trim()}>
-                  Envoyer ma réponse
-                </button>
-              )}
-            </form>
-          )}
-          {["slider", "scale", "nps"].includes(q.type) && (
-            <section className="numeric-answer">
-              <strong className="numeric-value">{submitted?.value ?? value}</strong>
-              <Slider
-                className="hub-slider"
-                value={[submitted?.value ?? value]}
-                min={q.min}
-                max={q.max}
-                step={q.step}
+          <p className="hint center">
+            {q.multiple
+              ? "Plusieurs choix possibles. Sélectionne tes réponses, puis valide."
+              : "Sélectionne une réponse."}
+            {q.points === "double" ? " · Points doubles !" : q.points === "none" ? " · Sans points" : ""}
+          </p>
+          <div className="answers">
+            {q.options.map((opt, i) => (
+              <button
+                type="button"
+                key={i}
+                className={`answer ${selected.includes(i) ? "selected" : ""} ${revealed && q.correctAnswers?.includes(i) ? "correct" : ""}`}
                 disabled={locked}
-                onValueChange={(v) => setValue(v[0])}
-                aria-label="Ta valeur"
-              />
-              <div className="row spaced">
-                <span>
-                  {q.min}
-                  {q.type === "nps" ? " · Pas du tout probable" : ""}
-                </span>
-                <span>
-                  {q.max}
-                  {q.type === "nps" ? " · Très probable" : ""}
-                </span>
-              </div>
-              <label className="exact-number">
-                Ou saisis une valeur
-                <input
-                  aria-label="Valeur précise"
-                  type="number"
-                  min={q.min}
-                  max={q.max}
-                  step={q.step}
-                  disabled={locked}
-                  value={submitted?.value ?? value}
-                  onChange={(e) => setValue(e.target.valueAsNumber)}
-                />
-              </label>
-              {!submitted && !revealed && (
-                <button
-                  className="button"
-                  disabled={locked || !Number.isFinite(value) || value < q.min || value > q.max}
-                  onClick={() => send({ value })}
-                >
-                  Valider ma valeur
-                </button>
-              )}
-            </section>
-          )}
-          {pinMedia && (
-            <section className="pin-answer">
-              <p className="hint">Touche l’image pour placer ton repère, puis valide.</p>
-              <PinImage
-                media={pinMedia}
-                value={submitted?.x !== undefined ? { x: submitted.x, y: submitted.y! } : pin}
-                onChange={setPin}
-                disabled={locked}
-              />
-              {!submitted && !revealed && (
-                <button className="button" disabled={locked || !pin} onClick={() => pin && send(pin)}>
-                  Valider mon repère
-                </button>
-              )}
-            </section>
-          )}
-          {q.type === "puzzle" && (
-            <section className="puzzle-answer">
-              <p className="hint">Remets les éléments dans l’ordre avec les flèches, puis valide.</p>
-              {(submitted?.order ?? order).map((id, i) => (
-                <div className="puzzle-piece" key={id}>
-                  <b>{i + 1}</b>
-                  <span>{q.options[id]}</span>
-                  <button
-                    className="text-button"
-                    aria-label={`Monter ${q.options[id]}`}
-                    disabled={locked || i === 0}
-                    onClick={() => {
-                      const next = [...order];
-                      [next[i], next[i - 1]] = [next[i - 1], next[i]];
-                      setOrder(next);
-                    }}
-                  >
-                    <ArrowUp size={20} />
-                  </button>
-                  <button
-                    className="text-button"
-                    aria-label={`Descendre ${q.options[id]}`}
-                    disabled={locked || i === order.length - 1}
-                    onClick={() => {
-                      const next = [...order];
-                      [next[i], next[i + 1]] = [next[i + 1], next[i]];
-                      setOrder(next);
-                    }}
-                  >
-                    <ArrowDown size={20} />
-                  </button>
-                </div>
-              ))}
-              {!submitted && !revealed && (
-                <button className="button" disabled={locked} onClick={() => send({ order })}>
-                  Valider cet ordre
-                </button>
-              )}
-            </section>
-          )}
-          {q.type === "brainstorm" && (
-            <form
-              className="response-form"
-              onSubmit={(e) => {
-                e.preventDefault();
-                send({ ideas: ideas.filter((s) => s.trim()) });
-              }}
-            >
-              <p>Propose jusqu’à trois idées.</p>
-              {ideas.map((idea, i) => (
-                <label key={i}>
-                  Idée {i + 1}
-                  <textarea
-                    rows={2}
-                    value={submitted?.ideas?.[i] ?? idea}
-                    maxLength={200}
-                    disabled={locked}
-                    onChange={(e) => setIdeas(ideas.map((v, j) => (j === i ? e.target.value : v)))}
-                  />
-                </label>
-              ))}
-              {!submitted && !revealed && (
-                <button className="button" disabled={locked || ideas.every((s) => !s.trim())}>
-                  Partager mes idées
-                </button>
-              )}
-            </form>
+                aria-pressed={selected.includes(i)}
+                onClick={() => {
+                  if (q.multiple)
+                    setChoices(selected.includes(i) ? selected.filter((x) => x !== i) : [...selected, i]);
+                  else send({ choices: [i] });
+                }}
+              >
+                <span className="answer-letter">{String.fromCharCode(65 + i)}</span>
+                <span>{opt}</span>
+                {(selected.includes(i) || (revealed && q.correctAnswers?.includes(i))) && <Check size={23} />}
+              </button>
+            ))}
+          </div>
+          {q.multiple && !submitted && !revealed && (
+            <button disabled={locked || !choices.length} className="button" onClick={() => send({ choices })}>
+              Valider {choices.length} réponse{choices.length > 1 ? "s" : ""}
+            </button>
           )}
         </>
       )}
+      {["text", "open", "wordcloud"].includes(q.type) && (
+        <form
+          className="response-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            send({ text });
+          }}
+        >
+          <label>
+            {q.type === "wordcloud"
+              ? "Ton mot ou ta courte expression"
+              : q.type === "open"
+                ? "Ton avis"
+                : "Ta réponse"}
+            {q.type === "open" ? (
+              <textarea
+                rows={4}
+                value={submitted?.text ?? text}
+                disabled={locked}
+                maxLength={1000}
+                onChange={(e) => setText(e.target.value)}
+                required
+              />
+            ) : (
+              <input
+                value={submitted?.text ?? text}
+                disabled={locked}
+                maxLength={q.type === "wordcloud" ? 40 : 150}
+                onChange={(e) => setText(e.target.value)}
+                required
+                autoComplete="off"
+              />
+            )}
+          </label>
+          {!submitted && !revealed && (
+            <button className="button" disabled={locked || !text.trim()}>
+              Envoyer ma réponse
+            </button>
+          )}
+        </form>
+      )}
+      {["slider", "scale", "nps"].includes(q.type) && (
+        <section className="numeric-answer">
+          <strong className="numeric-value">{submitted?.value ?? value}</strong>
+          <Slider
+            className="hub-slider"
+            value={[submitted?.value ?? value]}
+            min={q.min}
+            max={q.max}
+            step={q.step}
+            disabled={locked}
+            onValueChange={(v) => setValue(v[0])}
+            aria-label="Ta valeur"
+          />
+          <div className="row spaced">
+            <span>
+              {q.min}
+              {q.type === "nps" ? " · Pas du tout probable" : ""}
+            </span>
+            <span>
+              {q.max}
+              {q.type === "nps" ? " · Très probable" : ""}
+            </span>
+          </div>
+          <label className="exact-number">
+            Ou saisis une valeur
+            <input
+              aria-label="Valeur précise"
+              type="number"
+              min={q.min}
+              max={q.max}
+              step={q.step}
+              disabled={locked}
+              value={submitted?.value ?? value}
+              onChange={(e) => setValue(e.target.valueAsNumber)}
+            />
+          </label>
+          {!submitted && !revealed && (
+            <button
+              className="button"
+              disabled={locked || !Number.isFinite(value) || value < q.min || value > q.max}
+              onClick={() => send({ value })}
+            >
+              Valider ma valeur
+            </button>
+          )}
+        </section>
+      )}
+      {pinMedia && (
+        <section className="pin-answer">
+          <p className="hint">Touche l’image pour placer ton repère, puis valide.</p>
+          <PinImage
+            media={pinMedia}
+            value={submitted?.x !== undefined ? { x: submitted.x, y: submitted.y! } : pin}
+            onChange={setPin}
+            disabled={locked}
+          />
+          {!submitted && !revealed && (
+            <button className="button" disabled={locked || !pin} onClick={() => pin && send(pin)}>
+              Valider mon repère
+            </button>
+          )}
+        </section>
+      )}
+      {q.type === "puzzle" && (
+        <section className="puzzle-answer">
+          <p className="hint">Remets les éléments dans l’ordre avec les flèches, puis valide.</p>
+          {(submitted?.order ?? order).map((id, i) => (
+            <div className="puzzle-piece" key={id}>
+              <b>{i + 1}</b>
+              <span>{q.options[id]}</span>
+              <button
+                className="text-button"
+                aria-label={`Monter ${q.options[id]}`}
+                disabled={locked || i === 0}
+                onClick={() => {
+                  const next = [...order];
+                  [next[i], next[i - 1]] = [next[i - 1], next[i]];
+                  setOrder(next);
+                }}
+              >
+                <ArrowUp size={20} />
+              </button>
+              <button
+                className="text-button"
+                aria-label={`Descendre ${q.options[id]}`}
+                disabled={locked || i === order.length - 1}
+                onClick={() => {
+                  const next = [...order];
+                  [next[i], next[i + 1]] = [next[i + 1], next[i]];
+                  setOrder(next);
+                }}
+              >
+                <ArrowDown size={20} />
+              </button>
+            </div>
+          ))}
+          {!submitted && !revealed && (
+            <button className="button" disabled={locked} onClick={() => send({ order })}>
+              Valider cet ordre
+            </button>
+          )}
+        </section>
+      )}
+      {q.type === "brainstorm" && (
+        <form
+          className="response-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            send({ ideas: ideas.filter((s) => s.trim()) });
+          }}
+        >
+          <p>Propose jusqu’à trois idées.</p>
+          {ideas.map((idea, i) => (
+            <label key={i}>
+              Idée {i + 1}
+              <textarea
+                rows={2}
+                value={submitted?.ideas?.[i] ?? idea}
+                maxLength={200}
+                disabled={locked}
+                onChange={(e) => setIdeas(ideas.map((v, j) => (j === i ? e.target.value : v)))}
+              />
+            </label>
+          ))}
+          {!submitted && !revealed && (
+            <button className="button" disabled={locked || ideas.every((s) => !s.trim())}>
+              Partager mes idées
+            </button>
+          )}
+        </form>
+      )}
     </>
+  );
+}
+
+/** A slide never asks for an answer; each layout arranges the title, text and media differently. */
+function SlideView({ slide: q }: { slide: PublicQuestion }) {
+  const image = q.media.find((m) => m.kind === "image" && safeMediaUrl(m.url));
+  const others = image ? q.media.filter((m) => m !== image) : q.media;
+  const layout = q.layout ?? "classic";
+  if (layout === "title")
+    return (
+      <div className="slide slide-title">
+        <h2>{q.text}</h2>
+        {q.body && <p className="slide-subtitle">{q.body}</p>}
+        <MediaView media={q.media} />
+      </div>
+    );
+  if (layout === "quote")
+    return (
+      <figure className="slide slide-quote">
+        <blockquote>{q.text}</blockquote>
+        {q.body && <figcaption>— {q.body}</figcaption>}
+        <MediaView media={q.media} />
+      </figure>
+    );
+  if (layout === "bigimage")
+    return (
+      <div className="slide slide-bigimage">
+        {image && (
+          <figure className="slide-hero">
+            <img src={image.url} alt={image.caption || q.text} />
+            <figcaption>{q.text}</figcaption>
+          </figure>
+        )}
+        {!image && <h2 className="question-title">{q.text}</h2>}
+        {q.body && <div className="slide-body">{q.body}</div>}
+        <MediaView media={others} />
+      </div>
+    );
+  if (layout === "titletext")
+    return (
+      <div className="slide slide-titletext">
+        <div>
+          <h2>{q.text}</h2>
+          {q.body && <div className="slide-body">{q.body}</div>}
+        </div>
+        {image && <img className="slide-side-image" src={image.url} alt={image.caption || q.text} />}
+        {others.length > 0 && <MediaView media={others} />}
+      </div>
+    );
+  if (layout === "bullets") {
+    const bullets = q.body
+      .split("\n")
+      .map((line) => line.replace(/^\s*[-•*]\s*/, "").trim())
+      .filter(Boolean);
+    return (
+      <div className="slide slide-bullets">
+        <h2>{q.text}</h2>
+        <ul>
+          {bullets.map((b, i) => (
+            <li key={i}>{b}</li>
+          ))}
+        </ul>
+        <MediaView media={q.media} />
+      </div>
+    );
+  }
+  return (
+    <div className="slide">
+      <h2 className="question-title">{q.text}</h2>
+      <MediaView media={q.media} />
+      {q.body && <div className="slide-body">{q.body}</div>}
+    </div>
   );
 }
 export function QuestionResults({
