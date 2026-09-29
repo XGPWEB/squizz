@@ -39,10 +39,16 @@ cp deploy/create-super-admin.mjs "$STANDALONE/"
 mkdir -p "$STANDALONE/node_modules/.prisma/client"
 cp node_modules/.prisma/client/libquery_engine-debian-openssl-3.0.x.so.node "$STANDALONE/node_modules/.prisma/client/"
 
+# Never ship local secrets or data: Next copies .env files into standalone, production reads /opt/squizz-secrets.env.
+rm -f "$STANDALONE"/.env*
+for leak in .env .media tests prisma/seed.ts; do
+  [ ! -e "$STANDALONE/$leak" ] || { echo "ARRÊT : $leak se retrouve dans le build."; exit 1; }
+done
+
 echo "[2/5] Archive"
 ARCHIVE=/tmp/squizz-release.tar.gz
-tar -czf "$ARCHIVE" -C "$STANDALONE" . 
-tar -czf /tmp/squizz-prisma.tar.gz prisma/schema.prisma prisma/migrations
+COPYFILE_DISABLE=1 tar -czf "$ARCHIVE" -C "$STANDALONE" . 
+COPYFILE_DISABLE=1 tar -czf /tmp/squizz-prisma.tar.gz prisma/schema.prisma prisma/migrations
 
 echo "[3/5] Vérification du serveur"
 $SSH "test -f /opt/squizz-secrets.env && test -x /opt/squizz-tools/node_modules/.bin/prisma" \

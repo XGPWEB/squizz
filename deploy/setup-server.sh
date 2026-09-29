@@ -44,7 +44,7 @@ SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=
 SMTP_PASS=
-SMTP_FROM=SQuizz <no-reply@squizz.fun>
+SMTP_FROM="SQuizz <no-reply@squizz.fun>"
 ENV
   echo "Secrets écrits dans $SECRETS."
 fi
