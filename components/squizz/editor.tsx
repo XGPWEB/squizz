@@ -137,7 +137,7 @@ export function QuizEditor({
               <Choice
                 label="Type de question"
                 value={q.type}
-                options={questionTypes.map((t) => [t.id, t.label])}
+                options={questionTypes.map((t) => [t.id, t.label, undefined, t.group])}
                 onChange={(v) => setType(v as QuestionType)}
               />
               {q.type === "slide" ? (
@@ -145,7 +145,7 @@ export function QuizEditor({
                   <Choice
                     label="Mise en page"
                     value={q.layout}
-                    options={slideLayouts.map((l) => [l.id, l.label])}
+                    options={slideLayouts.map((l) => [l.id, l.label, l.hint])}
                     onChange={(v) => patch({ layout: v as SlideLayout })}
                   />
                   <p className="hint">{slideLayouts.find((l) => l.id === q.layout)?.hint}</p>
@@ -191,9 +191,17 @@ export function QuizEditor({
                     label="Points"
                     value={q.points}
                     options={[
-                      ["standard", "Standard"],
-                      ["double", "Points doubles"],
-                      ["none", "Aucun point"],
+                      [
+                        "standard",
+                        "Standard",
+                        "Récompense les réponses correctes avec le nombre de points habituel.",
+                      ],
+                      [
+                        "double",
+                        "Points doubles",
+                        "Donne deux fois plus de points pour les réponses correctes.",
+                      ],
+                      ["none", "Aucun point", "Diminue les enjeux de la question et désactive les points."],
                     ]}
                     onChange={(v) => patch({ points: v as Question["points"] })}
                   />
@@ -203,8 +211,16 @@ export function QuizEditor({
                     label="Limite de réponse"
                     value={q.multiple ? "multiple" : "single"}
                     options={[
-                      ["single", "Une seule réponse"],
-                      ["multiple", "Réponses multiples"],
+                      [
+                        "single",
+                        "Une seule réponse possible",
+                        "Les participants ne peuvent sélectionner qu’une seule des réponses.",
+                      ],
+                      [
+                        "multiple",
+                        "Réponses multiples",
+                        "Les participants peuvent sélectionner plusieurs réponses avant de les envoyer.",
+                      ],
                     ]}
                     onChange={(v) =>
                       patch({

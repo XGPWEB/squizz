@@ -1119,7 +1119,9 @@ fieldset {
   color: var(--ink);
   border: 2px solid var(--ink);
   box-shadow: 4px 4px 0 var(--ink);
-  max-height: 320px !important;
+  max-height: min(440px, var(--radix-select-content-available-height)) !important;
+  width: var(--radix-select-trigger-width);
+  min-width: 260px;
 }
 .setting-options [data-slot="select-item"] {
   padding: 12px 35px 12px 12px;
@@ -2210,4 +2212,40 @@ fieldset {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+}
+.setting-group {
+  padding: 12px 12px 4px;
+  font: 700 11px monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b665e;
+}
+.setting-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+}
+.setting-option[data-highlighted] {
+  background: var(--acid);
+}
+.setting-option[data-state="checked"] {
+  font-weight: 700;
+}
+.setting-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 15px;
+}
+.setting-option-text small {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: #55514b;
 }
