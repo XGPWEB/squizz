@@ -69,9 +69,9 @@ export default function PricingPage() {
               <Check size={18} /> Support prioritaire
             </li>
           </ul>
-          <a className="button" href="mailto:contact@pressweb.fr?subject=Offre%20Pro%20SQuizz">
+          <Link className="button" href="/#contact">
             Nous contacter
-          </a>
+          </Link>
         </article>
       </div>
     </>

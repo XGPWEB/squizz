@@ -16,7 +16,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "test:e2e": "python3 tests/game-flow.py && python3 tests/rich-game-flow.py && python3 tests/timeout.py && python3 tests/quiz-management.py"
+    "test:e2e": "python3 tests/game-flow.py && python3 tests/rich-game-flow.py && python3 tests/timeout.py && python3 tests/quiz-management.py && python3 tests/accounts.py && python3 tests/contact.py"
   },
   "dependencies": {
     "@fontsource/anton": "^5.3.0",

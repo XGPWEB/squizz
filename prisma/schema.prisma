@@ -186,3 +186,16 @@ model RateLimit {
   count     Int
   windowEnd DateTime
 }
+
+/// Messages sent from the public contact form; also emailed to the publisher when SMTP is configured.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

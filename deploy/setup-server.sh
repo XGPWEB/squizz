@@ -45,6 +45,9 @@ SMTP_PORT=587
 SMTP_USER=
 SMTP_PASS=
 SMTP_FROM="SQuizz <no-reply@squizz.fun>"
+# Cloudflare Turnstile pour le formulaire de contact. Optionnel.
+TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
 ENV
   echo "Secrets écrits dans $SECRETS."
 fi

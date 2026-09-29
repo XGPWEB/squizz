@@ -22,6 +22,7 @@ export function AppHeader({ user, area }: { user: SessionUser; area: "app" | "ad
         ) : (
           <>
             <Link href="/admin">Organisations</Link>
+            <Link href="/admin/messages">Messages</Link>
             <Link href="/admin/journal">Journal</Link>
             {user.organizationId && <Link href="/app">Mon organisation</Link>}
           </>

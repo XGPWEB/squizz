@@ -12,6 +12,7 @@ export async function PublicHeader() {
         <Link href="/#fonctionnalites">Fonctionnalités</Link>
         <Link href="/tarifs">Tarifs</Link>
         <Link href="/jouer">Rejoindre une partie</Link>
+        <Link href="/#contact">Contact</Link>
       </nav>
       <div className="header-actions">
         {user ? (

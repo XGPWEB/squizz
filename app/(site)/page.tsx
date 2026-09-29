@@ -3,6 +3,7 @@ import { Building2, GraduationCap, PartyPopper, QrCode, Sparkles, Trophy, Users,
 import { questionTypes, slideLayouts } from "@/lib/question";
 import { TypePreview, LayoutPreview } from "@/components/squizz/type-preview";
 import { JoinBox } from "@/components/site/join-box";
+import { ContactSection } from "@/components/site/contact-section";
 
 const featured = ["quiz", "truefalse", "slider", "puzzle", "wordcloud", "pin"] as const;
 
@@ -145,6 +146,7 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+      <ContactSection />
     </>
   );
 }

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { CONTACT_EMAIL } from "@/lib/company-info";
 
 export function Footer() {
   return (
@@ -14,7 +13,7 @@ export function Footer() {
         <Link href="/mentions-legales">Mentions légales</Link>
         <Link href="/cgu">CGU</Link>
         <Link href="/confidentialite">Confidentialité</Link>
-        <a href={`mailto:${CONTACT_EMAIL}`}>Contact</a>
+        <Link href="/#contact">Contact</Link>
       </nav>
     </footer>
   );

@@ -24,7 +24,7 @@ export function route<P = Record<string, never>>(fn: (req: Request, params: P) =
   };
 }
 
-export async function json<T>(req: Request, schema: z.ZodType<T>): Promise<T> {
+export async function json<S extends z.ZodTypeAny>(req: Request, schema: S): Promise<z.output<S>> {
   const body = await req.json().catch(() => {
     throw new HttpError("Requête invalide.");
   });

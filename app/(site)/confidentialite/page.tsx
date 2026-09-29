@@ -47,7 +47,11 @@ export default function PolitiqueConfidentialitePage() {
         contexte de jeu. Elle informe ses participants de l’usage qui est fait de leurs réponses (par exemple
         lors d’une formation ou d’un sondage interne).
       </p>
-      <h3>2.3 Données techniques</h3>
+      <h3>2.3 Formulaire de contact</h3>
+      <ul>
+        <li>Nom, email, sujet et contenu du message que vous nous envoyez</li>
+      </ul>
+      <h3>2.4 Données techniques</h3>
       <ul>
         <li>Adresse IP (limitation des tentatives de connexion et d’inscription, logs serveur)</li>
         <li>Journal des actions sensibles (invitations, changements de rôle, suspensions, suppressions)</li>
@@ -111,6 +115,10 @@ export default function PolitiqueConfidentialitePage() {
             <td>Suppression immédiate de ses comptes, quiz, parties et médias</td>
           </tr>
           <tr>
+            <td>Messages du formulaire de contact</td>
+            <td>3 ans après le dernier échange</td>
+          </tr>
+          <tr>
             <td>Journal des actions sensibles</td>
             <td>12 mois</td>
           </tr>
@@ -126,11 +134,15 @@ export default function PolitiqueConfidentialitePage() {
       </table>
 
       <h2>6. Avec qui nous partageons vos données</h2>
-      <p>Nous utilisons le sous-traitant suivant pour fournir le Service :</p>
+      <p>Nous utilisons les sous-traitants suivants pour fournir le Service :</p>
       <ul>
         <li>
           <strong>{c.host.name}</strong> — location du serveur (VPS) qui héberge l’application, la base de
           données, les médias et les sauvegardes
+        </li>
+        <li>
+          <strong>Cloudflare, Inc.</strong> — vérification anti-robot (Turnstile) du formulaire de contact,
+          sans cookie publicitaire
         </li>
       </ul>
       <p>
