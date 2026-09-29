@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, primaryKey, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, primaryKey, uniqueIndex, index } from "drizzle-orm/sqlite-core";
 export const quizzes = sqliteTable(
   "quizzes",
   { id: text("id").primaryKey(), owner: text("owner").notNull(), data: text("data").notNull() },
@@ -30,4 +30,14 @@ export const answers = sqliteTable(
     correctness: integer("correctness"),
   },
   (t) => [primaryKey({ columns: [t.code, t.player, t.question] })],
+);
+export const media = sqliteTable(
+  "media",
+  {
+    id: text("id").primaryKey(),
+    owner: text("owner").notNull(),
+    size: integer("size").notNull(),
+    created: integer("created").notNull(),
+  },
+  (t) => [index("idx_media_owner_created").on(t.owner, t.created)],
 );

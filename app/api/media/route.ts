@@ -1,5 +1,24 @@
 import { env } from "cloudflare:workers";
 import { identity, identityHeaders } from "@/lib/identity";
+import { rawDb } from "@/db";
+
+const MB = 1024 * 1024;
+/** Per-visitor limits so one person cannot fill the bucket. */
+const QUOTA_BYTES = 200 * MB;
+const UPLOADS_PER_HOUR = 30;
+
+async function quotaError(db: D1Database, owner: string, size: number): Promise<string | null> {
+  const usage = await db
+    .prepare(
+      "SELECT COALESCE(SUM(size),0) AS total, COUNT(CASE WHEN created > ? THEN 1 END) AS recent FROM media WHERE owner = ?",
+    )
+    .bind(Date.now() - 60 * 60 * 1000, owner)
+    .first<{ total: number; recent: number }>();
+  if ((usage?.recent ?? 0) >= UPLOADS_PER_HOUR)
+    return "Trop d’imports en peu de temps. Réessaie dans une heure.";
+  if ((usage?.total ?? 0) + size > QUOTA_BYTES) return "Tu as atteint la limite de 200 Mo de médias.";
+  return null;
+}
 export async function POST(req: Request) {
   const who = identity(req);
   const headers = identityHeaders(req, who);
@@ -9,7 +28,7 @@ export async function POST(req: Request) {
         { error: "Le stockage des médias est momentanément indisponible." },
         { status: 503, headers },
       );
-    if (Number(req.headers.get("content-length")) > 21 * 1024 * 1024)
+    if (Number(req.headers.get("content-length")) > 21 * MB)
       return Response.json({ error: "Fichier trop lourd : 20 Mo maximum." }, { status: 413, headers });
     const form = await req.formData();
     const file = form.get("file");
@@ -44,7 +63,14 @@ export async function POST(req: Request) {
         { error: "Le contenu du fichier ne correspond pas à son format." },
         { status: 400, headers },
       );
+    const db = rawDb();
+    const overQuota = await quotaError(db, who.id, file.size);
+    if (overQuota) return Response.json({ error: overQuota }, { status: 429, headers });
     const id = crypto.randomUUID();
+    await db
+      .prepare("INSERT INTO media (id,owner,size,created) VALUES (?,?,?,?)")
+      .bind(id, who.id, file.size, Date.now())
+      .run();
     await env.BUCKET.put(id, file.stream(), {
       httpMetadata: { contentType: file.type },
       customMetadata: { owner: who.id },

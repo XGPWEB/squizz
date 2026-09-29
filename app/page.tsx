@@ -6,7 +6,20 @@ import { invitationOrigin } from "@/lib/invitation";
 declare const __SQUIZZ_PREVIEW_HOST__: string;
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState } from "react";
-import { Zap, Plus, Play, Users, Sparkles, ArrowLeft, Check, Trophy, Copy, X } from "lucide-react";
+import {
+  Zap,
+  Plus,
+  Play,
+  Users,
+  Sparkles,
+  ArrowLeft,
+  Check,
+  Trophy,
+  Copy,
+  X,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { demos, type Quiz, type Question } from "@/lib/quizzes";
@@ -59,7 +72,8 @@ export default function Home() {
     [game, setGame] = useState<Game | null>(null),
     [title, setTitle] = useState(""),
     [questions, setQuestions] = useState<Question[]>([blank()]),
-    [saved, setSaved] = useState(false),
+    [saved, setSaved] = useState<"" | "created" | "updated" | "deleted">(""),
+    [editingId, setEditingId] = useState<string | null>(null),
     [copied, setCopied] = useState(false),
     [clock, setClock] = useState(Date.now()),
     [origin, setOrigin] = useState("");
@@ -128,8 +142,7 @@ export default function Home() {
           execute(input: unknown) {
             if (!input || typeof input !== "object" || Object.keys(input).length)
               throw new Error("Aucun paramètre attendu.");
-            setView("editor");
-            setSaved(false);
+            editor();
             return { view: "editor" };
           },
         },
@@ -156,10 +169,14 @@ export default function Home() {
     setGame(null);
     history.replaceState(null, "", "/");
   };
-  const editor = () => {
+  const editor = (quiz?: Quiz) => {
+    setEditingId(quiz?.id ?? null);
+    setTitle(quiz?.title ?? "");
+    setQuestions(quiz ? structuredClone(quiz.questions) : [blank()]);
     setView("editor");
-    setSaved(false);
+    setSaved("");
     setError("");
+    window.scrollTo(0, 0);
   };
   const launch = (quizId: string) =>
     run(async () => {
@@ -178,13 +195,28 @@ export default function Home() {
     });
   const save = () =>
     run(async () => {
-      const d = await api("save", { quiz: { title, questions } });
-      setQuizzes((q) => [...q, d.quiz]);
-      setSaved(true);
+      const quiz = { title, questions };
+      if (editingId) {
+        const d = await api("update", { quizId: editingId, quiz });
+        setQuizzes((list) => list.map((q) => (q.id === editingId ? d.quiz : q)));
+      } else {
+        const d = await api("save", { quiz });
+        setQuizzes((list) => [...list, d.quiz]);
+      }
+      setSaved(editingId ? "updated" : "created");
+      setEditingId(null);
       setTitle("");
       setQuestions([blank()]);
       setView("home");
     });
+  const remove = (quiz: Quiz) => {
+    if (!confirm(`Supprimer « ${quiz.title} » ? Cette action est définitive.`)) return;
+    run(async () => {
+      await api("delete", { quizId: quiz.id });
+      setQuizzes((list) => list.filter((q) => q.id !== quiz.id));
+      setSaved("deleted");
+    });
+  };
   const patch = (i: number, value: Partial<Question>) =>
     setQuestions((q) => q.map((x, j) => (j === i ? { ...x, ...value } : x)));
   const remaining = game ? Math.max(0, Math.ceil((game.remaining - (clock - received.current)) / 1000)) : 0;
@@ -203,7 +235,7 @@ export default function Home() {
         </a>
         <span className="header-note">LE QUIZ · VERSION COLLECTIVE</span>
         {view === "home" ? (
-          <button className="button small" onClick={editor}>
+          <button className="button small" onClick={() => editor()}>
             <Plus size={18} /> Créer un quiz
           </button>
         ) : (
@@ -225,7 +257,12 @@ export default function Home() {
           <>
             {saved && (
               <div className="success" role="status">
-                <Check size={18} /> Votre quiz est enregistré. Il est prêt à jouer.
+                <Check size={18} />{" "}
+                {saved === "deleted"
+                  ? "Le quiz a été supprimé."
+                  : saved === "updated"
+                    ? "Vos modifications sont enregistrées."
+                    : "Votre quiz est enregistré. Il est prêt à jouer."}
               </div>
             )}
             <div className="intro">
@@ -280,35 +317,60 @@ export default function Home() {
               <span className="hint">Des quiz prêts à lancer</span>
             </div>
             <div className="quiz-grid">
-              {quizzes.map((q) => (
-                <article className="quiz-card" key={q.id}>
-                  <div className={`card-art ${q.color}`}>
-                    <span aria-hidden="true">{q.symbol}</span>
-                    <span className="pill">
-                      {demos.some((x) => x.id === q.id) ? "SQuizz Originals" : "Votre quiz"}
-                    </span>
-                  </div>
-                  <div className="card-content">
-                    <p className="eyebrow">{q.tag}</p>
-                    <h3>{q.title}</h3>
-                    <p>{q.desc}</p>
-                    <div className="card-bottom">
-                      <span>
-                        <Users size={15} /> {q.questions.length} questions · ~
-                        {Math.ceil(q.questions.length * 0.5)} min
-                      </span>
-                      <button
-                        disabled={busy}
-                        aria-label={`Lancer ${q.title}`}
-                        onClick={() => launch(q.id)}
-                        className="play"
-                      >
-                        <Play size={18} fill="currentColor" />
-                      </button>
+              {quizzes.map((q) => {
+                const own = !demos.some((x) => x.id === q.id);
+                return (
+                  <article className="quiz-card" key={q.id}>
+                    <div className={`card-art ${q.color}`}>
+                      <span aria-hidden="true">{q.symbol}</span>
+                      <span className="pill">{own ? "Votre quiz" : "SQuizz Originals"}</span>
                     </div>
-                  </div>
-                </article>
-              ))}
+                    <div className="card-content">
+                      <p className="eyebrow">{q.tag}</p>
+                      <h3>{q.title}</h3>
+                      <p>{q.desc}</p>
+                      <div className="card-bottom">
+                        <span>
+                          <Users size={15} /> {q.questions.length} question{q.questions.length > 1 ? "s" : ""}{" "}
+                          · ~{Math.ceil(q.questions.length * 0.5)} min
+                        </span>
+                        <span className="card-actions">
+                          {own && (
+                            <>
+                              <button
+                                disabled={busy}
+                                aria-label={`Modifier ${q.title}`}
+                                title="Modifier"
+                                onClick={() => editor(q)}
+                                className="card-action"
+                              >
+                                <Pencil size={16} />
+                              </button>
+                              <button
+                                disabled={busy}
+                                aria-label={`Supprimer ${q.title}`}
+                                title="Supprimer"
+                                onClick={() => remove(q)}
+                                className="card-action danger"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          )}
+                          <button
+                            disabled={busy}
+                            aria-label={`Lancer ${q.title}`}
+                            onClick={() => launch(q.id)}
+                            className="play"
+                          >
+                            <Play size={18} fill="currentColor" />
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
             <div className="creator">
               <Sparkles />
@@ -316,7 +378,7 @@ export default function Home() {
                 <h3>Tes questions. Ton terrain de jeu.</h3>
                 <p>Prépare le quiz dont tout le monde va parler.</p>
               </div>
-              <button className="button dark" onClick={editor}>
+              <button className="button dark" onClick={() => editor()}>
                 <Plus size={18} /> Créer mon quiz
               </button>
             </div>
@@ -371,6 +433,7 @@ export default function Home() {
             setBusy={setBusy}
             onError={setError}
             onSave={save}
+            editing={editingId !== null}
           />
         )}
         {view === "game" && !game && (

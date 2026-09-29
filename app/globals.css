@@ -322,6 +322,7 @@ h3 {
   border-top: 2px solid var(--ink);
   padding-top: 14px;
   gap: 8px;
+  flex-wrap: wrap;
 }
 .card-bottom > span {
   display: flex;
@@ -1689,4 +1690,28 @@ fieldset {
   .question-settings .setting-trigger {
     font-size: 16px;
   }
+}
+.card-actions {
+  display: flex;
+  margin-left: auto;
+  gap: 8px;
+  align-items: center;
+}
+.card-action {
+  border: 2px solid var(--ink);
+  background: white;
+  color: var(--ink);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.card-action.danger:hover {
+  background: var(--pink);
+}
+.card-bottom > span:first-child {
+  flex: 1 1 110px;
+  min-width: 0;
 }

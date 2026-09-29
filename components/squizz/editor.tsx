@@ -23,6 +23,7 @@ export function QuizEditor({
   setBusy,
   onError,
   onSave,
+  editing = false,
 }: {
   title: string;
   questions: Question[];
@@ -32,6 +33,7 @@ export function QuizEditor({
   setBusy: (b: boolean) => void;
   onError: (s: string) => void;
   onSave: () => void;
+  editing?: boolean;
 }) {
   const [active, setActive] = useState(0);
   const [picker, setPicker] = useState(false);
@@ -56,8 +58,8 @@ export function QuizEditor({
   return (
     <section className="quiz-editor">
       <div className="editor-title">
-        <span className="sticker pink-sticker">À TOI DE CRÉER</span>
-        <h1>Ton quiz. Tes règles.</h1>
+        <span className="sticker pink-sticker">{editing ? "RETOUCHES EN COURS" : "À TOI DE CRÉER"}</span>
+        <h1>{editing ? "On peaufine ton quiz." : "Ton quiz. Tes règles."}</h1>
       </div>
       <form
         onSubmit={(e) => {
@@ -432,7 +434,7 @@ export function QuizEditor({
               {busy ? "Import ou enregistrement en cours…" : "Tout est prêt ? Enregistre ton quiz."}
             </span>
             <button type="submit" className="button" disabled={busy}>
-              {busy ? "Un instant…" : "Enregistrer le quiz"}
+              {busy ? "Un instant…" : editing ? "Enregistrer les modifications" : "Enregistrer le quiz"}
             </button>
           </div>
         </fieldset>
