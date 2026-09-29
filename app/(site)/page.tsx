@@ -4,25 +4,45 @@ import { questionTypes, slideLayouts } from "@/lib/question";
 import { TypePreview, LayoutPreview } from "@/components/squizz/type-preview";
 import { JoinBox } from "@/components/site/join-box";
 import { ContactSection } from "@/components/site/contact-section";
+import { Marquee } from "@/components/site/marquee";
 
 const featured = ["quiz", "truefalse", "slider", "puzzle", "wordcloud", "pin"] as const;
 
 export default function HomePage() {
   return (
     <>
-      <section className="intro">
-        <div>
-          <p className="eyebrow">LE SAVOIR, ÇA SE JOUE.</p>
+      <section className="intro hero">
+        <div className="hero-decor" aria-hidden="true">
+          <span className="shape shape-star" data-parallax="0.25">
+            ✦
+          </span>
+          <span className="shape shape-circle" data-parallax="-0.18" />
+          <span className="shape shape-square" data-parallax="0.35" />
+          <span className="shape shape-question" data-parallax="-0.3">
+            ?
+          </span>
+          <span className="shape shape-bolt" data-parallax="0.15">
+            <Zap />
+          </span>
+        </div>
+        <div className="hero-copy">
+          <p className="eyebrow hero-in" style={{ ["--d" as string]: "0ms" }}>
+            LE SAVOIR, ÇA SE JOUE.
+          </p>
           <h1>
-            Moins de blabla.
+            <span className="hero-line hero-in" style={{ ["--d" as string]: "120ms" }}>
+              Moins de blabla.
+            </span>
             <br />
-            Plus de <span>défis.</span>
+            <span className="hero-line hero-in" style={{ ["--d" as string]: "260ms" }}>
+              Plus de <span className="wiggle">défis.</span>
+            </span>
           </h1>
-          <p className="lead">
+          <p className="lead hero-in" style={{ ["--d" as string]: "420ms" }}>
             Créez un quiz en quelques minutes, projetez-le et laissez chacun répondre depuis son téléphone.
             Classement en direct, podium final, zéro application à installer.
           </p>
-          <div className="row" style={{ marginTop: 26 }}>
+          <div className="row hero-in" style={{ marginTop: 26, ["--d" as string]: "560ms" }}>
             <Link className="button" href="/inscription">
               <Sparkles size={18} /> Créer mon espace gratuit
             </Link>
@@ -31,17 +51,34 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-        <JoinBox />
+        <div className="hero-join" data-reveal="pop">
+          <JoinBox />
+        </div>
       </section>
 
+      <Marquee
+        items={[
+          "Quiz",
+          "Vrai ou faux",
+          "Curseur",
+          "Puzzle",
+          "Sondage",
+          "Nuage de mots",
+          "Place le pin’s",
+          "Brainstorming",
+          "Diapos",
+          "Podium",
+        ]}
+      />
+
       <section className="steps" aria-labelledby="steps-title">
-        <div className="section-heading">
+        <div className="section-heading" data-reveal="left">
           <div>
             <p className="eyebrow">EN TROIS TEMPS</p>
             <h2 id="steps-title">Comment ça marche ?</h2>
           </div>
         </div>
-        <ol className="step-list">
+        <ol className="step-list" data-stagger="up">
           <li>
             <span className="step-icon">
               <Sparkles />
@@ -67,14 +104,14 @@ export default function HomePage() {
       </section>
 
       <section id="fonctionnalites" aria-labelledby="features-title">
-        <div className="section-heading">
+        <div className="section-heading" data-reveal="left">
           <div>
             <p className="eyebrow">TESTER, SONDER, PRÉSENTER</p>
             <h2 id="features-title">Tous les formats pour faire participer</h2>
           </div>
           <span className="hint">{questionTypes.length} types de questions</span>
         </div>
-        <div className="type-grid showcase">
+        <div className="type-grid showcase" data-stagger="zoom">
           {featured.map((id) => {
             const t = questionTypes.find((x) => x.id === id)!;
             return (
@@ -89,7 +126,7 @@ export default function HomePage() {
         <p className="feature-more">
           Et aussi : réponse libre, sondage, échelle, NPS, place le pin’s, question ouverte, brainstorming…
         </p>
-        <div className="type-grid showcase slides-showcase">
+        <div className="type-grid showcase slides-showcase" data-stagger="up">
           {slideLayouts.slice(0, 3).map((l) => (
             <article key={l.id}>
               <LayoutPreview layout={l.id} />
@@ -101,13 +138,13 @@ export default function HomePage() {
       </section>
 
       <section className="audiences" aria-labelledby="audiences-title">
-        <div className="section-heading">
+        <div className="section-heading" data-reveal="left">
           <div>
             <p className="eyebrow">POUR QUI ?</p>
             <h2 id="audiences-title">Une salle, un écran, et c’est parti</h2>
           </div>
         </div>
-        <div className="audience-grid">
+        <div className="audience-grid" data-stagger="pop">
           <article>
             <Building2 />
             <h3>Entreprises</h3>
@@ -126,7 +163,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="cta-band">
+      <Marquee
+        tone="acid"
+        items={[
+          "Jusqu’à 100 joueurs",
+          "Sans application",
+          "Classement en direct",
+          "QR code",
+          "Gratuit pour démarrer",
+        ]}
+      />
+
+      <section className="cta-band" data-reveal="zoom">
         <div>
           <h2>Votre équipe, vos animateurs, vos quiz.</h2>
           <p>
@@ -146,7 +194,9 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
-      <ContactSection />
+      <div data-reveal="up">
+        <ContactSection />
+      </div>
     </>
   );
 }

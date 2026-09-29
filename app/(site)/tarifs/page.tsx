@@ -16,12 +16,12 @@ export default function PricingPage() {
   const pro = PLANS.PRO;
   return (
     <>
-      <div className="page-heading">
+      <div className="page-heading" data-reveal="up">
         <p className="eyebrow">TARIFS</p>
         <h1>Simple comme un quiz.</h1>
         <p className="lead">Démarrez gratuitement. Passez à Pro quand vos parties prennent de l’ampleur.</p>
       </div>
-      <div className="price-grid">
+      <div className="price-grid" data-stagger="pop">
         <article className="price-card">
           <h2>{free.label}</h2>
           <p className="price">0 €</p>
