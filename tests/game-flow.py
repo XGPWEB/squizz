@@ -1,15 +1,8 @@
 """Run against a local SQuizz preview: python3 tests/game-flow.py."""
-import http.cookiejar, json, urllib.request, urllib.error
-BASE='http://127.0.0.1:5173/api/game'
-def client(): return urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
-def call(c,action,expect=200,**data):
-    req=urllib.request.Request(BASE,data=json.dumps(dict(action=action,**data)).encode(),headers={'Content-Type':'application/json'})
-    try:
-        r=c.open(req); status=r.status; out=json.load(r)
-    except urllib.error.HTTPError as e: status=e.code;out=json.load(e)
-    assert status==expect,(action,status,out)
-    return out
-host,a,b,stranger=client(),client(),client(),client()
+from helpers import client, call, signup
+host,_,_=signup()
+stranger,_,_=signup()
+a,b=client(),client()
 quiz={'title':'Test fonctionnel','questions':[{'text':'Deux plus deux ?','options':['3','4','5','6'],'correct':1},{'text':'La planète rouge ?','options':['Mars','Terre','Vénus','Jupiter'],'correct':0}]}
 call(host,'save',expect=400,quiz={'title':'Invalide','questions':[]})
 qid=call(host,'save',quiz=quiz)['quiz']['id']

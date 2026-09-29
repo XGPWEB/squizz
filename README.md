@@ -1,57 +1,71 @@
 # SQuizz
 
-Application de quiz collectif en français. Cible de domaine fournie : **www.squizz.fun**, chez Hostinger. Le type d’offre et l’accès au compte restent à préciser avant d’y déployer l’application. Aucun réglage DNS n’a été modifié.
+Plateforme de quiz collectif en français, sur **www.squizz.fun** : site vitrine, espace des organisations (quiz, animateurs, droits), super-admin, et jeu en direct rejoint par les joueurs avec un code ou un QR code. Service conçu par [Pressweb](https://www.pressweb.fr/), sur le même principe que Barber Q PRO.
 
-## Fonctionnalités
+## Rôles
 
-- Charte inspirée du Hub : vert acide, bleu électrique, rose, crème, contours et ombres noirs, polices Anton et Permanent Marker servies localement.
-- QR code généré localement dans la salle d’attente ; lien contenant le code de la partie et pseudo à saisir sur téléphone.
-- Bilan individuel après chaque question : correction, points, rang, évolution ; égalités respectées.
-- Podium final et total des bonnes réponses.
-- Trois quiz de démonstration de cinq questions.
-- Création, modification et suppression de quiz (1 à 30 questions, 14 types de question).
-- Parties avec code à six chiffres et lien d’invitation, jusqu’à 100 joueurs.
-- Animation des questions, 20 secondes par réponse et classement.
-- Calcul des points côté serveur, réponse unique par joueur et question.
-- Restauration d’une partie après rechargement grâce à son URL.
+| Rôle | Peut |
+|---|---|
+| **Super-admin** (Pressweb) | Voir toutes les organisations, changer leur offre, les suspendre ou les supprimer, gérer les utilisateurs, créer des liens de réinitialisation, consulter le journal |
+| **Administrateur** d’une organisation | Tout ce que fait un animateur + inviter des membres, changer leur rôle, les désactiver ou les supprimer, modifier tous les quiz de l’organisation |
+| **Animateur** | Créer des quiz, modifier/supprimer les siens, lancer des parties avec tous les quiz de l’organisation |
+| **Joueur** | Rejoindre une partie avec un pseudo, sans compte |
 
-## Environnement actuel
+Une organisation garde toujours au moins un administrateur actif. Désactiver un membre, changer son mot de passe ou suspendre l’organisation coupe immédiatement ses sessions.
 
-React / Vinext, Worker Cloudflare et base D1. Cette version serveur ne s’installe pas par simple copie dans un dossier d’hébergement PHP. Pour un hébergement Hostinger, déterminer l’offre avant de choisir un portage Node/SQLite, PHP/MySQL ou un serveur séparé.
+## Offres
 
-Les quiz sont rattachés à un cookie HttpOnly propre au navigateur. L’identité Sites (en-tête `oai-authenticated-user-id`) n’est prise en compte qu’en développement ou si la variable `TRUST_SITES_IDENTITY=true` est définie : ne l’activer que derrière le proxy Sites, sinon n’importe qui peut forger cet en-tête. La suppression de ce cookie fait perdre l’accès aux quiz créés anonymement. Les parties expirent après 24 heures et sont purgées à la création d’une nouvelle partie. Les imports de médias sont limités à 200 Mo et 30 fichiers par heure et par visiteur. La synchronisation interroge le serveur toutes les 900 ms ; la capacité annoncée de 100 joueurs est une limite applicative, pas un résultat de test de charge.
+Définies dans `lib/plans.ts`, attribuées à la main depuis le super-admin (Stripe viendra plus tard).
 
-Un projet Sites privé a été enregistré pendant l’initialisation ; il n’a pas encore été publié. La politique d’accès Sites s’applique aux invitations si ce mode d’hébergement est retenu.
+| | Gratuit | Pro |
+|---|---|---|
+| Quiz | 5 | illimités |
+| Joueurs par partie | 20 | 100 |
+| Membres | 3 | illimités |
+| Médias | 100 Mo | 5 Go |
+
+## Stack
+
+Next.js 16 (App Router, sortie `standalone`), PostgreSQL + Prisma 5, NextAuth 4 (email + mot de passe, JWT revérifié à chaque requête), médias sur disque (`MEDIA_DIR`), Nodemailer (SMTP optionnel : sans SMTP, les liens d’invitation et de réinitialisation sont écrits dans les logs et affichés aux administrateurs).
+
+```
+app/(site)/        site public : accueil, tarifs, jouer, partie, connexion, inscription, légal
+app/app/           espace organisation : bibliothèque, éditeur, équipe, compte
+app/admin/         super-admin : organisations, détail, journal
+app/api/           game (jeu + quiz), media, account, invitations, org, admin, auth, health
+lib/server/        guard (droits), game, quiz-store, accounts, rate-limit, audit, mail
+lib/question.ts    14 types de questions, 6 diapos, validation et correction
+prisma/            schéma, migrations, seed
+deploy/            scripts serveur (préparation, HTTPS, Nginx, super-admin)
+```
 
 ## Développement
 
-Node.js 22.13 ou ultérieur. Formater avec `npm run format`.
+Node.js 20.9 ou ultérieur, PostgreSQL local.
 
 ```sh
-npm ci
-npm run db:generate
-npm run build
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_loving_makkari.sql
-# puis de même pour 0001_kind_deathstrike.sql et 0002_chunky_excalibur.sql
-npm run dev
+npm install
+cp .env.example .env        # puis renseigner DATABASE_URL, AUTH_SECRET, SEED_*
+npx prisma migrate dev
+npm run db:seed             # super-admin (+ organisation de démo si SEED_DEMO=1)
+npm run dev -- --port 5173
 ```
 
-N’appliquer chaque migration locale qu’une fois. Les migrations de production sont prises en charge par Sites dans ce mode de déploiement.
-
-## Vérifications
+## Tests
 
 ```sh
-npx tsc --noEmit
-python3 tests/game-flow.py
-node --experimental-strip-types tests/ranking.test.mjs
-python3 tests/timeout.py
-python3 tests/quiz-management.py
+npm test                    # unitaires (Vitest) — bloquants au déploiement
+npm run test:e2e            # intégration contre le serveur de dev sur :5173
 ```
 
-Le test fonctionnel utilise l’aperçu local sur `127.0.0.1:5173`. Il vérifie la validation et la propriété des quiz, les permissions de l’animateur, l’inscription, le masquage de la bonne réponse avant la révélation, les réponses en double, les points et la fin de partie.
+`tests/accounts.py` couvre les droits : inscription, invitations, rôles, isolation entre organisations, limites des offres, dernier administrateur, désactivation, super-admin (offres, suspension, réinitialisation, journal, suppression), changement et réinitialisation du mot de passe. Les limites de débit (connexion, inscription) sont multipliées par 100 hors production pour que les tests puissent créer de nombreux comptes.
 
-## Essai sur téléphone
+## Déploiement (VPS Hostinger)
 
-Lancer `npm run dev -- --hostname 0.0.0.0`, puis ouvrir sur l’ordinateur l’adresse Network imprimée par le serveur. Le QR code reprend cette origine : les téléphones sur le même Wi-Fi peuvent alors rejoindre la partie. Pendant cet aperçu réseau, les liens d’invitation remplacent automatiquement localhost ou 127.0.0.1 par l’adresse Wi-Fi détectée au démarrage. L’adresse réseau peut changer et l’accès dépend du pare-feu et de l’isolation des appareils Wi-Fi.
+Même méthode que les autres applications du VPS : app Next.js standalone lancée par PM2 (Node 24, port 3010, `/opt/squizz`), base PostgreSQL dédiée `squizz`, Nginx + Let’s Encrypt, sauvegarde quotidienne (base + médias, 7 jours) et contrôle de santé toutes les 5 minutes avec alerte email.
 
-En production, le QR code utilise automatiquement l’origine réelle de la page. Le domaine squizz.fun n’est pas utilisé tant qu’il n’est pas raccordé à cette application.
+1. `bash deploy.sh --setup` — une seule fois : base, utilisateur, secrets (`/opt/squizz-secrets.env`, générés sur le serveur), dossiers, sauvegarde, santé, cron.
+2. Dans hPanel Hostinger → DNS de squizz.fun : enregistrements **A** `@` et `www` vers l’IP du VPS.
+3. `bash deploy.sh --https` — une fois le DNS propagé : site Nginx + certificat.
+4. `bash deploy.sh` — à chaque mise en production : tests, build, migrations, bascule (version précédente gardée dans `/opt/squizz/app-prev`), redémarrage, contrôle de santé.
+5. Super-admin : sur le VPS, `cd /opt/squizz/app && set -a && . /opt/squizz-secrets.env && set +a && /opt/node24/bin/node create-super-admin.mjs contact@pressweb.fr` affiche un lien valable 1 heure pour choisir le mot de passe.

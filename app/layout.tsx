@@ -4,22 +4,15 @@ import "@fontsource/permanent-marker/latin-400.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SQuizz — Jouez ensemble",
-  description: "Créez vos quiz, réunissez vos joueurs et défiez vos méninges.",
-  other: {
-    "codex-preview": "development",
-  },
-  icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-  },
+  metadataBase: new URL(process.env.APP_URL || "https://www.squizz.fun"),
+  title: { default: "SQuizz — Le quiz qui se joue ensemble", template: "%s · SQuizz" },
+  description:
+    "Créez des quiz interactifs, lancez une partie en direct et laissez vos participants jouer depuis leur téléphone. Pour les équipes, les écoles et les événements.",
+  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
+  openGraph: { siteName: "SQuizz", locale: "fr_FR", type: "website" },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fr">
       <body className="antialiased">{children}</body>

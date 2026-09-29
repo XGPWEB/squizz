@@ -1,0 +1,188 @@
+generator client {
+  provider      = "prisma-client-js"
+  // "native" for development, OpenSSL 3 for the Ubuntu 24.04 VPS.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// SUPER_ADMIN runs the platform; ORG_ADMIN manages an organisation; HOST (animateur) creates quizzes and runs games.
+enum UserRole {
+  SUPER_ADMIN
+  ORG_ADMIN
+  HOST
+}
+
+/// Plans are assigned by hand from the super-admin until Stripe is wired in. Limits live in lib/plans.ts.
+enum Plan {
+  FREE
+  PRO
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+/// The tenant: every quiz, game, member and media file belongs to one organisation.
+model Organization {
+  id        String             @id @default(cuid())
+  name      String
+  plan      Plan               @default(FREE)
+  status    OrganizationStatus @default(ACTIVE)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  users       User[]
+  invitations Invitation[]
+  quizzes     Quiz[]
+  rooms       Room[]
+  media       Media[]
+  auditLogs   AuditLog[]
+}
+
+model User {
+  id               String        @id @default(cuid())
+  email            String        @unique
+  name             String
+  passwordHash     String
+  role             UserRole      @default(HOST)
+  /// Null only for super-admins.
+  organizationId   String?
+  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  active           Boolean       @default(true)
+  /// Bumped on password change or deactivation to revoke every open session.
+  sessionVersion   Int           @default(0)
+  failedLoginCount Int           @default(0)
+  lockedUntil      DateTime?
+  lastLoginAt      DateTime?
+  createdAt        DateTime      @default(now())
+
+  quizzes        Quiz[]
+  invitationsBy  Invitation[]
+  passwordResets PasswordResetToken[]
+
+  @@index([organizationId])
+}
+
+model Invitation {
+  id             String       @id @default(cuid())
+  /// SHA-256 of the token sent in the link; the raw token is never stored.
+  tokenHash      String       @unique
+  email          String
+  role           UserRole     @default(HOST)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedById    String?
+  invitedBy      User?        @relation(fields: [invitedById], references: [id], onDelete: SetNull)
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Quiz {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdById    String?
+  createdBy      User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  title          String
+  /// Validated questions (see lib/question.ts).
+  questions      Json
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId])
+}
+
+/// A live game. Timestamps are epoch milliseconds so the timing maths matches the client.
+model Room {
+  code           String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  host           String
+  /// Snapshot of the quiz at launch, so editing or deleting the quiz never breaks a running game.
+  quiz           Json
+  phase          String
+  question       Int
+  started        BigInt
+  created        BigInt
+  maxPlayers     Int
+
+  players Player[]
+
+  @@index([created])
+}
+
+model Player {
+  code String
+  id   String
+  name String
+  room Room   @relation(fields: [code], references: [code], onDelete: Cascade)
+
+  answers Answer[]
+
+  @@id([code, id])
+  @@unique([code, name])
+}
+
+model Answer {
+  code        String
+  player      String
+  question    Int
+  choice      Int
+  points      Int
+  payload     String @default("")
+  correctness Int?
+  owner       Player @relation(fields: [code, player], references: [code, id], onDelete: Cascade)
+
+  @@id([code, player, question])
+}
+
+model Media {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  uploadedById   String?
+  mime           String
+  size           Int
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+/// Sensitive actions (role changes, suspensions, deletions). Kept when the actor is deleted.
+model AuditLog {
+  id             String        @id @default(cuid())
+  actorId        String?
+  actorEmail     String
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  action         String
+  details        Json?
+  createdAt      DateTime      @default(now())
+
+  @@index([createdAt])
+}
+
+/// Sliding-window counters for login and signup throttling.
+model RateLimit {
+  key       String   @id
+  count     Int
+  windowEnd DateTime
+}

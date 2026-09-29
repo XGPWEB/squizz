@@ -1,8 +1,11 @@
 """Verify result for an unanswered question against the local preview."""
-import http.cookiejar,json,urllib.request,urllib.error,time
-c=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+import time,urllib.error
+from helpers import signup, request
+c,_,_=signup()
 def call(action,**data):
-    r=c.open(urllib.request.Request('http://127.0.0.1:5173/api/game',data=json.dumps(dict(action=action,**data)).encode(),headers={'Content-Type':'application/json'}));return json.load(r)
+    out=request(c,'POST','/api/game',dict(action=action,**data),expect=None)
+    if 'error' in out: raise urllib.error.HTTPError('', 400, out['error'], None, None)
+    return out
 code=call('create',quizId='general')['code']
 call('join',code=code,name='Chrono')
 call('start',code=code)

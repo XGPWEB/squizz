@@ -1,16 +1,8 @@
 """Exercise all 14 question types and media persistence against the local server."""
-import base64,http.cookiejar,json,urllib.request,urllib.error
-BASE='http://127.0.0.1:5173'
-def client():return urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
-def call(c,action,expect=200,**data):
-    req=urllib.request.Request(BASE+'/api/game',data=json.dumps(dict(action=action,**data)).encode(),headers={'Content-Type':'application/json'})
-    try:r=c.open(req,timeout=60);status=r.status;out=json.load(r)
-    except urllib.error.HTTPError as e:status=e.code;out=json.load(e)
-    assert status==expect,(action,status,out)
-    return out
-host,a,b=client(),client(),client()
-# Establish the same owner identity before importing.
-call(host,'list')
+import base64,json,urllib.request,urllib.error
+from helpers import BASE, client, call, signup
+host,_,_=signup()
+a,b=client(),client()
 png=base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1kAAAAASUVORK5CYII=')
 def upload(data,mime,name,expect=200):
     boundary='squizz-test-boundary'

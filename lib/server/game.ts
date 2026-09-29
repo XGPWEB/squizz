@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { rankPlayers, type ScoreRow } from "@/lib/game-results";
 import type { Quiz } from "@/lib/quizzes";
 import {
@@ -12,17 +14,18 @@ import { fail, validated, type Body } from "./http";
 import { normalizeQuiz } from "./quiz-store";
 
 export const ROOM_TTL = 24 * 60 * 60 * 1000;
-export const MAX_PLAYERS = 100;
 const MAX_NAME = 24;
 
 type Room = {
   code: string;
+  organizationId: string;
   host: string;
-  quiz: string;
+  quiz: Quiz;
   phase: "lobby" | "question" | "finished";
   question: number;
   started: number;
   created: number;
+  maxPlayers: number;
 };
 type AnswerRow = {
   player: string;
@@ -52,29 +55,42 @@ function shufflePuzzles(quiz: Quiz): Quiz {
   return { ...quiz, questions };
 }
 
-/** Removes games older than ROOM_TTL together with their players and answers. */
-export async function purgeExpiredRooms(db: D1Database) {
-  const cutoff = Date.now() - ROOM_TTL;
-  const expired = "(SELECT code FROM rooms WHERE created < ?)";
-  await db.batch([
-    db.prepare(`DELETE FROM answers WHERE code IN ${expired}`).bind(cutoff),
-    db.prepare(`DELETE FROM players WHERE code IN ${expired}`).bind(cutoff),
-    db.prepare("DELETE FROM rooms WHERE created < ?").bind(cutoff),
-  ]);
+/** Removes games older than ROOM_TTL (players and answers follow by cascade) and expired audit entries. */
+export async function purgeExpiredRooms() {
+  await prisma.room.deleteMany({ where: { created: { lt: BigInt(Date.now() - ROOM_TTL) } } });
+  // The privacy policy promises 12 months for the audit log.
+  await prisma.auditLog.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 365 * 86400_000) } } });
 }
 
-export async function createRoom(db: D1Database, host: string, quiz: Quiz): Promise<string> {
-  await purgeExpiredRooms(db);
-  const snapshot = JSON.stringify(shufflePuzzles(normalizeQuiz(quiz)));
+export async function createRoom(
+  host: string,
+  organizationId: string,
+  quiz: Quiz,
+  maxPlayers: number,
+): Promise<string> {
+  await purgeExpiredRooms();
+  const snapshot = shufflePuzzles(normalizeQuiz(quiz)) as unknown as Prisma.InputJsonValue;
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = String(100000 + (randomInt() % 900000));
-    const result = await db
-      .prepare(
-        "INSERT OR IGNORE INTO rooms (code,host,quiz,phase,question,started,created) VALUES (?,?,?,'lobby',0,0,?)",
-      )
-      .bind(code, host, snapshot, Date.now())
-      .run();
-    if (result.meta.changes) return code;
+    try {
+      await prisma.room.create({
+        data: {
+          code,
+          organizationId,
+          host,
+          quiz: snapshot,
+          phase: "lobby",
+          question: 0,
+          started: BigInt(0),
+          created: BigInt(Date.now()),
+          maxPlayers,
+        },
+      });
+      return code;
+    } catch (e) {
+      // A code collision is retried; anything else is a real error.
+      if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")) throw e;
+    }
   }
   fail("Impossible de créer la partie. Réessaie.", 503);
 }
@@ -85,33 +101,38 @@ export function parseCode(value: unknown): string {
   return code;
 }
 
-async function loadRoom(db: D1Database, code: string): Promise<Room> {
-  const room = await db.prepare("SELECT * FROM rooms WHERE code = ?").bind(code).first<Room>();
-  if (!room || Date.now() - room.created > ROOM_TTL) fail("Cette partie est introuvable ou a expiré.", 404);
-  return room;
+async function loadRoom(code: string): Promise<Room> {
+  const row = await prisma.room.findUnique({ where: { code } });
+  if (!row || Date.now() - Number(row.created) > ROOM_TTL)
+    fail("Cette partie est introuvable ou a expiré.", 404);
+  return {
+    ...row,
+    quiz: normalizeQuiz(row.quiz as unknown as Quiz),
+    phase: row.phase as Room["phase"],
+    started: Number(row.started),
+    created: Number(row.created),
+  };
 }
 
-export async function joinRoom(db: D1Database, who: string, code: string, rawName: unknown) {
-  const room = await loadRoom(db, code);
+export async function joinRoom(who: string, code: string, rawName: unknown) {
+  const room = await loadRoom(code);
   const name = String(rawName || "").trim();
   if (name.length < 1 || name.length > MAX_NAME) fail(`Choisis un pseudo de 1 à ${MAX_NAME} caractères.`);
-  const exists = await db.prepare("SELECT id FROM players WHERE code = ? AND id = ?").bind(code, who).first();
+  const exists = await prisma.player.findUnique({ where: { code_id: { code, id: who } } });
   if (exists) return;
   if (room.phase !== "lobby") fail("La partie a déjà commencé.");
-  const result = await db
-    .prepare(
-      `INSERT OR IGNORE INTO players(code,id,name) SELECT ?,?,?
-       WHERE EXISTS (SELECT 1 FROM rooms WHERE code = ? AND phase = 'lobby')
-       AND (SELECT COUNT(*) FROM players WHERE code = ?) < ?`,
-    )
-    .bind(code, who, name, code, code, MAX_PLAYERS)
-    .run();
-  if (!result.meta.changes) fail("Ce pseudo est déjà utilisé, la partie est pleine ou elle a commencé.");
+  // One statement re-checks the phase and the player cap atomically with the insert.
+  const inserted = await prisma.$executeRaw`
+    INSERT INTO "Player" ("code", "id", "name")
+    SELECT ${code}, ${who}, ${name}
+    WHERE EXISTS (SELECT 1 FROM "Room" WHERE "code" = ${code} AND "phase" = 'lobby')
+      AND (SELECT COUNT(*) FROM "Player" WHERE "code" = ${code}) < ${room.maxPlayers}
+    ON CONFLICT DO NOTHING`;
+  if (!inserted) fail("Ce pseudo est déjà utilisé, la partie est pleine ou elle a commencé.");
 }
 
 /** Everything the in-game actions need to know about a room, as seen by one visitor. */
 type GameContext = {
-  db: D1Database;
   who: string;
   room: Room;
   quiz: Quiz;
@@ -124,30 +145,29 @@ type GameContext = {
   revealed: boolean;
 };
 
-export async function loadGame(db: D1Database, who: string, code: string): Promise<GameContext> {
-  const room = await loadRoom(db, code);
-  const quiz = normalizeQuiz(JSON.parse(room.quiz));
+export async function loadGame(who: string, code: string): Promise<GameContext> {
+  const room = await loadRoom(code);
+  const quiz = room.quiz;
   const question = quiz.questions[room.question];
   const duration = question.duration * 1000;
   const host = room.host === who;
-  const [scores, answers] = await db.batch([
-    db
-      .prepare(
-        `SELECT p.id, p.name,
-           COALESCE(SUM(a.points),0) AS score,
-           COALESCE(SUM(CASE WHEN a.question < ? THEN a.points ELSE 0 END),0) AS priorScore,
-           COALESCE(SUM(CASE WHEN COALESCE(a.correctness, CASE WHEN a.points > 0 THEN 1 ELSE 0 END) = 1
-             THEN 1 ELSE 0 END),0) AS correctCount
-         FROM players p LEFT JOIN answers a ON a.code = p.code AND a.player = p.id
-         WHERE p.code = ? GROUP BY p.id, p.name ORDER BY score DESC, p.name ASC`,
-      )
-      .bind(room.question, code),
-    db
-      .prepare("SELECT player,choice,points,payload,correctness FROM answers WHERE code = ? AND question = ?")
-      .bind(code, room.question),
+  const [scores, submitted] = await Promise.all([
+    prisma.$queryRaw<ScoreRow[]>`
+      SELECT p."id", p."name",
+        COALESCE(SUM(a."points"), 0)::int AS "score",
+        COALESCE(SUM(CASE WHEN a."question" < ${room.question} THEN a."points" ELSE 0 END), 0)::int AS "priorScore",
+        COALESCE(SUM(CASE WHEN COALESCE(a."correctness", CASE WHEN a."points" > 0 THEN 1 ELSE 0 END) = 1
+          THEN 1 ELSE 0 END), 0)::int AS "correctCount"
+      FROM "Player" p LEFT JOIN "Answer" a ON a."code" = p."code" AND a."player" = p."id"
+      WHERE p."code" = ${code}
+      GROUP BY p."id", p."name"
+      ORDER BY "score" DESC, p."name" ASC`,
+    prisma.answer.findMany({
+      where: { code, question: room.question },
+      select: { player: true, choice: true, points: true, payload: true, correctness: true },
+    }),
   ]);
-  const people = scores.results as ScoreRow[];
-  const submitted = answers.results as AnswerRow[];
+  const people = scores;
   const me = people.find((p) => p.id === who);
   if (!host && !me) fail("Rejoins d’abord cette partie.", 403);
   const revealed =
@@ -156,11 +176,11 @@ export async function loadGame(db: D1Database, who: string, code: string): Promi
       question.type === "slide" ||
       Date.now() >= room.started + duration ||
       (people.length > 0 && submitted.length >= people.length));
-  return { db, who, room, quiz, question, duration, host, people, me, submitted, revealed };
+  return { who, room, quiz, question, duration, host, people, me, submitted, revealed };
 }
 
 export async function submitAnswer(g: GameContext, body: Body) {
-  const { db, room, question, duration } = g;
+  const { room, question, duration } = g;
   if (!g.me) fail("Rejoins la partie pour répondre.", 403);
   if (question.type === "slide") fail("Cette diapo ne demande pas de réponse.");
   if (room.phase !== "question" || g.revealed) fail("Le temps est écoulé.");
@@ -172,26 +192,14 @@ export async function submitAnswer(g: GameContext, body: Body) {
       ? Math.round(500 + 500 * speed) * (question.points === "double" ? 2 : 1)
       : 0;
   // The WHERE clause re-checks the phase and deadline atomically with the insert.
-  const r = await db
-    .prepare(
-      `INSERT OR IGNORE INTO answers(code,player,question,choice,points,payload,correctness)
-       SELECT ?,?,?,?,?,?,? WHERE EXISTS
-         (SELECT 1 FROM rooms WHERE code = ? AND phase = 'question' AND question = ? AND started > ?)`,
-    )
-    .bind(
-      room.code,
-      g.who,
-      room.question,
-      result.payload.choices?.[0] ?? -1,
-      points,
-      JSON.stringify(result.payload),
-      result.correct === null ? -1 : result.correct ? 1 : 0,
-      room.code,
-      room.question,
-      Date.now() - duration,
-    )
-    .run();
-  if (!r.meta.changes) fail("Réponse déjà envoyée ou temps écoulé.");
+  const inserted = await prisma.$executeRaw`
+    INSERT INTO "Answer" ("code", "player", "question", "choice", "points", "payload", "correctness")
+    SELECT ${room.code}, ${g.who}, ${room.question}, ${result.payload.choices?.[0] ?? -1}, ${points},
+      ${JSON.stringify(result.payload)}, ${result.correct === null ? -1 : result.correct ? 1 : 0}
+    WHERE EXISTS (SELECT 1 FROM "Room" WHERE "code" = ${room.code} AND "phase" = 'question'
+      AND "question" = ${room.question} AND "started" > ${BigInt(Date.now() - duration)})
+    ON CONFLICT DO NOTHING`;
+  if (!inserted) fail("Réponse déjà envoyée ou temps écoulé.");
 }
 
 function requireHost(g: GameContext) {
@@ -201,10 +209,10 @@ function requireHost(g: GameContext) {
 export async function startGame(g: GameContext) {
   requireHost(g);
   if (g.room.phase !== "lobby" || !g.people.length) fail("Attends au moins un joueur.");
-  await g.db
-    .prepare("UPDATE rooms SET phase='question',started=? WHERE code=? AND phase='lobby'")
-    .bind(Date.now(), g.room.code)
-    .run();
+  await prisma.room.updateMany({
+    where: { code: g.room.code, phase: "lobby" },
+    data: { phase: "question", started: BigInt(Date.now()) },
+  });
 }
 
 export async function nextQuestion(g: GameContext, body: Body) {
@@ -213,16 +221,14 @@ export async function nextQuestion(g: GameContext, body: Body) {
   if (room.phase !== "question" || !g.revealed || body.question !== room.question)
     fail("Attends la fin de cette question.");
   const last = room.question + 1 >= g.quiz.questions.length;
-  await g.db
-    .prepare("UPDATE rooms SET phase=?,question=?,started=? WHERE code=? AND phase='question' AND question=?")
-    .bind(
-      last ? "finished" : "question",
-      last ? room.question : room.question + 1,
-      Date.now(),
-      room.code,
-      room.question,
-    )
-    .run();
+  await prisma.room.updateMany({
+    where: { code: room.code, phase: "question", question: room.question },
+    data: {
+      phase: last ? "finished" : "question",
+      question: last ? room.question : room.question + 1,
+      started: BigInt(Date.now()),
+    },
+  });
 }
 
 function outcome(question: Question, answer: AnswerRow | undefined) {
@@ -249,6 +255,7 @@ export function gameState(g: GameContext) {
     duration: question.duration,
     remaining: Math.max(0, room.started + g.duration - Date.now()),
     revealed,
+    maxPlayers: room.maxPlayers,
     question: room.phase === "lobby" ? null : publicQuestion(question, revealed, room.question),
     players,
     personal:
