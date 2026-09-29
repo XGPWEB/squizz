@@ -21,7 +21,8 @@ server {
 }
 NGINX
 ln -sf "$SITE" /etc/nginx/sites-enabled/squizz
-nginx -t && systemctl reload nginx
+nginx -t
+systemctl reload nginx
 
 # 2) Certificate (webroot, so no other site's config is modified).
 certbot certonly --webroot -w /var/www/html -d squizz.fun -d www.squizz.fun \
@@ -29,5 +30,6 @@ certbot certonly --webroot -w /var/www/html -d squizz.fun -d www.squizz.fun \
 
 # 3) Final site.
 cp /tmp/squizz-nginx.conf "$SITE"
-nginx -t && systemctl reload nginx
+nginx -t
+systemctl reload nginx
 echo "HTTPS actif pour squizz.fun et www.squizz.fun."
