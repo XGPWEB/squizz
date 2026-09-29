@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { ArrowUp, ArrowDown, Check } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
 import { type AnswerPayload, type PublicQuestion, type Aggregate, isScored } from "@/lib/question";
 import { MediaView, PinImage } from "./media";
 export function QuestionPlay({

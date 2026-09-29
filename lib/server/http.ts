@@ -20,6 +20,7 @@ export function validated<T>(check: () => T): T {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- untrusted JSON, validated by each action
 export type Body = Record<string, any>;
 
 export async function readBody(req: Request): Promise<Body> {

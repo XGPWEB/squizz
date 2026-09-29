@@ -20,7 +20,6 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { demos, type Quiz, type Question } from "@/lib/quizzes";
 type RankedPlayer = {
@@ -142,7 +141,9 @@ export default function Home() {
           execute(input: unknown) {
             if (!input || typeof input !== "object" || Object.keys(input).length)
               throw new Error("Aucun paramètre attendu.");
-            editor();
+            setEditingId(null);
+            setView("editor");
+            setSaved("");
             return { view: "editor" };
           },
         },

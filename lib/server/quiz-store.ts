@@ -1,6 +1,6 @@
 import { demos, type Quiz } from "@/lib/quizzes";
 import { normalizeQuestion, validateQuestion } from "@/lib/question";
-import { fail, validated } from "./http";
+import { fail, validated, type Body } from "./http";
 
 export const MAX_QUESTIONS = 30;
 export const MAX_TITLE = 90;
@@ -12,7 +12,7 @@ export function normalizeQuiz(raw: Quiz): Quiz {
 export const isDemo = (id: unknown) => demos.some((q) => q.id === id);
 
 /** Validates an untrusted quiz draft and returns its title and questions. */
-export function parseQuizInput(value: any) {
+export function parseQuizInput(value: Body["quiz"]) {
   if (
     !value ||
     typeof value.title !== "string" ||
