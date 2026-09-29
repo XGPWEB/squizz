@@ -6,6 +6,7 @@ import { route, json } from "@/lib/server/api";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { verifyTurnstile } from "@/lib/server/turnstile";
 import { sendMail } from "@/lib/server/mail";
+import { contactEmail } from "@/lib/server/email-templates";
 import { fail } from "@/lib/server/http";
 
 const schema = z.object({
@@ -37,8 +38,7 @@ export const POST = route(async (req) => {
   });
   await sendMail(
     CONTACT_EMAIL,
-    `[SQuizz] ${body.subject} — ${body.name}`,
-    `Nouveau message depuis le formulaire de contact de SQuizz.\n\nNom : ${body.name}\nEmail : ${body.email}\nSujet : ${body.subject}\n\n${body.message}\n`,
+    contactEmail({ name: body.name, email: body.email, subject: body.subject, message: body.message }),
     body.email,
   ).catch((err) => console.error("[contact] envoi de l’email impossible :", err));
   return { ok: true };

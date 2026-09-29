@@ -4,8 +4,17 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { postJson } from "@/lib/client/api";
 import { signInOrThrow } from "@/components/auth/auth-form";
+import { PasswordInput } from "@/components/site/password-input";
 
-export function AccountForms({ name, email }: { name: string; email: string }) {
+export function AccountForms({
+  name,
+  email,
+  viewingAs = false,
+}: {
+  name: string;
+  email: string;
+  viewingAs?: boolean;
+}) {
   const router = useRouter();
   const [error, setError] = useState(""),
     [message, setMessage] = useState(""),
@@ -32,6 +41,12 @@ export function AccountForms({ name, email }: { name: string; email: string }) {
           <p className="hint">{email}</p>
         </div>
       </div>
+      {viewingAs && (
+        <p className="info-box">
+          Vous êtes en vue administrateur d’une organisation. Quittez cette vue (bandeau rose en haut) pour
+          modifier votre compte.
+        </p>
+      )}
       {error && (
         <div className="error" role="alert">
           {error}
@@ -85,15 +100,15 @@ export function AccountForms({ name, email }: { name: string; email: string }) {
         >
           <label>
             Mot de passe actuel
-            <input name="current" type="password" required autoComplete="current-password" />
+            <PasswordInput name="current" required autoComplete="current-password" />
           </label>
           <label>
             Nouveau mot de passe (10 caractères minimum)
-            <input name="next" type="password" required minLength={10} autoComplete="new-password" />
+            <PasswordInput name="next" required minLength={10} autoComplete="new-password" />
           </label>
           <label>
             Confirme le nouveau mot de passe
-            <input name="confirm" type="password" required minLength={10} autoComplete="new-password" />
+            <PasswordInput name="confirm" required minLength={10} autoComplete="new-password" />
           </label>
           <button className="button" disabled={busy}>
             Changer le mot de passe

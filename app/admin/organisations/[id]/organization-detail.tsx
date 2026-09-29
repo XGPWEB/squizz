@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowLeft, Check, Copy, KeyRound } from "lucide-react";
+import { ArrowLeft, Check, Copy, Eye, KeyRound } from "lucide-react";
 import { getJson, postJson } from "@/lib/client/api";
 
 type Role = "ORG_ADMIN" | "HOST";
@@ -69,6 +69,25 @@ export function OrganizationDetail({ id }: { id: string }) {
             {Math.round(org.mediaBytes / 1024 / 1024)} Mo)
           </p>
         </div>
+        <button
+          className="button"
+          disabled={busy}
+          title="Ouvre l’espace de l’organisation avec les droits de son administrateur, pendant 2 heures"
+          onClick={() => {
+            setBusy(true);
+            postJson(`/api/admin/organizations/${org.id}/view`)
+              .then(() => {
+                router.push("/app");
+                router.refresh();
+              })
+              .catch((e) => {
+                setError((e as Error).message);
+                setBusy(false);
+              });
+          }}
+        >
+          <Eye size={18} /> Voir en tant qu’administrateur
+        </button>
       </div>
       {error && (
         <div className="error" role="alert">

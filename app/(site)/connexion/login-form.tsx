@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AuthForm, signInOrThrow } from "@/components/auth/auth-form";
+import { PasswordInput } from "@/components/site/password-input";
 
 export function LoginForm({ suspended, email }: { suspended: boolean; email: string }) {
   const router = useRouter();
@@ -33,7 +34,7 @@ export function LoginForm({ suspended, email }: { suspended: boolean; email: str
       </label>
       <label>
         Mot de passe
-        <input name="password" type="password" autoComplete="current-password" required />
+        <PasswordInput name="password" autoComplete="current-password" required />
       </label>
     </AuthForm>
   );

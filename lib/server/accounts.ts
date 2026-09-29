@@ -5,6 +5,7 @@ import { planLimits } from "@/lib/plans";
 import { fail } from "./http";
 import { hashToken, newToken } from "./tokens";
 import { appUrl, sendMail } from "./mail";
+import { invitationEmail, resetEmail } from "./email-templates";
 
 export const hashPassword = (password: string) => bcrypt.hash(password, 12);
 
@@ -58,10 +59,13 @@ export async function createInvitation(
   const link = `${appUrl()}/invitation/${token}`;
   const sent = await sendMail(
     email,
-    `Invitation à rejoindre ${invitation.organization.name} sur SQuizz`,
-    `${inviterName} vous invite à rejoindre « ${invitation.organization.name} » sur SQuizz en tant que ${
-      role === "ORG_ADMIN" ? "administrateur" : "animateur"
-    }.\n\nCréez votre compte ici (lien valable ${INVITE_DAYS} jours) :\n${link}\n`,
+    invitationEmail({
+      organization: invitation.organization.name,
+      inviter: inviterName,
+      role,
+      link,
+      days: INVITE_DAYS,
+    }),
   );
   return { invitation, link, sent };
 }
@@ -84,11 +88,7 @@ export async function requestPasswordReset(email: string) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !user.active) return null;
   const link = await createResetLink(user.id);
-  await sendMail(
-    email,
-    "Réinitialisation de votre mot de passe SQuizz",
-    `Bonjour ${user.name},\n\nPour choisir un nouveau mot de passe, ouvrez ce lien (valable ${RESET_MINUTES} minutes) :\n${link}\n\nSi vous n’êtes pas à l’origine de cette demande, ignorez cet email.`,
-  );
+  await sendMail(email, resetEmail({ name: user.name, link, minutes: RESET_MINUTES }));
   return link;
 }
 

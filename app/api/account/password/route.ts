@@ -15,6 +15,7 @@ const schema = z.object({
 export const POST = route(async (req) => {
   const user = await getSessionUser();
   if (!user) fail("Connecte-toi pour continuer.", 401);
+  if (user.viewingAs) fail("Quittez la vue de l’organisation pour modifier votre propre compte.", 403);
   const input = await json(req, schema);
   const row = await prisma.user.findUniqueOrThrow({ where: { id: user.id } });
   if (!(await bcrypt.compare(input.current, row.passwordHash))) fail("Mot de passe actuel incorrect.", 403);
@@ -24,6 +25,7 @@ export const POST = route(async (req) => {
 export const PATCH = route(async (req) => {
   const user = await getSessionUser();
   if (!user) fail("Connecte-toi pour continuer.", 401);
+  if (user.viewingAs) fail("Quittez la vue de l’organisation pour modifier votre propre compte.", 403);
   const { name } = await json(req, z.object({ name: nameSchema }));
   await prisma.user.update({ where: { id: user.id }, data: { name } });
 });

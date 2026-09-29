@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { AuthForm, signInOrThrow } from "@/components/auth/auth-form";
 import { postJson } from "@/lib/client/api";
+import { PasswordInput } from "@/components/site/password-input";
 
 export function AcceptForm(props: { token: string; email: string; organization: string; role: string }) {
   const router = useRouter();
@@ -32,11 +33,11 @@ export function AcceptForm(props: { token: string; email: string; organization: 
       </label>
       <label>
         Mot de passe (10 caractères minimum)
-        <input name="password" type="password" required minLength={10} autoComplete="new-password" />
+        <PasswordInput name="password" required minLength={10} autoComplete="new-password" />
       </label>
       <label>
         Confirme le mot de passe
-        <input name="confirm" type="password" required minLength={10} autoComplete="new-password" />
+        <PasswordInput name="confirm" required minLength={10} autoComplete="new-password" />
       </label>
     </AuthForm>
   );

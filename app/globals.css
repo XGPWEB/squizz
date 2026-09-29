@@ -2922,3 +2922,77 @@ a.card-action {
   text-decoration-color: var(--pink);
   text-decoration-thickness: 2px;
 }
+.view-as-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--pink);
+  border-bottom: 3px solid var(--ink);
+  font-size: 15px;
+}
+.view-as-banner .button {
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  background: white;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.search-bar input {
+  flex: 1;
+  min-width: 0;
+  border: 0 !important;
+  outline: none;
+  font-size: 17px;
+  padding: 8px 4px;
+}
+.row-actions.stacked {
+  flex-direction: column;
+  align-items: flex-end;
+}
+.inline-link input {
+  width: 220px;
+  font: 12px monospace;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+.inline-error {
+  color: #b3261e;
+  font-weight: 700;
+}
+/* Password field with show/hide eye */
+.password-field {
+  position: relative;
+  display: block;
+}
+.password-field input {
+  width: 100%;
+  padding-right: 52px !important;
+}
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+}
+.password-toggle:hover {
+  background: var(--acid);
+}

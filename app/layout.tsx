@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   title: { default: "SQuizz — Le quiz qui se joue ensemble", template: "%s · SQuizz" },
   description:
     "Créez des quiz interactifs, lancez une partie en direct et laissez vos participants jouer depuis leur téléphone. Pour les équipes, les écoles et les événements.",
-  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
   openGraph: { siteName: "SQuizz", locale: "fr_FR", type: "website" },
 };
 
