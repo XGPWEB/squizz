@@ -3328,3 +3328,228 @@ html.motion .intro .eyebrow.hero-in {
     display: none;
   }
 }
+
+/* ===================== Signed-in header ===================== */
+.app-header {
+  max-width: 1240px;
+  margin: 18px auto 6px;
+  padding: 0 24px;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.app-header .brand {
+  flex-shrink: 0;
+}
+.app-bar {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 8px 8px 10px;
+  background: white;
+  border: 3px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.app-tabs {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.app-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 15px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    transform 0.15s;
+}
+.app-tab:hover {
+  background: var(--cream);
+  transform: translateY(-1px);
+}
+.app-tab.active {
+  background: var(--acid);
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.app-bar-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.org-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 260px;
+  padding: 6px 6px 6px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--cream);
+  font-weight: 700;
+  font-size: 14px;
+}
+.org-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.plan-badge {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: white;
+  font: 700 11px monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.plan-badge.pro {
+  background: var(--pink);
+}
+.account {
+  position: relative;
+}
+.account-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: white;
+  font-weight: 800;
+  color: var(--ink);
+}
+.account-button:hover {
+  background: var(--acid);
+}
+.account-button .flip {
+  transform: rotate(180deg);
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--electric);
+  color: white;
+  font: 400 15px Anton, sans-serif;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.avatar.big {
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+}
+.account-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 50;
+  width: 280px;
+  padding: 8px;
+  background: white;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 6px 6px 0 var(--pink);
+  animation: menu-in 0.18s ease-out;
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.account-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 8px 12px;
+  margin-bottom: 6px;
+  border-bottom: 2px solid var(--ink);
+}
+.account-head > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.account-head small {
+  color: #55514b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.role-pill {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--acid);
+  font: 700 10px monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  text-align: left;
+}
+.menu-item:hover {
+  background: var(--cream);
+}
+.menu-item.danger:hover {
+  background: var(--pink);
+}
+@media (max-width: 900px) {
+  .org-chip {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .app-header {
+    flex-wrap: wrap;
+    padding: 0 14px;
+  }
+  .app-bar {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .app-tab span,
+  .account-name {
+    display: none;
+  }
+  .app-tab {
+    padding: 10px 12px;
+  }
+}
