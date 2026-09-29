@@ -3,74 +3,79 @@ export const questionTypes = [
     id: "quiz",
     label: "Quiz",
     group: "Tester les connaissances",
-    hint: "Choisir une ou plusieurs bonnes réponses.",
+    hint: "Demande aux participants de choisir entre plusieurs réponses.",
   },
   {
     id: "truefalse",
     label: "Vrai ou faux",
     group: "Tester les connaissances",
-    hint: "Deux choix, une bonne réponse.",
+    hint: "Les participants doivent dire si l’affirmation est vraie ou fausse.",
   },
   {
     id: "text",
     label: "Réponse libre",
     group: "Tester les connaissances",
-    hint: "Écrire une réponse corrigée automatiquement.",
+    hint: "Les participants doivent saisir une courte réponse correcte.",
   },
   {
     id: "slider",
     label: "Curseur",
     group: "Tester les connaissances",
-    hint: "Trouver une valeur sur une échelle numérique.",
+    hint: "Laisse les participants deviner le nombre sur le curseur.",
   },
   {
     id: "pin",
     label: "Réponse par pin’s",
     group: "Tester les connaissances",
-    hint: "Placer un repère sur la bonne zone d’une image.",
+    hint: "Demande aux participants de placer le pin’s au bon endroit sur une image.",
   },
   {
     id: "puzzle",
     label: "Puzzle",
     group: "Tester les connaissances",
-    hint: "Remettre les éléments dans le bon ordre.",
+    hint: "Les participants doivent classer les réponses dans le bon ordre.",
   },
   {
     id: "poll",
     label: "Sondage",
     group: "Collecter des avis",
-    hint: "Choisir parmi plusieurs propositions, sans correction.",
+    hint: "Demande aux participants de choisir entre 6 avis maximum.",
   },
-  { id: "scale", label: "Échelle", group: "Collecter des avis", hint: "Donner une note sur une échelle." },
+  {
+    id: "scale",
+    label: "Échelle",
+    group: "Collecter des avis",
+    hint: "Évalue les opinions et les sentiments à l’aide de l’échelle de Likert ou d’autres échelles personnalisées.",
+  },
   {
     id: "nps",
     label: "Échelle NPS",
     group: "Collecter des avis",
-    hint: "Une note de recommandation de 0 à 10.",
+    hint: "Évalue la satisfaction des participants et la probabilité qu’ils recommandent un produit ou un service.",
   },
   {
     id: "pinpoll",
     label: "Place le pin’s",
     group: "Collecter des avis",
-    hint: "Recueillir les repères de chacun sur une image.",
+    hint: "Demande aux participants de placer des pin’s sur une image.",
   },
   {
     id: "wordcloud",
     label: "Nuage de mots",
     group: "Collecter des avis",
-    hint: "Faire ressortir les mots les plus cités.",
+    hint: "Laisse les participants exprimer leur avis en quelques mots.",
   },
   {
     id: "open",
     label: "Question ouverte",
     group: "Collecter des avis",
-    hint: "Recueillir des réponses rédigées.",
+    hint: "Les participants doivent écrire une réponse libre élaborée.",
   },
   {
     id: "brainstorm",
     label: "Brainstorming",
     group: "Collecter des avis",
-    hint: "Rassembler jusqu’à trois idées par personne.",
+    hint: "Rassemble les idées de chacun, jusqu’à trois par personne.",
   },
   {
     id: "slide",
@@ -81,14 +86,33 @@ export const questionTypes = [
 ] as const;
 export type QuestionType = (typeof questionTypes)[number]["id"];
 export const slideLayouts = [
-  { id: "classic", label: "Classique", hint: "Un titre, un texte et des médias." },
-  { id: "title", label: "Grand titre", hint: "Un titre en grand pour ouvrir une partie." },
-  { id: "titletext", label: "Titre et texte", hint: "Un titre et un texte côte à côte avec une image." },
-  { id: "bullets", label: "Liste à puces", hint: "Un titre et une liste de points clés." },
-  { id: "quote", label: "Citation", hint: "Une citation mise en valeur et son auteur." },
-  { id: "bigimage", label: "Grande image", hint: "Une image plein cadre et une légende." },
+  {
+    id: "classic",
+    label: "Classique",
+    hint: "Donne aux participants davantage de contexte ou d’explications.",
+  },
+  {
+    id: "title",
+    label: "Grand titre",
+    hint: "Écris un titre et un sous-titre pour le début d’une présentation.",
+  },
+  {
+    id: "titletext",
+    label: "Titre et texte",
+    hint: "Ajoute un paragraphe pour donner plus de contexte aux joueurs.",
+  },
+  { id: "bullets", label: "Liste à puces", hint: "Écris une liste à puces plutôt qu’un paragraphe." },
+  { id: "quote", label: "Citation", hint: "Partage une citation marquante et affiche le nom de son auteur." },
+  {
+    id: "bigimage",
+    label: "Grande image",
+    hint: "Présente une grande image, une vidéo ou un GIF pour booster l’engagement.",
+  },
 ] as const;
 export type SlideLayout = (typeof slideLayouts)[number]["id"];
+/** Formats a slider value with its unit, e.g. "2 380 000 $". */
+export const formatValue = (value: number, unit = "") =>
+  `${value.toLocaleString("fr-FR", { maximumFractionDigits: 6 })}${unit ? ` ${unit}` : ""}`;
 export const slideLayoutLabel = (layout: SlideLayout) => slideLayouts.find((l) => l.id === layout)?.label;
 export type Media = { kind: "image" | "video" | "youtube" | "link"; url: string; caption: string };
 export type Question = {
@@ -106,6 +130,11 @@ export type Question = {
   step: number;
   target: number;
   tolerance: number;
+  /** Shown after slider values, e.g. "€" or "km". */
+  unit: string;
+  /** Labels for the two ends of a scale or NPS question. */
+  minLabel: string;
+  maxLabel: string;
   pin: { x: number; y: number; radius: number };
   order: number[];
   body: string;
@@ -140,6 +169,9 @@ export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "
     step: 1,
     target: 50,
     tolerance: 0,
+    unit: "",
+    minLabel: type === "nps" ? "Peu probable" : type === "scale" ? "Je ne suis pas d’accord" : "",
+    maxLabel: type === "nps" ? "Très probable" : type === "scale" ? "Je suis d’accord" : "",
     pin: { x: 0.5, y: 0.5, radius: 0.1 },
     order: [0, 1, 2, 3],
     body: "",
@@ -282,7 +314,7 @@ export function validateQuestion(raw: unknown): Question {
         q.min < q.max &&
         q.step > 0 &&
         q.step <= q.max - q.min &&
-        Math.max(Math.abs(q.min), Math.abs(q.max)) <= 1000000 &&
+        Math.max(Math.abs(q.min), Math.abs(q.max)) <= 1_000_000_000 &&
         (q.max - q.min) / q.step <= 1000000,
       "Bornes ou pas du curseur invalides.",
     );
@@ -297,6 +329,11 @@ export function validateQuestion(raw: unknown): Question {
         "Valeur cible ou tolérance invalide.",
       );
   }
+  check(typeof q.unit === "string" && q.unit.length <= 12, "Unité limitée à 12 caractères.");
+  check(
+    [q.minLabel, q.maxLabel].every((l) => typeof l === "string" && l.length <= 40),
+    "Libellés d’échelle limités à 40 caractères.",
+  );
   if (["pin", "pinpoll"].includes(q.type)) {
     check(
       q.media.some((m) => m.kind === "image"),
@@ -316,7 +353,13 @@ export function validateQuestion(raw: unknown): Question {
       );
   }
   if (!isScored(q.type)) q.points = "none";
-  return { ...q, text: q.text.trim() };
+  return {
+    ...q,
+    text: q.text.trim(),
+    unit: q.unit.trim(),
+    minLabel: q.minLabel.trim(),
+    maxLabel: q.maxLabel.trim(),
+  };
 }
 const normalizeText = (s: string) =>
   s

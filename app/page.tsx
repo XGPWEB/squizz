@@ -651,7 +651,11 @@ export default function Home() {
                           })
                         }
                       >
-                        {game.index + 1 === game.total ? "Voir le podium" : "Question suivante"}
+                        {game.index + 1 === game.total
+                          ? "Voir le podium"
+                          : game.question?.type === "slide"
+                            ? "Continuer"
+                            : "Question suivante"}
                       </button>
                     ) : (
                       <p className="center lead">L’animateur prépare la suite…</p>

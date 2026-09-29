@@ -6,6 +6,7 @@ import {
   type AnswerPayload,
   type PublicQuestion,
   type Aggregate,
+  formatValue,
   isScored,
   safeMediaUrl,
 } from "@/lib/question";
@@ -118,7 +119,7 @@ export function QuestionPlay({
       )}
       {["slider", "scale", "nps"].includes(q.type) && (
         <section className="numeric-answer">
-          <strong className="numeric-value">{submitted?.value ?? value}</strong>
+          <strong className="numeric-value">{formatValue(submitted?.value ?? value, q.unit)}</strong>
           <Slider
             className="hub-slider"
             value={[submitted?.value ?? value]}
@@ -129,14 +130,14 @@ export function QuestionPlay({
             onValueChange={(v) => setValue(v[0])}
             aria-label="Ta valeur"
           />
-          <div className="row spaced">
+          <div className="row spaced scale-ends">
             <span>
-              {q.min}
-              {q.type === "nps" ? " · Pas du tout probable" : ""}
+              <b>{formatValue(q.min, q.unit)}</b>
+              {q.minLabel && <small>{q.minLabel}</small>}
             </span>
             <span>
-              {q.max}
-              {q.type === "nps" ? " · Très probable" : ""}
+              <b>{formatValue(q.max, q.unit)}</b>
+              {q.maxLabel && <small>{q.maxLabel}</small>}
             </span>
           </div>
           <label className="exact-number">
@@ -256,44 +257,67 @@ function SlideView({ slide: q }: { slide: PublicQuestion }) {
   const image = q.media.find((m) => m.kind === "image" && safeMediaUrl(m.url));
   const others = image ? q.media.filter((m) => m !== image) : q.media;
   const layout = q.layout ?? "classic";
+  const sideImage = image && (
+    <img className="slide-side-image" src={image.url} alt={image.caption || q.text} />
+  );
   if (layout === "title")
     return (
-      <div className="slide slide-title">
-        <h2>{q.text}</h2>
-        {q.body && <p className="slide-subtitle">{q.body}</p>}
-        <MediaView media={q.media} />
+      <div className={`slide slide-title ${image ? "with-image" : ""}`}>
+        <div>
+          <h2>{q.text}</h2>
+          {q.body && <p className="slide-subtitle">{q.body}</p>}
+        </div>
+        {sideImage}
+        {others.length > 0 && <MediaView media={others} />}
       </div>
     );
   if (layout === "quote")
     return (
       <figure className="slide slide-quote">
+        {image && <img className="slide-avatar" src={image.url} alt={image.caption || q.body || "Auteur"} />}
         <blockquote>{q.text}</blockquote>
         {q.body && <figcaption>— {q.body}</figcaption>}
-        <MediaView media={q.media} />
+        {others.length > 0 && <MediaView media={others} />}
       </figure>
     );
-  if (layout === "bigimage")
+  if (layout === "bigimage") {
+    const hero = q.media.find((m) => ["image", "video"].includes(m.kind) && safeMediaUrl(m.url));
+    const rest = hero ? q.media.filter((m) => m !== hero) : q.media;
     return (
       <div className="slide slide-bigimage">
-        {image && (
+        {hero ? (
           <figure className="slide-hero">
-            <img src={image.url} alt={image.caption || q.text} />
+            {hero.kind === "image" ? (
+              <img src={hero.url} alt={hero.caption || q.text} />
+            ) : (
+              <video
+                src={hero.url}
+                controls
+                autoPlay
+                muted
+                loop
+                playsInline
+                aria-label={hero.caption || q.text}
+              />
+            )}
             <figcaption>{q.text}</figcaption>
           </figure>
+        ) : (
+          <h2 className="question-title">{q.text}</h2>
         )}
-        {!image && <h2 className="question-title">{q.text}</h2>}
         {q.body && <div className="slide-body">{q.body}</div>}
-        <MediaView media={others} />
+        <MediaView media={rest} />
       </div>
     );
+  }
   if (layout === "titletext")
     return (
-      <div className="slide slide-titletext">
+      <div className={`slide slide-titletext ${image ? "with-image" : ""}`}>
         <div>
           <h2>{q.text}</h2>
           {q.body && <div className="slide-body">{q.body}</div>}
         </div>
-        {image && <img className="slide-side-image" src={image.url} alt={image.caption || q.text} />}
+        {sideImage}
         {others.length > 0 && <MediaView media={others} />}
       </div>
     );
@@ -303,14 +327,17 @@ function SlideView({ slide: q }: { slide: PublicQuestion }) {
       .map((line) => line.replace(/^\s*[-•*]\s*/, "").trim())
       .filter(Boolean);
     return (
-      <div className="slide slide-bullets">
-        <h2>{q.text}</h2>
-        <ul>
-          {bullets.map((b, i) => (
-            <li key={i}>{b}</li>
-          ))}
-        </ul>
-        <MediaView media={q.media} />
+      <div className={`slide slide-bullets ${image ? "with-image" : ""}`}>
+        <div>
+          <h2>{q.text}</h2>
+          <ul>
+            {bullets.map((b, i) => (
+              <li key={i}>{b}</li>
+            ))}
+          </ul>
+        </div>
+        {sideImage}
+        {others.length > 0 && <MediaView media={others} />}
       </div>
     );
   }
@@ -349,8 +376,8 @@ export function QuestionResults({
       )}
       {q.type === "slider" && (
         <p className="info-box">
-          Valeur attendue : <strong>{q.target}</strong>
-          {!!q.tolerance && ` (tolérance ±${q.tolerance})`}
+          Valeur attendue : <strong>{formatValue(q.target ?? 0, q.unit)}</strong>
+          {!!q.tolerance && ` (tolérance ±${formatValue(q.tolerance, q.unit)})`}
         </p>
       )}
       {q.type === "puzzle" && (

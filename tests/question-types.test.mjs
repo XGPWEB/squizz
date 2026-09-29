@@ -62,6 +62,12 @@ for (const layout of ["classic", "title", "titletext", "bullets", "quote", "bigi
   assert.equal(validateQuestion({ ...newQuestion("slide", layout), text: "Diapo" }).layout, layout);
 assert.equal(validateQuestion({ type: "slide", text: "Ancienne diapo" }).layout, "classic");
 assert.throws(() => validateQuestion({ ...newQuestion("slide"), text: "Diapo", layout: "wide" }));
+const money = make("slider", { min: 0, max: 5000000, step: 10000, target: 2380000, unit: " $ " });
+assert.equal(money.unit, "$");
+assert.throws(() => make("slider", { unit: "x".repeat(13) }));
+assert.equal(newQuestion("nps").minLabel, "Peu probable");
+assert.equal(make("scale", { minLabel: "Non", maxLabel: "Oui" }).maxLabel, "Oui");
+assert.throws(() => make("scale", { minLabel: "x".repeat(41) }));
 console.log(
-  "PASS: 14 types, 6 slide layouts, multiple-answer correctness, free text, tolerance, pins, puzzle, opinion aggregation, hidden solutions, and media validation.",
+  "PASS: 14 types, 6 slide layouts, units, scale labels, multiple-answer correctness, free text, tolerance, pins, puzzle, opinion aggregation, hidden solutions, and media validation.",
 );

@@ -15,7 +15,7 @@ import {
   type QuestionType,
   type SlideLayout,
 } from "@/lib/question";
-import { layoutIcons, typeIcons } from "./type-icons";
+import { LayoutPreview, TypePreview } from "./type-preview";
 import { Choice } from "./settings";
 import { MediaEditor, PinImage } from "./media";
 export function QuizEditor({
@@ -319,6 +319,35 @@ export function QuizEditor({
                       />
                     </label>
                   ))}
+                  <label>
+                    Unité (facultatif)
+                    <input
+                      value={q.unit}
+                      maxLength={12}
+                      placeholder="€, $, km…"
+                      onChange={(e) => patch({ unit: e.target.value })}
+                    />
+                  </label>
+                </div>
+              )}
+              {["scale", "nps"].includes(q.type) && (
+                <div className="numeric-settings">
+                  <label>
+                    Libellé du minimum
+                    <input
+                      value={q.minLabel}
+                      maxLength={40}
+                      onChange={(e) => patch({ minLabel: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    Libellé du maximum
+                    <input
+                      value={q.maxLabel}
+                      maxLength={40}
+                      onChange={(e) => patch({ maxLabel: e.target.value })}
+                    />
+                  </label>
                 </div>
               )}
               {q.type === "scale" && (
@@ -450,7 +479,7 @@ export function QuizEditor({
                       .map((t) => (
                         <TypeCard
                           key={t.id}
-                          icon={typeIcons[t.id]}
+                          preview={<TypePreview type={t.id} />}
                           label={t.label}
                           hint={t.hint}
                           onPick={() => add(newQuestion(t.id))}
@@ -465,7 +494,7 @@ export function QuizEditor({
                   {slideLayouts.map((l) => (
                     <TypeCard
                       key={l.id}
-                      icon={layoutIcons[l.id]}
+                      preview={<LayoutPreview layout={l.id} />}
                       label={l.label}
                       hint={l.hint}
                       onPick={() => add(newQuestion("slide", l.id))}
@@ -499,21 +528,19 @@ const slideBodyLabel: Record<SlideLayout, string> = {
 };
 
 function TypeCard({
-  icon: Icon,
+  preview,
   label,
   hint,
   onPick,
 }: {
-  icon: React.ComponentType<{ size?: number; "aria-hidden"?: boolean }>;
+  preview: React.ReactNode;
   label: string;
   hint: string;
   onPick: () => void;
 }) {
   return (
     <button type="button" onClick={onPick}>
-      <span className="type-icon">
-        <Icon size={26} aria-hidden />
-      </span>
+      {preview}
       <strong>{label}</strong>
       <span>{hint}</span>
     </button>
