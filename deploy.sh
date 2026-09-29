@@ -84,6 +84,9 @@ for line in open("/opt/squizz-secrets.env"):
     line = line.strip()
     if line and not line.startswith("#") and "=" in line:
         k, v = line.split("=", 1)
+        # Same meaning as when the file is sourced by bash: surrounding quotes are not part of the value.
+        if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+            v = v[1:-1]
         env[k] = v
 app = {"name": "squizz", "script": "$APP_DIR/app/server.js", "cwd": "$APP_DIR/app", "interpreter": "$NODE",
        "env": env, "instances": 1, "autorestart": True, "watch": False, "max_memory_restart": "512M"}
