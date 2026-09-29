@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-/** Sends an email when SMTP is configured; otherwise logs it so links stay usable in development. */
+/** Sends an email when SMTP is configured; otherwise logs it. Returns whether it was actually sent. */
 export async function sendMail(to: string, subject: string, text: string, replyTo?: string) {
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } = process.env;
   if (!SMTP_HOST) {
@@ -13,8 +13,14 @@ export async function sendMail(to: string, subject: string, text: string, replyT
     secure: Number(SMTP_PORT) === 465,
     auth: SMTP_USER ? { user: SMTP_USER, pass: SMTP_PASS } : undefined,
   });
-  await transport.sendMail({ from: SMTP_FROM || "SQuizz <no-reply@squizz.fun>", to, subject, text, replyTo });
-  return true;
+  try {
+    await transport.sendMail({ from: SMTP_FROM || "SQuizz <contact@pressweb.fr>", to, subject, text, replyTo });
+    return true;
+  } catch (err) {
+    // Callers still show the link (invitation, reset) or keep the stored message, so a mail outage never blocks them.
+    console.error(`[mail] envoi impossible à ${to} :`, err);
+    return false;
+  }
 }
 
 export const appUrl = () =>

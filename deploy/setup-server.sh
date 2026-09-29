@@ -44,7 +44,7 @@ SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=
 SMTP_PASS=
-SMTP_FROM="SQuizz <no-reply@squizz.fun>"
+SMTP_FROM="SQuizz <contact@pressweb.fr>"
 # Cloudflare Turnstile pour le formulaire de contact. Optionnel.
 TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
