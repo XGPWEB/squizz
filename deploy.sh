@@ -49,8 +49,8 @@ done
 
 echo "[2/5] Archive"
 ARCHIVE=/tmp/squizz-release.tar.gz
-COPYFILE_DISABLE=1 tar -czf "$ARCHIVE" -C "$STANDALONE" . 
-COPYFILE_DISABLE=1 tar -czf /tmp/squizz-prisma.tar.gz prisma/schema.prisma prisma/migrations
+COPYFILE_DISABLE=1 tar --no-xattrs --no-mac-metadata -czf "$ARCHIVE" -C "$STANDALONE" . 
+COPYFILE_DISABLE=1 tar --no-xattrs --no-mac-metadata -czf /tmp/squizz-prisma.tar.gz prisma/schema.prisma prisma/migrations
 
 echo "[3/5] Vérification du serveur"
 $SSH "test -f /opt/squizz-secrets.env && test -x /opt/squizz-tools/node_modules/.bin/prisma" \
