@@ -52,7 +52,7 @@ Définies dans `lib/plans.ts` (limites, prix, textes), qui alimente la page Tari
 |---|---|---|---|---|
 | Prix | 0 € | 15 € / mois | 30 € / mois | 310 € / an |
 | Quiz | 1 | 5 | 20 | 50 |
-| Joueurs par partie | 5 | 15 | 50 | 200 |
+| Joueurs par partie | 5 | 15 | 50 | 80 |
 | Membres (animateurs) | 1 | 2 | 5 | 10 |
 | Médias | 10 Mo | 250 Mo | 500 Mo | 1 Go |
 | Support | — | e-mail | prioritaire | prioritaire |

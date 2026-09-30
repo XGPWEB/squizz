@@ -90,8 +90,8 @@ call(admin, 'save', quiz=q('Sixième, en Pro'))
 # Partner: Premium for free whatever the billed plan, nothing to cancel, back to the plan when withdrawn.
 request(root, 'PATCH', f'/api/admin/organizations/{org_id}', {'partner': True})
 overview = request(admin, 'GET', '/api/org')['organization']
-assert overview['partner'] is True and overview['limits']['maxPlayersPerGame'] == 200, overview
-assert call(admin, 'state', code=call(admin, 'create', quizId='geo')['code'])['maxPlayers'] == 200
+assert overview['partner'] is True and overview['limits']['maxPlayersPerGame'] == 80, overview
+assert call(admin, 'state', code=call(admin, 'create', quizId='geo')['code'])['maxPlayers'] == 80
 request(admin, 'POST', '/api/org/subscription', {'action': 'cancel'}, expect=400)
 request(root, 'PATCH', f'/api/admin/organizations/{org_id}', {'partner': False})
 assert request(admin, 'GET', '/api/org')['organization']['limits']['maxPlayersPerGame'] == 50

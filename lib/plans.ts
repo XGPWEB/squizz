@@ -65,7 +65,7 @@ export const PLANS: Record<Plan, PlanLimits> = {
     period: "an",
     pitch: "Pour les événements et les grandes organisations, toute l’année.",
     maxQuizzes: 50,
-    maxPlayersPerGame: 200,
+    maxPlayersPerGame: 80,
     maxMembers: 10,
     mediaBytes: 1 * GB,
     support: "priority",
