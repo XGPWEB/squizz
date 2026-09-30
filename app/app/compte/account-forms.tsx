@@ -11,12 +11,16 @@ export function AccountForms({
   name,
   email,
   viewingAs = false,
+  superAdmin = false,
 }: {
   name: string;
   email: string;
   viewingAs?: boolean;
+  /** The super-admin's own account, on its separate session. */
+  superAdmin?: boolean;
 }) {
   const router = useRouter();
+  const api = (path: string) => (superAdmin ? `${path}?espace=super-admin` : path);
   const [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false);
@@ -66,7 +70,7 @@ export function AccountForms({
             e.preventDefault();
             const value = new FormData(e.currentTarget).get("name");
             run(async () => {
-              await postJson("/api/account/password", { name: value }, "PATCH");
+              await postJson(api("/api/account/password"), { name: value }, "PATCH");
               router.refresh();
             }, "Nom mis à jour.");
           }}
@@ -92,9 +96,14 @@ export function AccountForms({
             run(async () => {
               if (d.get("next") !== d.get("confirm"))
                 throw new Error("Les deux mots de passe ne correspondent pas.");
-              await postJson("/api/account/password", { current: d.get("current"), next: d.get("next") });
+              await postJson(api("/api/account/password"), {
+                current: d.get("current"),
+                next: d.get("next"),
+              });
               // The change revoked every session, including this one: sign straight back in.
-              await signInOrThrow(email, String(d.get("next")));
+              if (superAdmin)
+                await postJson("/api/admin/session", { email, password: String(d.get("next")) });
+              else await signInOrThrow(email, String(d.get("next")));
               form.reset();
             }, "Mot de passe modifié. Vos autres appareils ont été déconnectés.");
           }}
@@ -116,7 +125,7 @@ export function AccountForms({
           </button>
         </form>
       </section>
-      {!viewingAs && (
+      {!viewingAs && !superAdmin && (
         <section className="panel">
           <h2>Mes données</h2>
           <p>

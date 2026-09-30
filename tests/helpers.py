@@ -42,6 +42,12 @@ def login(c, email, password, ok=True):
     return c
 
 
+def admin_login(c, email, password, ok=True):
+    """Signs in to the super-admin space (its own cookie, separate from the client session)."""
+    request(c, 'POST', '/api/admin/session', {'email': email, 'password': password}, expect=200 if ok else 401)
+    return c
+
+
 def signup(org=None):
     """Creates a fresh organisation and returns (client signed in as its admin, email, password)."""
     email = f'test-{secrets.token_hex(6)}@example.test'

@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { route, json, nameSchema, passwordSchema } from "@/lib/server/api";
-import { getSessionUser } from "@/lib/server/guard";
+import { accountUser } from "@/lib/server/guard";
 import { setPassword } from "@/lib/server/accounts";
 import { fail } from "@/lib/server/http";
 
@@ -13,7 +13,7 @@ const schema = z.object({
 
 /** Changing the password signs the user out everywhere; the page signs them back in. */
 export const POST = route(async (req) => {
-  const user = await getSessionUser();
+  const user = await accountUser(req);
   if (!user) fail("Connectez-vous pour continuer.", 401);
   if (user.viewingAs) fail("Quittez la vue de l’organisation pour modifier votre propre compte.", 403);
   const input = await json(req, schema);
@@ -23,7 +23,7 @@ export const POST = route(async (req) => {
 });
 
 export const PATCH = route(async (req) => {
-  const user = await getSessionUser();
+  const user = await accountUser(req);
   if (!user) fail("Connectez-vous pour continuer.", 401);
   if (user.viewingAs) fail("Quittez la vue de l’organisation pour modifier votre propre compte.", 403);
   const { name } = await json(req, z.object({ name: nameSchema }));

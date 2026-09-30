@@ -1,6 +1,6 @@
 """Self-service data rights: python3 tests/rights.py (needs the seeded super-admin in .env)."""
 import json, secrets
-from helpers import BASE, client, call, request, signup, invite, login, env
+from helpers import BASE, client, call, request, signup, invite, login, env, admin_login
 
 tag = secrets.token_hex(3)
 admin, admin_email, admin_pw = signup(f'Org droits RGPD {tag}')
@@ -23,7 +23,7 @@ assert any(q['title'] == f'Quiz export {tag}' for q in call(admin, 'list')['quiz
 
 # Alone in the organisation, the admin's deletion removes the organisation.
 assert request(admin, 'DELETE', '/api/account', {'password': admin_pw})['deleted'] == 'organization'
-root = login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
+root = admin_login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
 assert all(o['name'] != f'Org droits RGPD {tag}' for o in request(root, 'GET', '/api/admin/organizations')['organizations'])
-request(root, 'DELETE', '/api/account', {'password': env('SEED_SUPER_ADMIN_PASSWORD')}, expect=403)
+request(root, 'DELETE', '/api/account?espace=super-admin', {'password': env('SEED_SUPER_ADMIN_PASSWORD')}, expect=403)
 print('PASS: data export, password-confirmed deletion, last-admin guard, organisation self-deletion, super-admin protected.')

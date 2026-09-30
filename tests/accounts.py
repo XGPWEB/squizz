@@ -1,5 +1,5 @@
 """Roles, rights and plans: python3 tests/accounts.py (needs the seeded super-admin in .env)."""
-from helpers import client, call, request, signup, invite, login, env
+from helpers import client, call, request, signup, invite, login, env, admin_login
 
 q = lambda title: {'title': title, 'questions': [{'text': 'Q ?', 'options': ['a', 'b'], 'correct': 0}]}
 
@@ -19,8 +19,9 @@ me = request(host, 'GET', '/api/org')
 assert me['me']['role'] == 'HOST' and me['invitations'] == []
 request(host, 'POST', '/api/org/invitations', {'email': 'x@example.test', 'role': 'HOST'}, expect=403)
 request(host, 'PATCH', '/api/org', {'name': 'Piratage'}, expect=403)
-request(host, 'GET', '/api/admin/organizations', expect=403)
-request(admin, 'GET', '/api/admin/organizations', expect=403)
+# Clients have no super-admin session at all.
+request(host, 'GET', '/api/admin/organizations', expect=401)
+request(admin, 'GET', '/api/admin/organizations', expect=401)
 
 # Hosts edit only their own quizzes; admins edit everything in the organisation.
 host_quiz = call(host, 'save', quiz=q('Quiz de Hugo'))['quiz']['id']
@@ -63,7 +64,7 @@ call(host, 'list', expect=401)
 login(client(), host_email, host_pw, ok=False)
 
 # --- Super-admin: plans, suspension, reset links, audit ------------------------------------
-root = login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
+root = admin_login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
 orgs = request(root, 'GET', '/api/admin/organizations')['organizations']
 org_id = next(o['id'] for o in orgs if o['name'] == 'Org droits')
 request(root, 'PATCH', f'/api/admin/organizations/{org_id}', {'plan': 'PRO'})

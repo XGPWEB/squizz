@@ -15,9 +15,14 @@ export default function ResetPage() {
       onSubmit={async (data) => {
         const password = String(data.get("password"));
         if (password !== data.get("confirm")) throw new Error("Les deux mots de passe ne correspondent pas.");
-        const { email } = await postJson<{ email: string }>("/api/account/reset", { token, password });
-        await signInOrThrow(email, password);
-        router.push("/app");
+        const { email, superAdmin } = await postJson<{ email: string; superAdmin: boolean }>(
+          "/api/account/reset",
+          { token, password },
+        );
+        // The super-admin has its own sign-in and space.
+        if (superAdmin) await postJson("/api/admin/session", { email, password });
+        else await signInOrThrow(email, password);
+        router.push(superAdmin ? "/super-admin" : "/app");
         router.refresh();
       }}
     >

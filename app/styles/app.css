@@ -527,3 +527,28 @@ main:focus {
 .host-modal-body .explanation p {
   font-size: clamp(17px, 2.4vh, 22px);
 }
+
+/* Super-admin sign-in */
+.admin-login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  min-height: 100dvh;
+}
+.admin-login .panel {
+  width: 100%;
+  margin: 0;
+  background: var(--ink);
+  color: var(--cream);
+  box-shadow: 7px 7px 0 var(--pink);
+}
+.admin-login .panel .eyebrow,
+.admin-login .auth-title {
+  color: var(--acid);
+}
+.admin-login .auth-footer,
+.admin-login .auth-footer a {
+  color: var(--cream);
+}

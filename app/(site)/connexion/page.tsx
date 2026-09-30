@@ -17,7 +17,6 @@ export default async function LoginPage({
 }) {
   const user = await getSessionUser();
   const params = await searchParams;
-  if (user && !params.suspendu)
-    redirect(user.role === "SUPER_ADMIN" && !user.organizationId ? "/super-admin" : "/app");
+  if (user && !params.suspendu) redirect("/app");
   return <LoginForm suspended={!!params.suspendu} email={params.email ?? ""} />;
 }

@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { route, json } from "@/lib/server/api";
-import { getSessionUser } from "@/lib/server/guard";
+import { accountUser } from "@/lib/server/guard";
 import { audit } from "@/lib/server/audit";
 import { fail } from "@/lib/server/http";
 import { mediaPath } from "@/lib/server/media-store";
@@ -15,7 +15,7 @@ import { accountDeletedEmail } from "@/lib/server/email-templates";
  * other members must hand over the role first; if they are alone, the whole organisation goes.
  */
 export const DELETE = route(async (req) => {
-  const user = await getSessionUser();
+  const user = await accountUser(req);
   if (!user) fail("Connectez-vous pour continuer.", 401);
   if (user.viewingAs || user.realRole === "SUPER_ADMIN")
     fail("Le compte super-admin ne peut pas être supprimé ici.", 403);

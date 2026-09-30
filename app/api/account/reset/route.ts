@@ -18,5 +18,5 @@ export const POST = route(async (req) => {
   if (!claimed.count) fail("Ce lien a déjà été utilisé.", 409);
   await setPassword(row.userId, input.password);
   const user = await prisma.user.findUniqueOrThrow({ where: { id: row.userId } });
-  return { email: user.email };
+  return { email: user.email, superAdmin: user.role === "SUPER_ADMIN" };
 });

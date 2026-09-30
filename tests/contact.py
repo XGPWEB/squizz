@@ -1,6 +1,6 @@
 """Contact form: python3 tests/contact.py (needs the seeded super-admin in .env)."""
 import secrets
-from helpers import client, request, signup, login, env
+from helpers import client, request, signup, login, env, admin_login
 
 tag = secrets.token_hex(4)
 ok = {'name': 'Jean Test', 'email': 'jean@example.test', 'subject': 'Offre Pro / devis',
@@ -14,10 +14,10 @@ request(anon, 'POST', '/api/contact', {**ok, 'subject': 'Sujet inventé'}, expec
 request(anon, 'POST', '/api/contact', {**ok, 'message': f'Robot {tag} spam spam', 'website': 'http://spam.test'})
 request(anon, 'POST', '/api/contact', ok)
 
-root = login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
+root = admin_login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
 page = request(root, 'GET', '/super-admin/messages', expect=200)
 member, _, _ = signup()
-request(member, 'PATCH', '/api/admin/messages/x', {'handled': True}, expect=403)
+request(member, 'PATCH', '/api/admin/messages/x', {'handled': True}, expect=401)
 request(anon, 'DELETE', '/api/admin/messages/x', expect=401)
 request(root, 'PATCH', '/api/admin/messages/inexistant', {'handled': True}, expect=404)
 print('PASS: contact validation, consent, honeypot, storage and super-admin-only moderation.')

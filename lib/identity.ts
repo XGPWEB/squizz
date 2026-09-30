@@ -2,6 +2,7 @@ import "server-only";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { getSessionUser } from "@/lib/server/guard";
+import { adminCookieName, readAdminToken } from "@/lib/server/admin-session";
 
 /** Anonymous players are only remembered for 48 hours: games last at most 24. */
 /**
@@ -20,6 +21,13 @@ export async function identity(req: Request) {
  * session check. Enough to recognise a host or signed-in player; never used to change anything.
  */
 export async function lightIdentity(req: Request) {
+  // A super-admin viewing an organisation hosts its games under their own super-admin identity.
+  const cookies = req.headers.get("cookie") ?? "";
+  if (/(?:^|; )sq_view=/.test(cookies)) {
+    const raw = cookies.match(new RegExp(`(?:^|; )${adminCookieName()}=([^;]+)`))?.[1];
+    const admin = await readAdminToken(raw);
+    if (admin) return { id: admin.id, fresh: false, user: null };
+  }
   const token = await getToken({ req: req as NextRequest, secret: process.env.AUTH_SECRET }).catch(
     () => null,
   );

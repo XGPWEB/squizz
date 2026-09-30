@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { route } from "@/lib/server/api";
-import { getSessionUser } from "@/lib/server/guard";
+import { accountUser } from "@/lib/server/guard";
 import { fail } from "@/lib/server/http";
 
 /** Right of access and portability: the account and the quizzes the user created, as JSON. */
-export const GET = route(async () => {
-  const user = await getSessionUser();
+export const GET = route(async (req) => {
+  const user = await accountUser(req);
   if (!user) fail("Connectez-vous pour continuer.", 401);
   const row = await prisma.user.findUniqueOrThrow({
     where: { id: user.id },

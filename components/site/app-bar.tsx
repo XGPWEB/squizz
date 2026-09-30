@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -40,6 +40,7 @@ const initials = (name: string) =>
 /** Tabs of the signed-in areas, with the current page highlighted, and the account menu. */
 export function AppBar(p: Props) {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const menu = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
@@ -75,7 +76,9 @@ export function AppBar(p: Props) {
       ? [
           { href: "/app", label: "Mes quiz", icon: LayoutGrid, exact: true },
           { href: "/app/equipe", label: p.canTeam ? "Équipe" : "Organisation", icon: Users },
-          ...(p.isSuperAdmin && !p.viewingAs ? [{ href: "/super-admin", label: "Super-admin", icon: Shield }] : []),
+          ...(p.isSuperAdmin && !p.viewingAs
+            ? [{ href: "/super-admin", label: "Super-admin", icon: Shield }]
+            : []),
         ]
       : [
           { href: "/super-admin", label: "Organisations", icon: Building2, exact: true },
@@ -148,7 +151,17 @@ export function AppBar(p: Props) {
                   <Shield size={18} /> Super-admin
                 </Link>
               )}
-              <button className="menu-item danger" onClick={() => signOut({ callbackUrl: "/" })}>
+              <button
+                className="menu-item danger"
+                onClick={async () => {
+                  // Each space has its own session: signing out of one leaves the other open.
+                  if (p.area === "admin" || p.viewingAs) {
+                    await fetch("/api/admin/session", { method: "DELETE" }).catch(() => null);
+                    router.push("/super-admin/connexion");
+                    router.refresh();
+                  } else await signOut({ callbackUrl: "/" });
+                }}
+              >
                 <LogOut size={18} /> Déconnexion
               </button>
             </div>
