@@ -1,50 +1,16 @@
 "use client";
 import Link from "next/link";
-import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 
 const noopSubscribe = () => () => {};
-import { Play, Users, Trophy, Copy, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
-import { type PublicQuestion, type Aggregate, type AnswerPayload } from "@/lib/question";
+import { type Game, Leaderboard, PersonalResult, Podium } from "./game-parts";
+import { HostStage } from "./host-stage";
 import { invitationOrigin } from "@/lib/invitation";
 import { gameApi as api } from "@/lib/client/api";
 import { Brand } from "@/components/site/brand";
-
-type RankedPlayer = {
-  name: string;
-  score: number;
-  me: boolean;
-  rank: number;
-  movement: number | null;
-  correctCount?: number;
-};
-type Game = {
-  code: string;
-  host: boolean;
-  title: string;
-  phase: string;
-  index: number;
-  total: number;
-  totalScored: number;
-  duration: number;
-  remaining: number;
-  revealed: boolean;
-  maxPlayers: number;
-  question: PublicQuestion | null;
-  aggregate: Aggregate | null;
-  players: RankedPlayer[];
-  personal:
-    | (RankedPlayer & { points: number; outcome: "correct" | "incorrect" | "timeout" | "opinion" | "slide" })
-    | null;
-  answered: number;
-  myAnswer: { choice: number; answer: AnswerPayload; points?: number } | null;
-  /** Milliseconds before the current question opens (the "Ready?" countdown). */
-  startsIn: number;
-  /** Local time at which this state was received, to run the timers between polls. */
-  receivedAt: number;
-};
 
 const LOST = "Connexion perdue, reconnexion…";
 
@@ -56,8 +22,6 @@ export function GameView({ code }: { code: string }) {
   const [game, setGame] = useState<Game | null>(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
-    [name, setName] = useState(""),
-    [copied, setCopied] = useState(false),
     [clock, setClock] = useState(() => Date.now());
   // Read on the client only; the server render has no window (empty until hydration).
   const origin = useSyncExternalStore(
@@ -155,157 +119,27 @@ export function GameView({ code }: { code: string }) {
           </Link>
         </div>
       )}
-      {game && !game.host && game.phase === "lobby" ? (
+      {game?.host ? (
+        <HostStage
+          game={game}
+          busy={busy}
+          run={run}
+          joinUrl={joinUrl}
+          origin={origin}
+          remaining={remaining}
+          startsLeft={startsLeft}
+          onError={setError}
+        />
+      ) : game && game.phase === "lobby" ? (
         <PlayerWaiting game={game} />
       ) : (
         game && (
           <>
             <div className="play-top">
-              <Brand href={game.host ? "/app" : null} />
+              <Brand href={null} />
             </div>
             <section className={`panel game-panel ${game.phase === "finished" ? "final-panel" : ""}`}>
-              {game.host && (
-                <div className="row spaced">
-                  <span className="eyebrow">ÉCRAN ANIMATEUR</span>
-                  <span className="hint">{game.title}</span>
-                </div>
-              )}
-              {game.phase === "lobby" ? (
-                <>
-                  <div className="lobby-heading">
-                    <span className="sticker">LE DÉFI VA COMMENCER</span>
-                    <h1>Ramène ton équipe.</h1>
-                    <p className="handnote">Scanne. Choisis ton pseudo. Joue !</p>
-                  </div>
-                  <div className="lobby-connect">
-                    <div className="invitation">
-                      <span className="eyebrow">LE CODE DE LA PARTIE</span>
-                      <div className="code">{game.code}</div>
-                      <p>
-                        Ouvre SQuizz sur ton téléphone
-                        <br />
-                        et entre ce code, ou scanne à côté.
-                      </p>
-                      <button
-                        className="button secondary small"
-                        onClick={() =>
-                          run(async () => {
-                            const url = joinUrl;
-                            if (navigator.clipboard) {
-                              await navigator.clipboard.writeText(url);
-                              setCopied(true);
-                              setTimeout(() => setCopied(false), 2000);
-                            } else {
-                              setError(`Copie ce lien : ${url}`);
-                            }
-                          })
-                        }
-                      >
-                        <Copy size={16} />
-                        {copied ? "Lien copié !" : "Copier l’invitation"}
-                      </button>
-                    </div>
-                    <div className="qr-sticker">
-                      {origin && (
-                        <QRCodeSVG
-                          value={joinUrl}
-                          size={224}
-                          level="M"
-                          marginSize={4}
-                          title="Scanner pour rejoindre cette partie SQuizz"
-                        />
-                      )}
-                      <strong>SCANNE & JOUE</strong>
-                      <a href={joinUrl} target="_blank" rel="noopener noreferrer">
-                        Ouvrir le lien de la partie
-                      </a>
-                    </div>
-                  </div>
-                  {origin && /localhost|127\.0\.0\.1/.test(origin) && (
-                    <p className="preview-note">
-                      Aperçu sur cet ordinateur : ouvre l’adresse réseau de SQuizz pour scanner depuis un
-                      téléphone connecté au même Wi-Fi.
-                    </p>
-                  )}
-                  <h3 style={{ marginTop: 30 }}>
-                    <Users size={20} style={{ display: "inline", verticalAlign: "middle" }} />{" "}
-                    {game.players.length} joueur{game.players.length > 1 ? "s" : ""}
-                    <span className="hint"> · {game.maxPlayers} maximum</span>
-                  </h3>
-                  <div className="row" style={{ margin: "20px 0 30px" }}>
-                    {game.players.length ? (
-                      game.players.map((p) => (
-                        <span className="player" key={p.name}>
-                          {p.name}
-                          {p.me ? " (toi)" : ""}
-                          {game.host && !p.me && (
-                            <button
-                              className="kick"
-                              disabled={busy}
-                              aria-label={`Retirer ${p.name} de la partie`}
-                              title="Retirer ce joueur"
-                              onClick={() => {
-                                if (
-                                  confirm(`Retirer ${p.name} de la partie ? Ce joueur ne pourra pas revenir.`)
-                                )
-                                  run(async () => {
-                                    await api("kick", { code, name: p.name });
-                                  });
-                              }}
-                            >
-                              <X size={14} />
-                            </button>
-                          )}
-                        </span>
-                      ))
-                    ) : (
-                      <p className="hint">Les joueurs apparaîtront ici dès leur arrivée.</p>
-                    )}
-                  </div>
-                  {game.host ? (
-                    <>
-                      <button
-                        className="button"
-                        disabled={busy || game.players.length === 0}
-                        onClick={() =>
-                          run(async () => {
-                            await api("start", { code });
-                          })
-                        }
-                      >
-                        <Play size={18} /> Lancer le quiz
-                      </button>
-                      {!game.players.some((p) => p.me) && (
-                        <form
-                          className="row"
-                          style={{ marginTop: 20 }}
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            run(async () => {
-                              await api("join", { code, name });
-                            });
-                          }}
-                        >
-                          <input
-                            style={{ flex: 1, width: 200 }}
-                            aria-label="Ton pseudo pour jouer aussi"
-                            placeholder="Ton pseudo pour jouer aussi"
-                            required
-                            maxLength={24}
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                          />
-                          <button disabled={busy} className="button secondary">
-                            Jouer aussi
-                          </button>
-                        </form>
-                      )}
-                    </>
-                  ) : (
-                    <p className="center lead">Tu es prêt ! L’animateur va lancer le quiz.</p>
-                  )}
-                </>
-              ) : game.phase === "finished" ? (
+              {game.phase === "finished" ? (
                 <>
                   <div className="center final-heading">
                     <span className="sticker pink-sticker">FIN DU GAME</span>
@@ -326,8 +160,8 @@ export function GameView({ code }: { code: string }) {
                   </div>
                   <Leaderboard players={game.players} />
                   <div className="center" style={{ marginTop: 25 }}>
-                    <Link className="button" href={game.host ? "/app" : "/"}>
-                      {game.host ? "Retour à mes quiz" : "On remet ça ?"}
+                    <Link className="button" href="/">
+                      On remet ça ?
                     </Link>
                   </div>
                 </>
@@ -402,26 +236,7 @@ export function GameView({ code }: { code: string }) {
                           <Leaderboard players={game.players} />
                         </>
                       )}
-                      {game.host ? (
-                        <button
-                          className="button"
-                          style={{ marginTop: 24 }}
-                          disabled={busy}
-                          onClick={() =>
-                            run(async () => {
-                              await api("next", { code, question: game.index });
-                            })
-                          }
-                        >
-                          {game.index + 1 === game.total
-                            ? "Voir le podium"
-                            : game.question?.type === "slide"
-                              ? "Continuer"
-                              : "Question suivante"}
-                        </button>
-                      ) : (
-                        <p className="center lead">L’animateur prépare la suite…</p>
-                      )}
+                      <p className="center lead">L’animateur prépare la suite…</p>
                     </>
                   )}
                 </>
@@ -471,98 +286,6 @@ function PlayerWaiting({ game }: { game: Game }) {
           </Link>
         </>
       )}
-    </div>
-  );
-}
-function Leaderboard({ players }: { players: Game["players"] }) {
-  return (
-    <ol className="leaderboard">
-      {players.map((p) => (
-        <li key={p.name} className={`score-row ${p.me ? "is-me" : ""}`}>
-          <span>
-            <strong className="rank">{p.rank}</strong> {p.name}
-            {p.me ? " (toi)" : ""}
-          </span>
-          <span className="score-end">
-            {p.movement !== null && (
-              <span
-                className={`movement ${p.movement > 0 ? "up" : ""}`}
-                aria-label={`${p.movement > 0 ? "Gain" : "Perte"} de ${Math.abs(p.movement)} places`}
-              >
-                {p.movement > 0 ? `↑ ${p.movement}` : p.movement < 0 ? `↓ ${-p.movement}` : "—"}
-              </span>
-            )}
-            <strong>{p.score.toLocaleString("fr-FR")} pts</strong>
-          </span>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-function PersonalResult({ game, final = false }: { game: Game; final?: boolean }) {
-  const p = game.personal;
-  if (!p) return null;
-  const message =
-    p.outcome === "correct"
-      ? "Bien joué !"
-      : p.outcome === "opinion"
-        ? "Ta voix compte !"
-        : p.outcome === "incorrect"
-          ? "Raté… mais rien n’est joué !"
-          : "Le chrono t’a devancé !";
-  return (
-    <div
-      className={`personal-result ${p.outcome === "correct" || p.outcome === "opinion" || final ? "won" : "missed"}`}
-      role="status"
-    >
-      <div>
-        <p className="eyebrow">{final ? "TON RÉSULTAT FINAL" : "TON RÉSULTAT"}</p>
-        <h2>{final ? `${p.correctCount} / ${game.totalScored} bonnes réponses` : message}</h2>
-        <p>
-          {final
-            ? `${p.score.toLocaleString("fr-FR")} points au total`
-            : p.outcome === "opinion"
-              ? "Réponse enregistrée · question sans points"
-              : `+${p.points} points · ${p.score.toLocaleString("fr-FR")} au total`}
-        </p>
-        <span className="movement-copy">
-          {final
-            ? "Merci d’avoir joué !"
-            : p.movement === null
-              ? "Le classement est lancé."
-              : p.movement > 0
-                ? `Tu gagnes ${p.movement} place${p.movement > 1 ? "s" : ""} !`
-                : p.movement < 0
-                  ? `Tu recules de ${-p.movement} place${p.movement < -1 ? "s" : ""}. À toi de rebondir !`
-                  : "Tu gardes ta place. Garde le rythme !"}
-        </span>
-      </div>
-      <div className="place-sticker">
-        <strong>#{p.rank}</strong>
-        <span>TA PLACE</span>
-        <small>SUR {game.players.length}</small>
-      </div>
-    </div>
-  );
-}
-function Podium({ players }: { players: RankedPlayer[] }) {
-  const top = players.filter((p) => p.rank <= 3);
-  const order = top.length >= 2 ? [top[1], top[0], ...top.slice(2)] : top;
-  return (
-    <div className="podium" aria-label="Podium final">
-      {order.map((p) => (
-        <div key={p.name} className={`podium-player place-${Math.min(p.rank, 3)}`}>
-          <span className="podium-name">
-            {p.rank === 1 && <Trophy size={30} />} {p.name}
-          </span>
-          <div className="podium-step">
-            <strong>{p.rank}</strong>
-            <span>{p.score.toLocaleString("fr-FR")} pts</span>
-            {p.me && <b>C’EST TOI !</b>}
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
