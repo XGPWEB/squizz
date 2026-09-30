@@ -1,8 +1,35 @@
 # SQuizz
 
-Plateforme de quiz collectif en français, sur **www.squizz.fun** : site vitrine, espace des organisations (quiz, animateurs, droits), super-admin, et jeu en direct rejoint par les joueurs avec un code ou un QR code. Service conçu par [Pressweb](https://www.pressweb.fr/), sur le même principe que Barber Q PRO.
+**SQuizz** est une plateforme de quiz collectif en direct, en français, en ligne sur **[www.squizz.fun](https://www.squizz.fun)**. Un animateur projette le quiz sur un grand écran ; les participants répondent depuis leur téléphone, sans application à installer ni compte à créer. Elle sert pour les soirées, les classes, les formations, les séminaires ou les événements. Service conçu et édité par [Pressweb](https://www.pressweb.fr/).
 
 Version en ligne : voir [CHANGELOG.md](CHANGELOG.md). Historique en clair : [JOURNAL.md](JOURNAL.md). Audit : [AUDIT-2026-09-30.md](AUDIT-2026-09-30.md).
+
+## Comment ça marche
+
+1. **Créer un compte** : une organisation (association, école, entreprise…) s'inscrit sur le site et invite son équipe.
+2. **Préparer un quiz** : l'éditeur ajoute les étapes une à une, dans une fenêtre en 4 temps (type, contenu, réglages, aperçu). Chaque question peut avoir une image (ou un GIF), une vidéo, une vidéo YouTube ou un lien, un temps de réponse (5 s à 4 min), des points et une explication affichée avec la correction.
+3. **Lancer la partie** : l'écran de l'animateur affiche un code et un QR code. Les joueurs vont sur www.squizz.fun/jouer, entrent le code et un pseudo, puis arrivent dans la salle d'attente.
+4. **Jouer** : au lancement de chaque question, tout le monde voit le même compte à rebours « Prêt ? ». Chacun répond sur son téléphone pendant que le grand écran affiche un chrono circulaire et le nombre de réponses.
+5. **Résultats** : après chaque question, la bonne réponse et sa répartition s'affichent, puis le classement avec l'évolution des places (▲ ▼ =). La partie se termine sur un podium avec confettis.
+
+## Contenu d'un quiz
+
+**Questions notées** : quiz (choix parmi plusieurs réponses), vrai ou faux, réponse libre (courte réponse à saisir), curseur (nombre à deviner), réponse par pin's (placer un pin's au bon endroit sur une image), puzzle (classer les réponses dans le bon ordre).
+
+**Questions sans bonne réponse**, pour recueillir des avis : sondage (jusqu'à 6 choix), échelle (Likert ou personnalisée), échelle NPS, place le pin's (sur une image), nuage de mots, question ouverte, brainstorming (jusqu'à 3 idées par personne).
+
+**Diapos**, pour introduire une manche ou donner une information entre deux questions, en 6 mises en page : classique, grand titre, titre et texte, liste à puces, citation, grande image.
+
+Les types et leur validation sont définis dans `lib/question.ts`.
+
+## Espaces du site
+
+| Espace | Adresse | Pour qui |
+|---|---|---|
+| Site public | `/`, `/tarifs`, `/alternative-kahoot`, formulaire de contact, pages légales, inscription et connexion | Visiteurs |
+| Jeu | `/jouer` (saisie du code), `/partie/[code]` (partie en cours : grand écran pour l'animateur, téléphone pour les joueurs) | Joueurs et animateurs |
+| Espace organisation | `/app` : bibliothèque de quiz, éditeur, équipe, compte | Membres d'une organisation |
+| Super-admin | `/super-admin` : organisations, utilisateurs, messages de contact, journal | Pressweb |
 
 ## Rôles
 
