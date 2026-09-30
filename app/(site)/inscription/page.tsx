@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { safeNext } from "@/lib/next-path";
 import { SignupForm } from "./signup-form";
 
 export const metadata: Metadata = {
@@ -7,6 +8,6 @@ export const metadata: Metadata = {
   description: "Créez gratuitement l’espace SQuizz de votre organisation.",
 };
 
-export default function SignupPage() {
-  return <SignupForm />;
+export default async function SignupPage({ searchParams }: { searchParams: Promise<{ suite?: string }> }) {
+  return <SignupForm next={safeNext((await searchParams).suite)} />;
 }

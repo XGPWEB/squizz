@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Building2,
   ChevronDown,
+  CreditCard,
   History,
   LayoutGrid,
   LogOut,
@@ -23,7 +24,7 @@ type Props = {
   email: string;
   roleLabel: string;
   organization: string | null;
-  plan: { label: string; pro: boolean } | null;
+  plan: { label: string; className: string } | null;
   canTeam: boolean;
   isSuperAdmin: boolean;
   viewingAs: boolean;
@@ -76,6 +77,7 @@ export function AppBar(p: Props) {
       ? [
           { href: "/app", label: "Mes quiz", icon: LayoutGrid, exact: true },
           { href: "/app/equipe", label: p.canTeam ? "Équipe" : "Organisation", icon: Users },
+          ...(p.canTeam ? [{ href: "/app/abonnement", label: "Abonnement", icon: CreditCard }] : []),
           ...(p.isSuperAdmin && !p.viewingAs
             ? [{ href: "/super-admin", label: "Super-admin", icon: Shield }]
             : []),
@@ -113,7 +115,7 @@ export function AppBar(p: Props) {
         {p.organization && (
           <span className="org-chip" title={p.organization}>
             <span className="org-name">{p.organization}</span>
-            {p.plan && <span className={`plan-badge ${p.plan.pro ? "pro" : ""}`}>{p.plan.label}</span>}
+            {p.plan && <span className={`plan-badge ${p.plan.className}`}>{p.plan.label}</span>}
           </span>
         )}
         <div className="account" ref={menu}>

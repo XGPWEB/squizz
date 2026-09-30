@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { prisma } from "@/lib/prisma";
-import { planLimits, sizeLabel } from "@/lib/plans";
+import { orgLimits, sizeLabel } from "@/lib/plans";
+import { withOrgLock } from "@/lib/server/org-lock";
 import { HttpError, assertSameOrigin, fail } from "@/lib/server/http";
 import { requireMember } from "@/lib/server/guard";
 import { mediaDir, mediaPath } from "@/lib/server/media-store";
@@ -43,33 +44,40 @@ export async function POST(req: Request) {
     if (!matchesSignature(file.type, bytes.slice(0, 32)))
       fail("Le contenu du fichier ne correspond pas à son format.");
 
-    const usage = await prisma.media.aggregate({
-      where: { organizationId: user.organizationId },
-      _sum: { size: true },
-    });
     const recent = await prisma.media.count({
       where: { uploadedById: user.id, createdAt: { gt: new Date(Date.now() - 60 * 60 * 1000) } },
     });
     if (recent >= UPLOADS_PER_HOUR) fail("Trop d’imports en peu de temps. Réessayez dans une heure.", 429);
-    const quota = planLimits(user.organization.plan).mediaBytes;
-    if ((usage._sum.size ?? 0) + file.size > quota)
-      fail(
-        `Votre organisation a atteint sa limite de ${sizeLabel(quota)} de médias. Passez à une offre supérieure (page Tarifs) pour en ajouter.`,
-        429,
-      );
-
+    const quota = orgLimits(user.organization).mediaBytes;
     const id = crypto.randomUUID();
-    await mkdir(mediaDir(), { recursive: true });
-    await writeFile(mediaPath(id), bytes);
-    await prisma.media.create({
-      data: {
-        id,
-        organizationId: user.organizationId,
-        uploadedById: user.id,
-        mime: file.type,
-        size: file.size,
-      },
+    // Check and record under the organisation lock, so parallel uploads cannot pass the quota together.
+    await withOrgLock(user.organizationId, async (tx) => {
+      const usage = await tx.media.aggregate({
+        where: { organizationId: user.organizationId },
+        _sum: { size: true },
+      });
+      if ((usage._sum.size ?? 0) + file.size > quota)
+        fail(
+          `Votre organisation a atteint sa limite de ${sizeLabel(quota)} de médias. Passez à une offre supérieure (page Tarifs) pour en ajouter.`,
+          429,
+        );
+      await tx.media.create({
+        data: {
+          id,
+          organizationId: user.organizationId,
+          uploadedById: user.id,
+          mime: file.type,
+          size: file.size,
+        },
+      });
     });
+    try {
+      await mkdir(mediaDir(), { recursive: true });
+      await writeFile(mediaPath(id), bytes);
+    } catch (err) {
+      await prisma.media.delete({ where: { id } });
+      throw err;
+    }
     return Response.json(
       {
         media: {

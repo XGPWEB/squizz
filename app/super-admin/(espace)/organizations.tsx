@@ -12,6 +12,8 @@ type Org = {
   name: string;
   plan: Plan;
   cancelRequestedAt: string | null;
+  partner: boolean;
+  subscriptionStatus: string | null;
   status: "ACTIVE" | "SUSPENDED";
   createdAt: string;
   members: number;
@@ -147,6 +149,7 @@ export function Organizations() {
                 <th>Organisation</th>
                 <th>Offre</th>
                 <th>Statut</th>
+                <th>Partenaire</th>
                 <th>Membres</th>
                 <th>Quiz</th>
                 <th>Parties 24 h</th>
@@ -177,6 +180,11 @@ export function Organizations() {
                         </option>
                       ))}
                     </select>
+                    {o.subscriptionStatus && (
+                      <span className="stripe-flag" title={`Abonnement Stripe : ${o.subscriptionStatus}`}>
+                        Stripe
+                      </span>
+                    )}
                     {o.cancelRequestedAt && (
                       <span
                         className="cancel-flag"
@@ -205,6 +213,36 @@ export function Organizations() {
                       }}
                     >
                       {o.status === "ACTIVE" ? "Active" : "Suspendue"}
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      className={`status partner-toggle ${o.partner ? "on" : "off"}`}
+                      disabled={busy}
+                      title={
+                        o.partner
+                          ? "Cliquer pour retirer le statut partenaire"
+                          : "Premium offert : cliquer pour activer"
+                      }
+                      onClick={() => {
+                        if (
+                          !confirm(
+                            o.partner
+                              ? `Retirer le statut partenaire de ${o.name} ? L’organisation reviendra sur son offre ${PLANS[o.plan].label}.`
+                              : `Rendre ${o.name} partenaire ? L’offre ${PLANS.PREMIUM.label} lui sera offerte.`,
+                          )
+                        )
+                          return;
+                        patch(
+                          o.id,
+                          { partner: !o.partner },
+                          o.partner
+                            ? `${o.name} n’est plus partenaire.`
+                            : `${o.name} est partenaire : Premium offert.`,
+                        );
+                      }}
+                    >
+                      {o.partner ? "Partenaire" : "Non"}
                     </button>
                   </td>
                   <td>{o.members}</td>

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { planLimits } from "@/lib/plans";
+import { orgLimits } from "@/lib/plans";
 import { route, json, nameSchema } from "@/lib/server/api";
 import { requireMember, requireOrgAdmin } from "@/lib/server/guard";
 import { audit } from "@/lib/server/audit";
@@ -38,7 +38,8 @@ export const GET = route(async () => {
       id: orgId,
       name: user.organization.name,
       plan: user.organization.plan,
-      limits: planLimits(user.organization.plan),
+      partner: user.organization.partner,
+      limits: orgLimits(user.organization),
       cancelRequestedAt: user.organization.cancelRequestedAt,
     },
     me: { id: user.id, role: user.role },

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { pageUser } from "@/lib/server/guard";
 import { prisma } from "@/lib/prisma";
 import { demos } from "@/lib/quizzes";
-import { planLimits } from "@/lib/plans";
+import { orgLimits } from "@/lib/plans";
 import { listQuizzes } from "@/lib/server/quiz-store";
 import { Library } from "./library";
 
@@ -15,7 +15,7 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
     organization: NonNullable<typeof user.organization>;
   };
   const quizzes = await listQuizzes(member);
-  const limits = planLimits(member.organization.plan);
+  const limits = orgLimits(member.organization);
   const count = await prisma.quiz.count({ where: { organizationId: member.organizationId } });
   const { ok } = await searchParams;
   return (

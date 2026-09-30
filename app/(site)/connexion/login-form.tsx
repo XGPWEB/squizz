@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { AuthForm, signInOrThrow } from "@/components/auth/auth-form";
 import { PasswordInput } from "@/components/site/password-input";
 
-export function LoginForm({ suspended, email }: { suspended: boolean; email: string }) {
+export function LoginForm({ suspended, email, next }: { suspended: boolean; email: string; next: string }) {
   const router = useRouter();
   return (
     <AuthForm
@@ -13,14 +13,17 @@ export function LoginForm({ suspended, email }: { suspended: boolean; email: str
       submit="Se connecter"
       onSubmit={async (data) => {
         await signInOrThrow(String(data.get("email")), String(data.get("password")));
-        router.push("/app");
+        router.push(next);
         router.refresh();
       }}
       footer={
         <>
           <Link href="/mot-de-passe-oublie">Mot de passe oublié ?</Link>
           <span>
-            Pas encore de compte ? <Link href="/inscription">Créer un espace</Link>
+            Pas encore de compte ?{" "}
+            <Link href={next === "/app" ? "/inscription" : `/inscription?suite=${encodeURIComponent(next)}`}>
+              Créer un espace
+            </Link>
           </span>
         </>
       }

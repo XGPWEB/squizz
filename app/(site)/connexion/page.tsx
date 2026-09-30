@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/server/guard";
+import { safeNext } from "@/lib/next-path";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
@@ -13,10 +14,11 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ suspendu?: string; email?: string }>;
+  searchParams: Promise<{ suspendu?: string; email?: string; suite?: string }>;
 }) {
   const user = await getSessionUser();
   const params = await searchParams;
-  if (user && !params.suspendu) redirect("/app");
-  return <LoginForm suspended={!!params.suspendu} email={params.email ?? ""} />;
+  const next = safeNext(params.suite);
+  if (user && !params.suspendu) redirect(next);
+  return <LoginForm suspended={!!params.suspendu} email={params.email ?? ""} next={next} />;
 }

@@ -1,8 +1,9 @@
 import "server-only";
 import bcrypt from "bcryptjs";
-import type { UserRole } from "@prisma/client";
+import type { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { planLimits } from "@/lib/plans";
+import { orgLimits } from "@/lib/plans";
+import { withOrgLock } from "./org-lock";
 import { fail } from "./http";
 import { hashToken, newToken } from "./tokens";
 import { appUrl, sendMail } from "./mail";
@@ -15,14 +16,28 @@ export async function assertEmailFree(email: string) {
     fail("Un compte existe déjà avec cette adresse email.", 409);
 }
 
-/** Members plus pending invitations, checked against the plan's member cap. */
-export async function assertSeatAvailable(organizationId: string) {
-  const org = await prisma.organization.findUniqueOrThrow({ where: { id: organizationId } });
-  const { maxMembers } = planLimits(org.plan);
+/**
+ * Members plus pending invitations, checked against the plan's member cap. Call it inside `withOrgLock`.
+ * `replacingEmail`: a new invitation to that address replaces the pending one, so it does not count.
+ */
+export async function assertSeatAvailable(
+  organizationId: string,
+  db: Prisma.TransactionClient = prisma,
+  replacingEmail?: string,
+) {
+  const org = await db.organization.findUniqueOrThrow({ where: { id: organizationId } });
+  const { maxMembers } = orgLimits(org);
   if (maxMembers === null) return;
   const [members, pending] = await Promise.all([
-    prisma.user.count({ where: { organizationId, active: true } }),
-    prisma.invitation.count({ where: { organizationId, acceptedAt: null, expiresAt: { gt: new Date() } } }),
+    db.user.count({ where: { organizationId, active: true } }),
+    db.invitation.count({
+      where: {
+        organizationId,
+        acceptedAt: null,
+        expiresAt: { gt: new Date() },
+        ...(replacingEmail && { email: { not: replacingEmail } }),
+      },
+    }),
   ]);
   if (members + pending >= maxMembers)
     fail(
@@ -42,20 +57,22 @@ export async function createInvitation(
 ) {
   if (role === "SUPER_ADMIN") fail("Rôle invalide.");
   await assertEmailFree(email);
-  await assertSeatAvailable(organizationId);
-  // A new invitation replaces any earlier pending one for the same address.
-  await prisma.invitation.deleteMany({ where: { organizationId, email, acceptedAt: null } });
   const { token, tokenHash } = newToken();
-  const invitation = await prisma.invitation.create({
-    data: {
-      tokenHash,
-      email,
-      role,
-      organizationId,
-      invitedById,
-      expiresAt: new Date(Date.now() + INVITE_DAYS * 86400_000),
-    },
-    include: { organization: true },
+  const invitation = await withOrgLock(organizationId, async (tx) => {
+    await assertSeatAvailable(organizationId, tx, email);
+    // A new invitation replaces any earlier pending one for the same address.
+    await tx.invitation.deleteMany({ where: { organizationId, email, acceptedAt: null } });
+    return tx.invitation.create({
+      data: {
+        tokenHash,
+        email,
+        role,
+        organizationId,
+        invitedById,
+        expiresAt: new Date(Date.now() + INVITE_DAYS * 86400_000),
+      },
+      include: { organization: true },
+    });
   });
   const link = `${appUrl()}/invitation/${token}`;
   const sent = await sendMail(

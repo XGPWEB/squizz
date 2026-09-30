@@ -33,7 +33,7 @@ function features(p: PlanLimits) {
 const PRICING_FAQ = [
   {
     q: "Suis-je engagé ?",
-    a: "Non. Toutes les offres sont sans engagement et vous pouvez arrêter votre abonnement à tout moment, par simple e-mail à contact@pressweb.fr.",
+    a: "Non. Toutes les offres sont sans engagement : vous arrêtez votre abonnement à tout moment, en un clic depuis la page « Abonnement » de votre espace, ou par e-mail à contact@pressweb.fr.",
   },
   {
     q: "Que se passe-t-il si j’arrête mon abonnement ?",
@@ -41,11 +41,11 @@ const PRICING_FAQ = [
   },
   {
     q: "Comment souscrire ?",
-    a: "Choisissez votre offre : un message nous parvient, nous activons l’offre sur votre espace et vous envoyons la facture. Vous pouvez créer votre espace gratuit dès maintenant et passer à une offre payante plus tard.",
+    a: "Choisissez votre offre, connectez-vous (ou créez votre espace) et payez par carte bancaire, en toute sécurité avec Stripe : l’offre est activée immédiatement. Factures et carte se gèrent depuis la page « Abonnement » de votre espace.",
   },
   {
     q: "Puis-je changer d’offre ?",
-    a: "Oui, à tout moment, vers une offre plus complète ou plus simple. Le changement est appliqué à votre espace dès qu’il est activé.",
+    a: "Oui, à tout moment, vers une offre plus complète ou plus simple, depuis la page « Abonnement ». La différence de prix est calculée au prorata.",
   },
   {
     q: "Les prix incluent-ils la TVA ?",
@@ -73,7 +73,10 @@ export default function PricingPage() {
           const p = PLANS[key];
           const featured = key === "PREMIUM";
           return (
-            <article key={key} className={`price-card${featured ? " featured" : ""}`}>
+            <article
+              key={key}
+              className={`price-card plan-${key.toLowerCase()}${featured ? " featured" : ""}`}
+            >
               {featured && <span className="sticker pink-sticker">LE PLUS COMPLET</span>}
               <h2>{p.label}</h2>
               <p className="price">
@@ -99,7 +102,10 @@ export default function PricingPage() {
                   Créer mon espace
                 </Link>
               ) : (
-                <Link className={`button${featured ? "" : " secondary"}`} href={`/?offre=${key}#contact`}>
+                <Link
+                  className={`button${featured ? "" : " secondary"}`}
+                  href={`/app/abonnement?offre=${key}`}
+                >
                   Choisir {p.label.split(" ")[0]}
                 </Link>
               )}

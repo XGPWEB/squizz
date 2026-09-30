@@ -3,14 +3,15 @@ import type { Plan, Prisma, Quiz as QuizRow } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { demos, type Quiz } from "@/lib/quizzes";
 import { normalizeQuestion, validateQuestion, type Question } from "@/lib/question";
-import { planLimits } from "@/lib/plans";
+import { orgLimits } from "@/lib/plans";
+import { withOrgLock } from "./org-lock";
 import { fail, validated } from "./http";
 import type { SessionUser } from "./guard";
 
 export const MAX_QUESTIONS = 30;
 export const MAX_TITLE = 90;
 
-type Member = SessionUser & { organizationId: string; organization: { plan: Plan } };
+type Member = SessionUser & { organizationId: string; organization: { plan: Plan; partner: boolean } };
 
 export function normalizeQuiz(raw: Quiz): Quiz {
   return { ...raw, questions: raw.questions.map(normalizeQuestion) };
@@ -75,23 +76,25 @@ export async function findQuiz(user: Member, id: unknown): Promise<Quiz | null> 
 
 export async function createQuiz(user: Member, draft: unknown): Promise<OrgQuiz> {
   const input = parseQuizInput(draft);
-  const { maxQuizzes } = planLimits(user.organization.plan);
-  if (maxQuizzes !== null) {
-    const count = await prisma.quiz.count({ where: { organizationId: user.organizationId } });
-    if (count >= maxQuizzes)
-      fail(
-        `Votre offre permet ${maxQuizzes} quiz. Supprimez-en un ou passez à une offre supérieure (page Tarifs).`,
-        403,
-      );
-  }
-  const row = await prisma.quiz.create({
-    data: {
-      organizationId: user.organizationId,
-      createdById: user.id,
-      title: input.title,
-      questions: input.questions as unknown as Prisma.InputJsonValue,
-    },
-    include: { createdBy: { select: { name: true } } },
+  const { maxQuizzes } = orgLimits(user.organization);
+  const row = await withOrgLock(user.organizationId, async (tx) => {
+    if (maxQuizzes !== null) {
+      const count = await tx.quiz.count({ where: { organizationId: user.organizationId } });
+      if (count >= maxQuizzes)
+        fail(
+          `Votre offre permet ${maxQuizzes} quiz. Supprimez-en un ou passez à une offre supérieure (page Tarifs).`,
+          403,
+        );
+    }
+    return tx.quiz.create({
+      data: {
+        organizationId: user.organizationId,
+        createdById: user.id,
+        title: input.title,
+        questions: input.questions as unknown as Prisma.InputJsonValue,
+      },
+      include: { createdBy: { select: { name: true } } },
+    });
   });
   return toQuiz(row, user);
 }

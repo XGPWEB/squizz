@@ -370,19 +370,59 @@ export function subscriptionCancelNoticeEmail(o: {
   plan: Plan;
   by: string;
   resumed?: boolean;
+  /** Stripe subscription: Stripe stops the renewal and the plan changes by itself. */
+  automatic?: boolean;
 }): Email {
   const p = PLANS[o.plan];
   const what = o.resumed ? "reprend son abonnement" : "arrête son abonnement";
+  const todo = o.resumed
+    ? "Rien à faire : l’offre continue."
+    : o.automatic
+      ? "Rien à faire : Stripe arrête le renouvellement et l’organisation repassera seule sur l’offre Gratuit à la fin de la période payée."
+      : "À faire : repasser l’organisation sur l’offre Gratuit à la fin de la période payée et arrêter la facturation.";
   const site = appUrl();
   return {
     subject: `[SQuizz] ${o.organization} ${what} ${p.label}`,
-    text: `${o.organization} ${what} ${p.label} (${priceLabel(p)}), demande de ${o.by} le ${when()}.\n\n${o.resumed ? "Rien à faire : l’offre continue." : "À faire : repasser l’organisation sur l’offre Gratuit à la fin de la période payée et arrêter la facturation."}\n\n${site}/super-admin/organisations/${o.organizationId}`,
+    text: `${o.organization} ${what} ${p.label} (${priceLabel(p)}), demande de ${o.by} le ${when()}.\n\n${todo}\n\n${site}/super-admin/organisations/${o.organizationId}`,
     html: layout({
       preheader: `${o.organization} ${what} ${p.label}.`,
       eyebrow: "Abonnement",
       title: o.resumed ? "Abonnement repris." : "Arrêt d’abonnement.",
-      body: `<p style="margin:0 0 12px"><strong>${esc(o.organization)}</strong> ${what} <strong>${esc(p.label)}</strong> (${esc(priceLabel(p))}), demande de ${esc(o.by)} le ${when()}.</p><p style="margin:0">${o.resumed ? "Rien à faire : l’offre continue." : "À faire : repasser l’organisation sur l’offre Gratuit à la fin de la période payée et arrêter la facturation."}</p>`,
+      body: `<p style="margin:0 0 12px"><strong>${esc(o.organization)}</strong> ${what} <strong>${esc(p.label)}</strong> (${esc(priceLabel(p))}), demande de ${esc(o.by)} le ${when()}.</p><p style="margin:0">${todo}</p>`,
       cta: { label: "Voir l’organisation", url: `${site}/super-admin/organisations/${o.organizationId}` },
+    }),
+  };
+}
+
+/** Partner status granted (Premium for free) or withdrawn by the super-admin. */
+export function partnerEmail(o: { name: string; organization: string; partner: boolean; plan: Plan }): Email {
+  const site = appUrl();
+  const premium = PLANS.PREMIUM;
+  if (o.partner)
+    return {
+      subject: `${o.organization} devient partenaire SQuizz`,
+      text: `Bonjour ${o.name},\n\n« ${o.organization} » est maintenant partenaire SQuizz : l’offre ${premium.label} vous est offerte (${limitsSummary(premium)}), sans rien à payer.\n\n${site}/app`,
+      html: layout({
+        preheader: `L’offre ${premium.label} vous est offerte.`,
+        eyebrow: "Partenariat",
+        title: "Bienvenue parmi nos partenaires !",
+        highlight: "partenaires",
+        body: `<p style="margin:0 0 12px">Bonjour ${esc(o.name)},</p><p style="margin:0">L’espace <strong>${esc(o.organization)}</strong> est maintenant <strong>partenaire SQuizz</strong> : l’offre <strong>${esc(premium.label)}</strong> vous est offerte, sans rien à payer : ${limitsSummary(premium)}.</p>`,
+        cta: { label: "Ouvrir mon espace", url: `${site}/app` },
+      }),
+    };
+  const back = PLANS[o.plan];
+  return {
+    subject: `Fin du partenariat SQuizz pour ${o.organization}`,
+    text: `Bonjour ${o.name},\n\nLe partenariat de « ${o.organization} » avec SQuizz a pris fin. Votre espace revient sur l’offre ${back.label} : ${limitsSummary(back)}. Vos quiz sont conservés.\n\n${site}/tarifs`,
+    html: layout({
+      preheader: `Votre espace revient sur l’offre ${back.label}.`,
+      eyebrow: "Partenariat",
+      title: "Fin du partenariat.",
+      highlight: "partenariat.",
+      body: `<p style="margin:0 0 12px">Bonjour ${esc(o.name)},</p><p style="margin:0">Le partenariat de <strong>${esc(o.organization)}</strong> avec SQuizz a pris fin. Votre espace revient sur l’offre <strong>${esc(back.label)}</strong> : ${limitsSummary(back)}. Vos quiz sont conservés.</p>`,
+      cta: { label: "Voir les offres", url: `${site}/tarifs` },
+      note: "Une question sur ce changement ? Répondez simplement à cet email.",
     }),
   };
 }

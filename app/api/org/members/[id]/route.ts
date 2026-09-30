@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { route, json } from "@/lib/server/api";
 import { requireOrgAdmin } from "@/lib/server/guard";
 import { assertSeatAvailable } from "@/lib/server/accounts";
+import { withOrgLock } from "@/lib/server/org-lock";
 import { audit } from "@/lib/server/audit";
 import { fail } from "@/lib/server/http";
 
@@ -32,15 +33,17 @@ export const PATCH = route<{ id: string }>(async (req, { id }) => {
   const losesAdmin =
     target.role === "ORG_ADMIN" && target.active && (input.role === "HOST" || input.active === false);
   if (losesAdmin) await assertAnotherAdmin(user.organizationId, id);
-  if (input.active === true && !target.active) await assertSeatAvailable(user.organizationId);
-  await prisma.user.update({
-    where: { id },
-    data: {
-      role: input.role,
-      active: input.active,
-      // Deactivation or a role change takes effect on the member's open sessions right away.
-      sessionVersion: input.active === false ? { increment: 1 } : undefined,
-    },
+  await withOrgLock(user.organizationId, async (tx) => {
+    if (input.active === true && !target.active) await assertSeatAvailable(user.organizationId, tx);
+    await tx.user.update({
+      where: { id },
+      data: {
+        role: input.role,
+        active: input.active,
+        // Deactivation or a role change takes effect on the member's open sessions right away.
+        sessionVersion: input.active === false ? { increment: 1 } : undefined,
+      },
+    });
   });
   await audit(user, "member.update", user.organizationId, { memberId: id, email: target.email, ...input });
 });

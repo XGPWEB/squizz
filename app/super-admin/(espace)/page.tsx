@@ -7,13 +7,14 @@ import { Organizations } from "./organizations";
 export const metadata: Metadata = { title: "Super-admin" };
 
 export default async function AdminHome() {
-  const [orgs, byPlan, suspended, users, quizzes, games] = await Promise.all([
+  const [orgs, byPlan, partners, suspended, users, quizzes, games] = await Promise.all([
     prisma.organization.count(),
     prisma.organization.groupBy({
       by: ["plan"],
-      where: { plan: { not: "FREE" }, status: "ACTIVE" },
+      where: { plan: { not: "FREE" }, status: "ACTIVE", partner: false },
       _count: true,
     }),
+    prisma.organization.count({ where: { partner: true } }),
     prisma.organization.count({ where: { status: "SUSPENDED" } }),
     prisma.user.count({ where: { role: { not: "SUPER_ADMIN" } } }),
     prisma.quiz.count(),
@@ -37,7 +38,7 @@ export default async function AdminHome() {
         <Stat
           label="Organisations"
           value={orgs}
-          note={`${paid} payante${paid > 1 ? "s" : ""} (≈ ${Math.round(monthly)} € / mois) · ${suspended} suspendue${suspended > 1 ? "s" : ""}`}
+          note={`${paid} payante${paid > 1 ? "s" : ""} (≈ ${Math.round(monthly)} € / mois) · ${partners} partenaire${partners > 1 ? "s" : ""} · ${suspended} suspendue${suspended > 1 ? "s" : ""}`}
         />
         <Stat label="Utilisateurs" value={users} />
         <Stat label="Quiz" value={quizzes} />

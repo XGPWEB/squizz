@@ -86,6 +86,15 @@ request(admin, 'POST', '/api/org/subscription', {'action': 'cancel'})
 request(root, 'PATCH', f'/api/admin/organizations/{org_id}', {'plan': 'PRO'})
 assert request(admin, 'GET', '/api/org')['organization']['cancelRequestedAt'] is None
 call(admin, 'save', quiz=q('Sixième, en Pro'))
+
+# Partner: Premium for free whatever the billed plan, nothing to cancel, back to the plan when withdrawn.
+request(root, 'PATCH', f'/api/admin/organizations/{org_id}', {'partner': True})
+overview = request(admin, 'GET', '/api/org')['organization']
+assert overview['partner'] is True and overview['limits']['maxPlayersPerGame'] == 200, overview
+assert call(admin, 'state', code=call(admin, 'create', quizId='geo')['code'])['maxPlayers'] == 200
+request(admin, 'POST', '/api/org/subscription', {'action': 'cancel'}, expect=400)
+request(root, 'PATCH', f'/api/admin/organizations/{org_id}', {'partner': False})
+assert request(admin, 'GET', '/api/org')['organization']['limits']['maxPlayersPerGame'] == 50
 request(admin, 'PATCH', f'/api/org/members/{host_id}', {'active': True})
 assert call(admin, 'state', code=call(admin, 'create', quizId='geo')['code'])['maxPlayers'] == 50
 
@@ -119,4 +128,4 @@ request(client(), 'POST', '/api/account/forgot', {'email': 'inconnu@example.test
 request(client(), 'POST', '/api/account/forgot', {'email': email})
 
 print('PASS: signup, invitations, roles, cross-organisation isolation, plan limits, last-admin guard, '
-      'deactivation, subscription stop/resume, super-admin plans/suspension/reset/audit/deletion, password change and reset.')
+      'deactivation, subscription stop/resume, partner status, super-admin plans/suspension/reset/audit/deletion, password change and reset.')

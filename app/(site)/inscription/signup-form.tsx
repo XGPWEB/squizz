@@ -5,7 +5,7 @@ import { AuthForm, signInOrThrow } from "@/components/auth/auth-form";
 import { postJson } from "@/lib/client/api";
 import { PasswordInput } from "@/components/site/password-input";
 
-export function SignupForm() {
+export function SignupForm({ next }: { next: string }) {
   const router = useRouter();
   return (
     <AuthForm
@@ -23,12 +23,15 @@ export function SignupForm() {
           password: body.password,
         });
         await signInOrThrow(body.email, body.password);
-        router.push("/app");
+        router.push(next);
         router.refresh();
       }}
       footer={
         <span>
-          Déjà un compte ? <Link href="/connexion">Se connecter</Link>
+          Déjà un compte ?{" "}
+          <Link href={next === "/app" ? "/connexion" : `/connexion?suite=${encodeURIComponent(next)}`}>
+            Se connecter
+          </Link>
         </span>
       }
     >

@@ -7,7 +7,7 @@ import { audit } from "@/lib/server/audit";
 import { fail } from "@/lib/server/http";
 import { mediaPath } from "@/lib/server/media-store";
 import { sendMail } from "@/lib/server/mail";
-import { organizationUpdateEmail } from "@/lib/server/email-templates";
+import { organizationUpdateEmail, partnerEmail } from "@/lib/server/email-templates";
 import { PLAN_KEYS } from "@/lib/plans";
 
 export const GET = route<{ id: string }>(async (_, { id }) => {
@@ -50,6 +50,7 @@ const schema = z.object({
   name: nameSchema.optional(),
   plan: z.enum(PLAN_KEYS).optional(),
   status: z.enum(["ACTIVE", "SUSPENDED"]).optional(),
+  partner: z.boolean().optional(),
 });
 
 export const PATCH = route<{ id: string }>(async (req, { id }) => {
@@ -59,7 +60,9 @@ export const PATCH = route<{ id: string }>(async (req, { id }) => {
   if (!org) fail("Organisation introuvable.", 404);
   // A new plan settles any pending cancellation (usually: the move to FREE at the end of the paid period).
   const settles = input.plan && input.plan !== org.plan ? { cancelRequestedAt: null } : {};
-  await prisma.organization.update({ where: { id }, data: { ...input, ...settles } });
+  const partnerChange = input.partner !== undefined && input.partner !== org.partner;
+  const since = partnerChange ? { partnerSince: input.partner ? new Date() : null } : {};
+  await prisma.organization.update({ where: { id }, data: { ...input, ...settles, ...since } });
   // Suspension signs every member out immediately.
   if (input.status === "SUSPENDED")
     await prisma.user.updateMany({
@@ -70,6 +73,21 @@ export const PATCH = route<{ id: string }>(async (req, { id }) => {
   // The organisation's administrators hear about a new plan, a suspension or a reactivation.
   const plan = input.plan && input.plan !== org.plan ? input.plan : undefined;
   const status = input.status && input.status !== org.status ? input.status : undefined;
+  if (partnerChange) {
+    const admins = await prisma.user.findMany({
+      where: { organizationId: id, role: "ORG_ADMIN", active: true },
+    });
+    for (const a of admins)
+      void sendMail(
+        a.email,
+        partnerEmail({
+          name: a.name,
+          organization: input.name ?? org.name,
+          partner: input.partner!,
+          plan: org.plan,
+        }),
+      );
+  }
   if (plan || status) {
     const admins = await prisma.user.findMany({
       where: { organizationId: id, role: "ORG_ADMIN", active: true },

@@ -31,15 +31,23 @@ enum OrganizationStatus {
 
 /// The tenant: every quiz, game, member and media file belongs to one organisation.
 model Organization {
-  id                String             @id @default(cuid())
-  name              String
-  plan              Plan               @default(FREE)
-  status            OrganizationStatus @default(ACTIVE)
+  id                   String             @id @default(cuid())
+  name                 String
+  plan                 Plan               @default(FREE)
+  status               OrganizationStatus @default(ACTIVE)
   /// Set when an administrator stops the paid plan; the super-admin moves the organisation to FREE at the
   /// end of the paid period, which clears it.
-  cancelRequestedAt DateTime?
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  cancelRequestedAt    DateTime?
+  /// Partner organisations get the Premium plan for free, whatever `plan` says. Granted by the super-admin.
+  partner              Boolean            @default(false)
+  partnerSince         DateTime?
+  /// Stripe billing, kept in sync by the webhook (app/api/billing/webhook).
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  subscriptionStatus   String?
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 
   users       User[]
   invitations Invitation[]

@@ -12,6 +12,8 @@ export type PlanLimits = {
   maxPlayersPerGame: number;
   maxMembers: number | null;
   mediaBytes: number;
+  /** Stripe product (prod_…) or price (price_…) of a paid plan; not secret. Overridden by STRIPE_PRICE_<PLAN>. */
+  stripe: string | null;
   /** Support included: none on the free plan. */
   support: "email" | "priority" | null;
 };
@@ -31,6 +33,7 @@ export const PLANS: Record<Plan, PlanLimits> = {
     maxMembers: 1,
     mediaBytes: 10 * MB,
     support: null,
+    stripe: null,
   },
   STARTER: {
     label: "Essentiel",
@@ -42,6 +45,7 @@ export const PLANS: Record<Plan, PlanLimits> = {
     maxMembers: 2,
     mediaBytes: 250 * MB,
     support: "email",
+    stripe: "prod_VMBlVgVHl9co7O",
   },
   PRO: {
     label: "Pro",
@@ -53,6 +57,7 @@ export const PLANS: Record<Plan, PlanLimits> = {
     maxMembers: 5,
     mediaBytes: 500 * MB,
     support: "priority",
+    stripe: "prod_VMBp6zj9SGvvE6",
   },
   PREMIUM: {
     label: "Premium annuel",
@@ -64,6 +69,7 @@ export const PLANS: Record<Plan, PlanLimits> = {
     maxMembers: 10,
     mediaBytes: 1 * GB,
     support: "priority",
+    stripe: null,
   },
 };
 
@@ -71,6 +77,17 @@ export const PLANS: Record<Plan, PlanLimits> = {
 export const PLAN_KEYS = ["FREE", "STARTER", "PRO", "PREMIUM"] as const satisfies readonly Plan[];
 
 export const planLimits = (plan: Plan) => PLANS[plan];
+
+/** Partner organisations get Premium for free, whatever plan they are billed for. */
+export const effectivePlan = (org: { plan: Plan; partner: boolean }): Plan =>
+  org.partner ? "PREMIUM" : org.plan;
+/** The limits that actually apply to an organisation: use this for every check. */
+export const orgLimits = (org: { plan: Plan; partner: boolean }) => PLANS[effectivePlan(org)];
+/** Badge shown in the app bar and the super-admin. */
+export const planBadge = (org: { plan: Plan; partner: boolean }) =>
+  org.partner
+    ? { label: "Partenaire", className: "partner" }
+    : { label: PLANS[org.plan].label, className: `plan-${org.plan.toLowerCase()}` };
 export const isPaid = (plan: Plan) => plan !== "FREE";
 
 /** « 15 € / mois », « 0 € ». */

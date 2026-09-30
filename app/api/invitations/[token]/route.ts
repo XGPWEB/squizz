@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { route, json, nameSchema, passwordSchema } from "@/lib/server/api";
 import { assertEmailFree, findInvitation, hashPassword } from "@/lib/server/accounts";
 import { sendMail } from "@/lib/server/mail";
+import { fail } from "@/lib/server/http";
+import { withOrgLock } from "@/lib/server/org-lock";
+import { orgLimits } from "@/lib/plans";
 import { memberJoinedEmail, memberWelcomeEmail } from "@/lib/server/email-templates";
 
 export const GET = route<{ token: string }>(async (_, { token }) => {
@@ -16,7 +19,17 @@ export const POST = route<{ token: string }>(async (req, { token }) => {
   const inv = await findInvitation(token);
   await assertEmailFree(inv.email);
   const passwordHash = await hashPassword(input.password);
-  await prisma.$transaction(async (tx) => {
+  await withOrgLock(inv.organizationId, async (tx) => {
+    // The plan may have shrunk since the invitation was sent: never go past the member cap.
+    const { maxMembers } = orgLimits(inv.organization);
+    if (
+      maxMembers !== null &&
+      (await tx.user.count({ where: { organizationId: inv.organizationId, active: true } })) >= maxMembers
+    )
+      fail(
+        "Cette organisation a atteint le nombre de membres permis par son offre. Demandez à son administrateur de libérer une place.",
+        403,
+      );
     const claimed = await tx.invitation.updateMany({
       where: { id: inv.id, acceptedAt: null },
       data: { acceptedAt: new Date() },

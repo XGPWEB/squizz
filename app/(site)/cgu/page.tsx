@@ -78,14 +78,20 @@ export default function CGUPage() {
       </ul>
       <p>
         Les prix sont exprimés en euros, nets de taxes : TVA non applicable, art. 293 B du CGI. Les offres
-        payantes sont souscrites en écrivant à l’Éditeur (formulaire de contact ou <Mail />) ; l’Éditeur
-        active l’offre sur l’espace du Client et lui adresse une facture, payable à réception. Les abonnements
-        sont reconduits tacitement à chaque échéance (mois ou année) tant qu’ils ne sont pas arrêtés. Pour
-        l’abonnement annuel, l’Éditeur rappelle au Client par e-mail, un à trois mois avant l’échéance, la
-        date de reconduction et la possibilité de ne pas la reconduire.
+        payantes sont souscrites par un administrateur de l’Organisation depuis la page « Abonnement » de son
+        espace, et payées par carte bancaire via le prestataire de paiement Stripe ; l’offre est activée dès
+        le paiement accepté et une facture est émise à chaque échéance. À défaut, elles peuvent être
+        souscrites en écrivant à l’Éditeur (<Mail />
+        ), qui active l’offre et adresse une facture payable à réception. Les abonnements sont reconduits
+        tacitement à chaque échéance (mois ou année) tant qu’ils ne sont pas arrêtés ; le moyen de paiement
+        enregistré est alors débité automatiquement. Pour l’abonnement annuel, l’Éditeur rappelle au Client
+        par e-mail, un à trois mois avant l’échéance, la date de reconduction et la possibilité de ne pas la
+        reconduire.
       </p>
       <p>
-        Le Client peut changer d’offre à tout moment. L’Éditeur peut faire évoluer le contenu, les limites et
+        Le Client peut changer d’offre à tout moment ; la différence de prix est calculée au prorata de la
+        période restante. Les Organisations désignées partenaires par l’Éditeur bénéficient gratuitement de
+        l’offre Premium, tant que dure le partenariat. L’Éditeur peut faire évoluer le contenu, les limites et
         les prix des offres ; les Clients abonnés en sont informés par e-mail au moins trente (30) jours à
         l’avance et peuvent arrêter leur abonnement avant l’entrée en vigueur du changement.
       </p>
@@ -93,8 +99,8 @@ export default function CGUPage() {
       <h2>4. Sans engagement : arrêt de l’abonnement et résiliation</h2>
       <p>
         Les abonnements sont <strong>sans engagement de durée</strong>. Un administrateur de l’Organisation
-        peut arrêter l’abonnement à tout moment, en un clic depuis la page « Équipe » de son espace (bouton «
-        Arrêter mon abonnement ») ou en écrivant à <Mail />. Un e-mail confirme l’arrêt.
+        peut arrêter l’abonnement à tout moment, en un clic depuis la page « Abonnement » de son espace
+        (bouton « Arrêter mon abonnement ») ou en écrivant à <Mail />. Un e-mail confirme l’arrêt.
       </p>
       <ul>
         <li>

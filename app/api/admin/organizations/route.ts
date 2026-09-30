@@ -28,6 +28,8 @@ export const GET = route(async () => {
       name: o.name,
       plan: o.plan,
       cancelRequestedAt: o.cancelRequestedAt,
+      partner: o.partner,
+      subscriptionStatus: o.subscriptionStatus,
       status: o.status,
       createdAt: o.createdAt,
       members: o._count.users,

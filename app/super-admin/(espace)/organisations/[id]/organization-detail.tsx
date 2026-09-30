@@ -9,11 +9,27 @@ import { PLANS } from "@/lib/plans";
 import type { Plan } from "@prisma/client";
 
 type Role = "ORG_ADMIN" | "HOST";
+
+const stripeStatus: Record<string, string> = {
+  active: "actif",
+  trialing: "en période d’essai",
+  past_due: "paiement en retard",
+  unpaid: "impayé",
+  canceled: "arrêté",
+  incomplete: "paiement à finaliser",
+  incomplete_expired: "paiement abandonné",
+  paused: "en pause",
+};
 type Detail = {
   id: string;
   name: string;
   plan: Plan;
   cancelRequestedAt: string | null;
+  partner: boolean;
+  partnerSince: string | null;
+  subscriptionStatus: string | null;
+  currentPeriodEnd: string | null;
+  stripeCustomerId: string | null;
   status: "ACTIVE" | "SUSPENDED";
   createdAt: string;
   users: {
@@ -65,6 +81,7 @@ export function OrganizationDetail({ id }: { id: string }) {
           <h1>{org.name}</h1>
           <p className="hint">
             Offre {PLANS[org.plan].label}
+            {org.partner && ` · partenaire (Premium offert depuis le ${date(org.partnerSince!)})`}
             {org.cancelRequestedAt &&
               ` (arrêt demandé le ${new Date(org.cancelRequestedAt).toLocaleDateString("fr-FR")})`}{" "}
             · {org.status === "ACTIVE" ? "active" : "suspendue"} · {org.mediaCount} médias (
@@ -91,6 +108,44 @@ export function OrganizationDetail({ id }: { id: string }) {
           <Eye size={18} /> Voir en tant qu’administrateur
         </button>
       </div>
+      <section className="panel subscription">
+        <h2>Abonnement et partenariat</h2>
+        <p>
+          {org.subscriptionStatus
+            ? `Abonnement Stripe : ${stripeStatus[org.subscriptionStatus] ?? org.subscriptionStatus}${
+                org.currentPeriodEnd ? `, période en cours jusqu’au ${date(org.currentPeriodEnd)}` : ""
+              }.`
+            : "Pas d’abonnement Stripe : l’offre est attribuée à la main."}
+        </p>
+        <p className="hint">
+          {org.partner
+            ? `Partenaire : l’offre ${PLANS.PREMIUM.label} est offerte, quelle que soit l’offre facturée.`
+            : `Le statut partenaire offre l’offre ${PLANS.PREMIUM.label} gratuitement, sans passer par Stripe.`}
+        </p>
+        <button
+          className={`button ${org.partner ? "secondary danger-button" : ""}`}
+          disabled={busy}
+          onClick={() => {
+            if (
+              !confirm(
+                org.partner
+                  ? `Retirer le statut partenaire ? ${org.name} reviendra sur l’offre ${PLANS[org.plan].label}.`
+                  : `Rendre ${org.name} partenaire ? L’offre ${PLANS.PREMIUM.label} lui sera offerte.`,
+              )
+            )
+              return;
+            run(
+              () =>
+                postJson(`/api/admin/organizations/${org.id}`, { partner: !org.partner }, "PATCH").then(
+                  () => {},
+                ),
+              org.partner ? "Statut partenaire retiré." : "Statut partenaire activé : Premium offert.",
+            );
+          }}
+        >
+          {org.partner ? "Retirer le statut partenaire" : "Activer le statut partenaire"}
+        </button>
+      </section>
       {error && (
         <div className="error" role="alert">
           {error}

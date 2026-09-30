@@ -90,7 +90,17 @@
   letter-spacing: 1px;
   text-transform: uppercase;
 }
-.plan-badge.pro {
+.plan-badge.plan-starter {
+  background: var(--orange);
+}
+.plan-badge.plan-pro {
+  background: var(--electric);
+  color: var(--cream);
+}
+.plan-badge.plan-premium {
+  background: var(--acid);
+}
+.plan-badge.partner {
   background: var(--pink);
 }
 .account {
@@ -567,4 +577,33 @@ main:focus {
   border-radius: 999px;
   font: 700 11px monospace;
   white-space: nowrap;
+}
+.partner-toggle.on {
+  background: var(--pink);
+}
+.stripe-flag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: var(--electric);
+  color: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font: 700 11px monospace;
+}
+.plan-choice {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 24px;
+  margin: 30px 0;
+}
+.plan-choice .price-card.wanted {
+  outline: 4px solid var(--pink);
+  outline-offset: 4px;
+}
+.plan-choice .price {
+  font-size: 36px;
+}
+.plan-choice .price small {
+  font-size: 18px;
 }

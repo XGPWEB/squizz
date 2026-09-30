@@ -169,11 +169,16 @@ export default function PolitiqueConfidentialitePage() {
           <strong>Cloudflare, Inc.</strong> (États-Unis) — vérification anti-robot (Turnstile) du formulaire
           de contact, qui reçoit votre adresse IP ; sans cookie publicitaire
         </li>
+        <li>
+          <strong>Stripe Payments Europe, Ltd.</strong> (Irlande) — paiement des abonnements : Stripe reçoit
+          le nom de l’organisation, l’adresse email de l’administrateur et les données de carte bancaire, que
+          SQuizz ne voit ni ne conserve jamais
+        </li>
       </ul>
       <p>
-        Les transferts vers les États-Unis (Resend, Cloudflare) reposent sur le cadre de protection des
-        données UE–États-Unis (Data Privacy Framework) ou, à défaut, sur les clauses contractuelles types de
-        la Commission européenne. Aucune donnée n’est vendue à des tiers.
+        Les transferts vers les États-Unis (Resend, Cloudflare, et Stripe pour certains traitements) reposent
+        sur le cadre de protection des données UE–États-Unis (Data Privacy Framework) ou, à défaut, sur les
+        clauses contractuelles types de la Commission européenne. Aucune donnée n’est vendue à des tiers.
       </p>
       <p>
         <strong>Vidéos YouTube</strong> : lorsqu’un quiz contient une vidéo YouTube, elle est chargée en mode

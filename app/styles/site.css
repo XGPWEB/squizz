@@ -461,8 +461,23 @@ a.card-action {
   border-radius: 22px;
   box-shadow: 7px 7px 0 var(--ink);
 }
-.price-card.featured {
+/* One colour per plan, from the brand palette: white, orange, electric, acid. */
+.price-card.plan-starter {
+  background: var(--orange);
+}
+.price-card.plan-pro {
+  background: var(--electric);
+  color: var(--cream);
+}
+.price-card.plan-pro .hint,
+.price-card.plan-pro .price-note {
+  color: #e4e6ff;
+}
+.price-card.plan-premium {
   background: var(--acid);
+}
+.price-card.plan-starter .hint {
+  color: #3a1d05;
 }
 .price-card .sticker {
   position: absolute;
