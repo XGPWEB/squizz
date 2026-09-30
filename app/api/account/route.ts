@@ -7,6 +7,8 @@ import { getSessionUser } from "@/lib/server/guard";
 import { audit } from "@/lib/server/audit";
 import { fail } from "@/lib/server/http";
 import { mediaPath } from "@/lib/server/media-store";
+import { sendMail } from "@/lib/server/mail";
+import { accountDeletedEmail } from "@/lib/server/email-templates";
 
 /**
  * Deletes one's own account (right to erasure). The last administrator of an organisation with
@@ -43,10 +45,15 @@ export const DELETE = route(async (req) => {
       await audit(user, "organization.self_delete", null, { id: orgId, name: user.organization?.name });
       await prisma.organization.delete({ where: { id: orgId } });
       await Promise.all(media.map((m) => rm(mediaPath(m.id), { force: true })));
+      void sendMail(
+        row.email,
+        accountDeletedEmail({ name: row.name, organization: user.organization?.name }),
+      );
       return { deleted: "organization" };
     }
   }
   await audit(user, "account.self_delete", orgId, { email: user.email });
   await prisma.user.delete({ where: { id: user.id } });
+  void sendMail(row.email, accountDeletedEmail({ name: row.name }));
   return { deleted: "account" };
 });

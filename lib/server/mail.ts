@@ -1,6 +1,7 @@
 import "server-only";
 import nodemailer from "nodemailer";
 import type { Email } from "./email-templates";
+import { CONTACT_EMAIL } from "@/lib/company-info";
 
 /** Sends an email when SMTP is configured; otherwise logs it. Returns whether it was actually sent. */
 export async function sendMail(to: string, { subject, text, html }: Email, replyTo?: string) {
@@ -22,7 +23,8 @@ export async function sendMail(to: string, { subject, text, html }: Email, reply
       subject,
       text,
       html,
-      replyTo,
+      // "Reply to this e-mail" always reaches Pressweb, whatever sending address SMTP uses.
+      replyTo: replyTo ?? CONTACT_EMAIL,
     });
     return true;
   } catch (err) {

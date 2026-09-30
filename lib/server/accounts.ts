@@ -6,7 +6,7 @@ import { planLimits } from "@/lib/plans";
 import { fail } from "./http";
 import { hashToken, newToken } from "./tokens";
 import { appUrl, sendMail } from "./mail";
-import { invitationEmail, resetEmail } from "./email-templates";
+import { invitationEmail, passwordChangedEmail, resetEmail } from "./email-templates";
 
 export const hashPassword = (password: string) => bcrypt.hash(password, 12);
 
@@ -102,9 +102,9 @@ export async function createResetLink(userId: string) {
   return `${appUrl()}/reinitialiser/${token}`;
 }
 
-/** Sets a new password and revokes every open session of that user. */
+/** Sets a new password, revokes every open session of that user and warns them by email. */
 export async function setPassword(userId: string, password: string) {
-  await prisma.user.update({
+  const user = await prisma.user.update({
     where: { id: userId },
     data: {
       passwordHash: await hashPassword(password),
@@ -113,4 +113,5 @@ export async function setPassword(userId: string, password: string) {
       lockedUntil: null,
     },
   });
+  void sendMail(user.email, passwordChangedEmail({ name: user.name }));
 }

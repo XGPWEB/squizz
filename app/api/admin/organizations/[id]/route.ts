@@ -6,6 +6,9 @@ import { requireSuperAdmin } from "@/lib/server/guard";
 import { audit } from "@/lib/server/audit";
 import { fail } from "@/lib/server/http";
 import { mediaPath } from "@/lib/server/media-store";
+import { sendMail } from "@/lib/server/mail";
+import { organizationUpdateEmail } from "@/lib/server/email-templates";
+import { planLimits } from "@/lib/plans";
 
 export const GET = route<{ id: string }>(async (_, { id }) => {
   await requireSuperAdmin();
@@ -62,6 +65,26 @@ export const PATCH = route<{ id: string }>(async (req, { id }) => {
       data: { sessionVersion: { increment: 1 } },
     });
   await audit(admin, "organization.update", id, input);
+  // The organisation's administrators hear about a new plan, a suspension or a reactivation.
+  const plan = input.plan && input.plan !== org.plan ? input.plan : undefined;
+  const status = input.status && input.status !== org.status ? input.status : undefined;
+  if (plan || status) {
+    const admins = await prisma.user.findMany({
+      where: { organizationId: id, role: "ORG_ADMIN", active: true },
+    });
+    const l = planLimits(plan ?? org.plan);
+    for (const a of admins)
+      void sendMail(
+        a.email,
+        organizationUpdateEmail({
+          name: a.name,
+          organization: input.name ?? org.name,
+          plan,
+          status,
+          limits: { players: l.maxPlayersPerGame, quizzes: l.maxQuizzes, members: l.maxMembers },
+        }),
+      );
+  }
 });
 
 /** Irreversible: requires the organisation's exact name as confirmation. */

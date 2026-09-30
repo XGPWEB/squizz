@@ -2,6 +2,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { route, json, nameSchema, passwordSchema } from "@/lib/server/api";
 import { assertEmailFree, findInvitation, hashPassword } from "@/lib/server/accounts";
+import { sendMail } from "@/lib/server/mail";
+import { memberJoinedEmail, memberWelcomeEmail } from "@/lib/server/email-templates";
 
 export const GET = route<{ token: string }>(async (_, { token }) => {
   const inv = await findInvitation(token);
@@ -30,5 +32,15 @@ export const POST = route<{ token: string }>(async (req, { token }) => {
       },
     });
   });
+  const organization = inv.organization.name;
+  void sendMail(inv.email, memberWelcomeEmail({ name: input.name, organization, role: inv.role }));
+  const inviter = inv.invitedById
+    ? await prisma.user.findFirst({ where: { id: inv.invitedById, active: true } })
+    : null;
+  if (inviter)
+    void sendMail(
+      inviter.email,
+      memberJoinedEmail({ inviter: inviter.name, member: input.name, email: inv.email, organization }),
+    );
   return { email: inv.email };
 });

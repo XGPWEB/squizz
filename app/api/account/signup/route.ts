@@ -4,6 +4,8 @@ import { route, json, emailSchema, nameSchema, passwordSchema } from "@/lib/serv
 import { assertEmailFree, hashPassword } from "@/lib/server/accounts";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { fail } from "@/lib/server/http";
+import { sendMail } from "@/lib/server/mail";
+import { welcomeEmail } from "@/lib/server/email-templates";
 
 const schema = z.object({
   organization: nameSchema,
@@ -25,5 +27,6 @@ export const POST = route(async (req) => {
       users: { create: { email: input.email, name: input.name, passwordHash, role: "ORG_ADMIN" } },
     },
   });
+  void sendMail(input.email, welcomeEmail({ name: input.name, organization: input.organization }));
   return { ok: true };
 });
