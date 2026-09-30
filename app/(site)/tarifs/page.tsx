@@ -104,7 +104,7 @@ export default function PricingPage() {
               ) : (
                 <Link
                   className={`button${featured ? "" : " secondary"}`}
-                  href={`/app/abonnement?offre=${key}`}
+                  href={`/connexion?suite=${encodeURIComponent(`/app/abonnement?offre=${key}`)}`}
                 >
                   Choisir {p.label.split(" ")[0]}
                 </Link>
