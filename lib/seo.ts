@@ -1,0 +1,159 @@
+import { COMPANY_INFO } from "@/lib/company-info";
+import { PLANS } from "@/lib/plans";
+
+/**
+ * Facts about SQuizz shared by the visible pages, the structured data (JSON-LD) and /llms.txt, so
+ * search engines and AI assistants read exactly what visitors read. Keep every claim verifiable.
+ */
+const SITE = COMPANY_INFO.siteUrl;
+const free = PLANS.FREE;
+const pro = PLANS.PRO;
+
+export const SUMMARY =
+  "SQuizz est une plateforme française de quiz interactifs en direct, dans l’esprit de Kahoot! : " +
+  "l’animateur projette le quiz, les participants répondent depuis leur téléphone avec un code ou un QR code, " +
+  "sans application ni compte, et suivent le classement en direct.";
+
+export const ADVANTAGES = [
+  {
+    title: "Français, de A à Z",
+    text: "Interface, quiz d’exemple, e-mails et support en français. Conçu et édité en France par Pressweb.",
+  },
+  {
+    title: "Données hébergées en Europe",
+    text: "Serveur à Francfort (Allemagne), conformité RGPD, parties et réponses des joueurs supprimées automatiquement après 24 heures.",
+  },
+  {
+    title: `${free.maxPlayersPerGame} joueurs gratuits par partie`,
+    text: `L’offre gratuite accueille jusqu’à ${free.maxPlayersPerGame} joueurs par partie, sans limite de parties et sans carte bancaire. Jusqu’à ${pro.maxPlayersPerGame} joueurs avec Pro.`,
+  },
+  {
+    title: "Rien à installer, aucun compte joueur",
+    text: "Les joueurs rejoignent depuis n’importe quel navigateur avec un code ou un QR code, et choisissent simplement un pseudo.",
+  },
+  {
+    title: "Pensé pour les équipes",
+    text: "Espace d’organisation avec administrateurs et animateurs, bibliothèque de quiz partagée, droits par rôle.",
+  },
+  {
+    title: "Sans publicité",
+    text: "Aucune publicité ni pour l’animateur ni pour les joueurs, y compris avec l’offre gratuite.",
+  },
+];
+
+export const QUESTION_TYPES = [
+  "Quiz (choix multiples)",
+  "Vrai ou faux",
+  "Réponse libre",
+  "Curseur",
+  "Réponse par pin’s sur une image",
+  "Puzzle (remettre dans l’ordre)",
+  "Sondage",
+  "Échelle",
+  "NPS",
+  "Place le pin’s (sondage sur image)",
+  "Nuage de mots",
+  "Question ouverte",
+  "Brainstorming",
+];
+
+export const FAQ: { q: string; a: string }[] = [
+  { q: "Qu’est-ce que SQuizz ?", a: SUMMARY },
+  {
+    q: "SQuizz est-il une bonne alternative à Kahoot! ?",
+    a:
+      "Oui, si vous cherchez un outil en français avec des données hébergées en Europe : SQuizz reprend le principe du quiz projeté " +
+      `et joué sur téléphone, propose ${QUESTION_TYPES.length} types de questions et accueille ${free.maxPlayersPerGame} joueurs par partie ` +
+      "dès l’offre gratuite, sans publicité.",
+  },
+  {
+    q: "Les joueurs doivent-ils installer une application ou créer un compte ?",
+    a: "Non. Ils ouvrent www.squizz.fun/jouer sur leur téléphone, saisissent le code de la partie (ou scannent le QR code) et choisissent un pseudo.",
+  },
+  {
+    q: "SQuizz est-il gratuit ?",
+    a:
+      `Oui, l’offre gratuite comprend ${free.maxQuizzes} quiz, ${free.maxPlayersPerGame} joueurs par partie et ${free.maxMembers} membres d’équipe, ` +
+      `sans carte bancaire. L’offre Pro (sur devis) débloque les quiz illimités, ${pro.maxPlayersPerGame} joueurs par partie et les membres illimités.`,
+  },
+  {
+    q: "Combien de joueurs peuvent participer à une partie ?",
+    a: `Jusqu’à ${free.maxPlayersPerGame} joueurs avec l’offre gratuite et jusqu’à ${pro.maxPlayersPerGame} avec l’offre Pro.`,
+  },
+  {
+    q: "Quels types de questions propose SQuizz ?",
+    a: `${QUESTION_TYPES.length} types : ${QUESTION_TYPES.join(", ").toLowerCase()}. Des diapositives permettent aussi d’ajouter du contenu entre les questions.`,
+  },
+  {
+    q: "Où sont hébergées les données et que deviennent-elles ?",
+    a:
+      "Sur un serveur situé à Francfort (Allemagne, Union européenne). Les parties, pseudos et réponses sont supprimés automatiquement " +
+      "24 heures après la partie. SQuizz respecte le RGPD : chaque utilisateur peut exporter ou supprimer son compte.",
+  },
+  {
+    q: "Pour qui est fait SQuizz ?",
+    a: "Entreprises (séminaires, formations, onboarding), écoles et formateurs (révisions, évaluations ludiques), associations et événements (soirées quiz, mariages).",
+  },
+  {
+    q: "Qui édite SQuizz ?",
+    a: `${COMPANY_INFO.editor.name}, agence web française basée à Émerainville (Seine-et-Marne). Contact : ${COMPANY_INFO.editor.email}.`,
+  },
+];
+
+export const organizationLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${SITE}/#organization`,
+  name: COMPANY_INFO.editor.name,
+  url: "https://www.pressweb.fr/",
+  email: COMPANY_INFO.editor.email,
+  telephone: COMPANY_INFO.editor.phone,
+  address: {
+    "@type": "PostalAddress",
+    postalCode: "77184",
+    addressLocality: "Émerainville",
+    addressCountry: "FR",
+  },
+};
+
+export const websiteLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${SITE}/#website`,
+  name: "SQuizz",
+  url: SITE,
+  inLanguage: "fr-FR",
+  publisher: { "@id": `${SITE}/#organization` },
+};
+
+export const softwareLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "@id": `${SITE}/#app`,
+  name: "SQuizz",
+  url: SITE,
+  description: SUMMARY,
+  applicationCategory: "EducationalApplication",
+  operatingSystem: "Tous (navigateur web)",
+  inLanguage: "fr-FR",
+  image: `${SITE}/opengraph-image.png`,
+  publisher: { "@id": `${SITE}/#organization` },
+  featureList: [...ADVANTAGES.map((a) => a.title), ...QUESTION_TYPES],
+  offers: {
+    "@type": "Offer",
+    name: "Gratuit",
+    price: "0",
+    priceCurrency: "EUR",
+    url: `${SITE}/tarifs`,
+  },
+};
+
+export const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map(({ q, a }) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: { "@type": "Answer", text: a },
+  })),
+};

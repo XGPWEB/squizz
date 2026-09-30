@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "https://www.squizz.fun"),
   title: { default: "SQuizz — Le quiz qui se joue ensemble", template: "%s · SQuizz" },
   description:
-    "Créez des quiz interactifs, lancez une partie en direct et laissez vos participants jouer depuis leur téléphone. Pour les équipes, les écoles et les événements.",
+    "L’alternative française à Kahoot! : créez des quiz interactifs, lancez une partie en direct et faites jouer vos participants depuis leur téléphone, sans application. Gratuit jusqu’à 20 joueurs, données hébergées en Europe.",
   alternates: { canonical: "/" },
   openGraph: {
     siteName: "SQuizz",

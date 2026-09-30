@@ -746,3 +746,162 @@ a.card-action {
 .password-toggle:hover {
   background: var(--acid);
 }
+
+/* Why SQuizz, FAQ and comparison page */
+.advantages,
+.faq-section {
+  margin-bottom: 60px;
+}
+.advantage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+.advantage-grid article {
+  padding: 22px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: white;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.advantage-grid svg {
+  width: 34px;
+  height: 34px;
+  padding: 6px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--acid);
+}
+.advantage-grid article:nth-child(3n + 2) svg {
+  background: var(--pink);
+}
+.advantage-grid article:nth-child(3n) svg {
+  background: var(--orange);
+}
+.advantage-grid h3 {
+  margin: 12px 0 6px;
+  font-size: 24px;
+}
+.advantage-grid p {
+  line-height: 1.5;
+}
+.faq {
+  display: grid;
+  gap: 12px;
+  max-width: 900px;
+}
+.faq details {
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background: white;
+}
+.faq details[open] {
+  background: var(--cream);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.faq summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  font-weight: 700;
+  font-size: 17px;
+  cursor: pointer;
+  list-style: none;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq summary::after {
+  content: "+";
+  flex-shrink: 0;
+  font:
+    400 24px/1 Anton,
+    sans-serif;
+  transition: transform 0.2s;
+}
+.faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+.faq details p {
+  margin: 0;
+  padding: 0 20px 18px;
+  line-height: 1.6;
+}
+.compare-wrap {
+  overflow-x: auto;
+  margin: 10px 0 14px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: white;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.compare {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.compare th,
+.compare td {
+  padding: 12px 14px;
+  border-bottom: 2px solid #14141322;
+  text-align: left;
+  vertical-align: top;
+}
+.compare thead th {
+  border-bottom: 3px solid var(--ink);
+  font:
+    400 20px/1.1 Anton,
+    sans-serif;
+}
+.compare .us {
+  background: #d2ff3655;
+}
+.compare thead .us {
+  background: var(--acid);
+}
+.compare tbody th {
+  font-weight: 700;
+}
+.compare tr:last-child > * {
+  border-bottom: 0;
+}
+.compare-note {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #55514b;
+}
+.compare-section {
+  margin: 50px 0;
+}
+.compare-section h2 {
+  margin-bottom: 18px;
+}
+.compare-honest {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+.compare-honest article {
+  padding: 22px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: var(--cream);
+}
+.compare-honest article:first-child {
+  background: var(--acid);
+}
+.compare-honest h3 {
+  margin: 0 0 10px;
+  font-size: 24px;
+}
+.compare-honest ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  list-style: disc;
+  line-height: 1.6;
+}

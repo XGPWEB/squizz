@@ -5,6 +5,9 @@ import { TypePreview, LayoutPreview } from "@/components/squizz/type-preview";
 import { JoinBox } from "@/components/site/join-box";
 import { ContactSection } from "@/components/site/contact-section";
 import { Marquee } from "@/components/site/marquee";
+import { JsonLd } from "@/components/site/json-ld";
+import { Advantages, Faq } from "@/components/site/seo-sections";
+import { faqLd, softwareLd } from "@/lib/seo";
 
 const featured = ["quiz", "truefalse", "slider", "puzzle", "wordcloud", "pin"] as const;
 
@@ -174,6 +177,19 @@ export default function HomePage() {
         ]}
       />
 
+      <section className="advantages" aria-labelledby="advantages-title">
+        <div className="section-heading" data-reveal="left">
+          <div>
+            <p className="eyebrow">POURQUOI SQUIZZ ?</p>
+            <h2 id="advantages-title">L’alternative française à Kahoot!</h2>
+          </div>
+          <Link className="hint" href="/alternative-kahoot">
+            Voir la comparaison →
+          </Link>
+        </div>
+        <Advantages />
+      </section>
+
       <section className="cta-band" data-reveal="zoom">
         <div>
           <h2>Votre équipe, vos animateurs, vos quiz.</h2>
@@ -194,9 +210,20 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+      <section className="faq-section" aria-labelledby="faq-title">
+        <div className="section-heading" data-reveal="left">
+          <div>
+            <p className="eyebrow">FAQ</p>
+            <h2 id="faq-title">Questions fréquentes</h2>
+          </div>
+        </div>
+        <Faq />
+      </section>
       <div data-reveal="up">
         <ContactSection />
       </div>
+      <JsonLd data={softwareLd} />
+      <JsonLd data={faqLd} />
     </>
   );
 }

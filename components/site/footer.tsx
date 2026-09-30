@@ -10,6 +10,7 @@ export function Footer() {
       </p>
       <nav aria-label="Liens légaux">
         <Link href="/tarifs">Tarifs</Link>
+        <Link href="/alternative-kahoot">Alternative à Kahoot!</Link>
         <Link href="/mentions-legales">Mentions légales</Link>
         <Link href="/cgu">CGU</Link>
         <Link href="/confidentialite">Confidentialité</Link>
