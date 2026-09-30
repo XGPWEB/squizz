@@ -329,10 +329,6 @@ body {
 .skip-link:focus {
   top: 12px;
 }
-.site-footer a {
-  display: inline-block;
-  padding: 8px 2px;
-}
 .type-grid.showcase article h3 {
   font-family: Anton, sans-serif;
   font-size: 23px;
