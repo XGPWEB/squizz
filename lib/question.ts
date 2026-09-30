@@ -140,6 +140,8 @@ export type Question = {
   body: string;
   layout: SlideLayout;
   media: Media[];
+  /** Optional text shown with the correction to explain the answer. */
+  explanation: string;
 };
 export type AnswerPayload = {
   choices?: number[];
@@ -177,6 +179,7 @@ export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "
     body: "",
     layout,
     media: [],
+    explanation: "",
   };
 }
 export function normalizeQuestion(value: Partial<Question>): Question {
@@ -187,6 +190,7 @@ export function normalizeQuestion(value: Partial<Question>): Question {
     correctAnswers: value.correctAnswers ?? [value.correct ?? 0],
     order: value.order ?? (value.options ?? base.options).map((_, i) => i),
     media: value.media ?? [],
+    explanation: value.explanation ?? "",
   };
 }
 export function youtubeId(raw: string): string | null {
@@ -240,6 +244,10 @@ export function validateQuestion(raw: unknown): Question {
     "Mise en page de diapo invalide.",
   );
   check(Array.isArray(q.media) && q.media.length <= 4, "Ajoutez au maximum quatre médias.");
+  check(
+    typeof q.explanation === "string" && q.explanation.length <= 600,
+    "L’explication de la réponse est limitée à 600 caractères.",
+  );
   for (const m of q.media) {
     check(
       m &&
@@ -359,6 +367,7 @@ export function validateQuestion(raw: unknown): Question {
     unit: q.unit.trim(),
     minLabel: q.minLabel.trim(),
     maxLabel: q.maxLabel.trim(),
+    explanation: q.type === "slide" ? "" : q.explanation.trim(),
   };
 }
 const normalizeText = (s: string) =>
@@ -458,7 +467,7 @@ export function evaluateAnswer(
   return fail();
 }
 export function publicQuestion(q: Question, revealed: boolean, index = 0) {
-  const { correct, correctAnswers, accepted, target, tolerance, pin, order, ...visible } = q;
+  const { correct, correctAnswers, accepted, target, tolerance, pin, order, explanation, ...visible } = q;
   // Games store puzzle options already shuffled, never in the solution order (see shufflePuzzles),
   // so the stored order is shown as is: nothing in it points to the answer.
   void index;
@@ -466,7 +475,7 @@ export function publicQuestion(q: Question, revealed: boolean, index = 0) {
   return {
     ...visible,
     puzzleOrder,
-    ...(revealed ? { correct, correctAnswers, accepted, target, tolerance, pin, order } : {}),
+    ...(revealed ? { correct, correctAnswers, accepted, target, tolerance, pin, order, explanation } : {}),
   };
 }
 export function aggregateAnswers(q: Question, answers: AnswerPayload[]) {

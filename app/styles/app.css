@@ -495,3 +495,35 @@ main:focus {
     padding: 14px 16px 24px;
   }
 }
+
+/* Explanation of the answer, shown with the correction */
+.explanation {
+  position: relative;
+  margin: 12px 0 16px;
+  padding: 16px 18px 16px 20px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 5px 5px 0 var(--electric);
+  animation: stage-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1.3) 0.2s both;
+}
+.explanation b {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--electric);
+  color: #fff;
+  font: 700 12px monospace;
+  letter-spacing: 1.5px;
+  transform: rotate(-2deg);
+}
+.explanation p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+.host-modal-body .explanation p {
+  font-size: clamp(17px, 2.4vh, 22px);
+}

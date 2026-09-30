@@ -361,6 +361,7 @@ export function QuestionResults({
   return (
     <section className="question-results">
       <h3>{isScored(q.type) ? "La correction" : "Les réponses"}</h3>
+      {q.explanation && <Explanation text={q.explanation} />}
       {["quiz", "truefalse"].includes(q.type) && (
         <p className="info-box">
           Bonne{(q.correctAnswers?.length ?? 0) > 1 ? "s" : ""} réponse
@@ -479,5 +480,15 @@ export function QuestionResults({
         </>
       )}
     </section>
+  );
+}
+
+/** The author's explanation of the answer, shown with the correction. */
+export function Explanation({ text }: { text: string }) {
+  return (
+    <aside className="explanation" aria-label="Explication">
+      <b>L’EXPLICATION</b>
+      <p>{text}</p>
+    </aside>
   );
 }

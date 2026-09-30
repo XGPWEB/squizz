@@ -305,6 +305,25 @@ export function QuestionFields({
               </span>
             </label>
           )}
+          {q.type !== "slide" && (
+            <label className="stack explanation-field">
+              Explication de la réponse (facultatif)
+              <textarea
+                value={q.explanation}
+                maxLength={600}
+                rows={3}
+                placeholder={
+                  isScored(q.type)
+                    ? "Ex. Canberra a été choisie en 1908 comme compromis entre Sydney et Melbourne."
+                    : "Ex. Merci ! Vos avis nous aident à préparer la prochaine séance."
+                }
+                onChange={(e) => patch({ explanation: e.target.value })}
+              />
+              <span className="hint">
+                Affichée avec la correction, sur l’écran et sur les téléphones. {q.explanation.length} / 600
+              </span>
+            </label>
+          )}
           <MediaEditor
             key={mediaKey}
             media={q.media}

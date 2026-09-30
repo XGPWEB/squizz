@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, Monitor, Smartphone } from "lucide-react";
 import { publicQuestion, type AnswerPayload, type Question } from "@/lib/question";
-import { QuestionPlay } from "./question-play";
+import { Explanation, QuestionPlay } from "./question-play";
 
 /**
  * Shows a step as the players will see it on their phone, or as it appears on the projected
@@ -67,6 +67,7 @@ export function QuestionPreview({ question, index = 0 }: { question: Question; i
             submitted={answer}
             onSubmit={setAnswer}
           />
+          {revealed && question.explanation.trim() && <Explanation text={question.explanation.trim()} />}
         </div>
       </div>
       <p className="hint center">

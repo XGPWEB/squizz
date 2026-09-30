@@ -3,7 +3,7 @@ from helpers import client, call, signup
 host,_,_=signup()
 stranger,_,_=signup()
 a,b=client(),client()
-quiz={'title':'Test fonctionnel','questions':[{'text':'Deux plus deux ?','options':['3','4','5','6'],'correct':1},{'text':'La planète rouge ?','options':['Mars','Terre','Vénus','Jupiter'],'correct':0}]}
+quiz={'title':'Test fonctionnel','questions':[{'text':'Deux plus deux ?','options':['3','4','5','6'],'correct':1,'explanation':'Deux paires font quatre.'},{'text':'La planète rouge ?','options':['Mars','Terre','Vénus','Jupiter'],'correct':0}]}
 call(host,'save',expect=400,quiz={'title':'Invalide','questions':[]})
 qid=call(host,'save',quiz=quiz)['quiz']['id']
 assert any(q['id']==qid for q in call(host,'list')['quizzes'])
@@ -19,7 +19,7 @@ call(host,'start',code=code)
 call(stranger,'join',expect=400,code=code,name='Late')
 for index,correct in enumerate([1,0]):
     state=call(a,'state',code=code)
-    assert state['index']==index and 'correct' not in state['question']
+    assert state['index']==index and 'correct' not in state['question'] and 'explanation' not in state['question']
     assert state['personal'] is None
     call(host,'next',expect=400,code=code,question=index)
     call(a,'answer',code=code,question=index,choice=correct)
@@ -30,6 +30,7 @@ for index,correct in enumerate([1,0]):
     call(b,'answer',code=code,question=index,choice=3)
     state=call(a,'state',code=code)
     assert state['revealed'] and state['question']['correct']==correct
+    if index==0: assert state['question']['explanation']=='Deux paires font quatre.'
     assert state['myAnswer']['points']>0
     assert state['personal']['outcome']=='correct' and state['personal']['rank']==1
     assert state['personal']['points']>0 and state['personal']['correctCount']==index+1
