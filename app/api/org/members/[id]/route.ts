@@ -9,7 +9,10 @@ import { fail } from "@/lib/server/http";
 const schema = z.object({ role: z.enum(["HOST", "ORG_ADMIN"]).optional(), active: z.boolean().optional() });
 
 async function member(orgId: string, id: string) {
-  const target = await prisma.user.findFirst({ where: { id, organizationId: orgId } });
+  // The platform super-admin is never managed from an organisation's team page.
+  const target = await prisma.user.findFirst({
+    where: { id, organizationId: orgId, role: { not: "SUPER_ADMIN" } },
+  });
   if (!target) fail("Membre introuvable.", 404);
   return target;
 }

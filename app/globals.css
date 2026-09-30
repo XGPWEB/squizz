@@ -3553,3 +3553,8 @@ html.motion .intro .eyebrow.hero-in {
     padding: 10px 12px;
   }
 }
+/* Decorative shapes and tilted bands must never make the page scroll sideways. */
+html,
+body {
+  overflow-x: clip;
+}

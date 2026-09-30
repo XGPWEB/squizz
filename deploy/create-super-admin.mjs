@@ -14,7 +14,8 @@ const prisma = new PrismaClient();
 const unusable = await bcrypt.hash(randomBytes(32).toString("hex"), 12);
 const user = await prisma.user.upsert({
   where: { email },
-  update: { role: "SUPER_ADMIN", active: true },
+  // A super-admin belongs to no organisation, so no organisation admin can ever manage it.
+  update: { role: "SUPER_ADMIN", active: true, organizationId: null },
   create: { email, name: "Super-admin SQuizz", passwordHash: unusable, role: "SUPER_ADMIN" },
 });
 const token = randomBytes(32).toString("base64url");
