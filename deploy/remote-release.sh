@@ -78,7 +78,8 @@ release() {
 
   # 1. Dump the database before touching its schema, so a bad migration can always be undone.
   STAMP=$(date +%Y%m%d-%H%M%S)
-  pg_dump --no-owner "$DATABASE_URL" | gzip > "$BACKUPS/pre-deploy-$STAMP.sql.gz"
+  # pg_dump rejects Prisma's pool parameters (?connection_limit=…): pass the bare address.
+  pg_dump --no-owner "${DATABASE_URL%%\?*}" | gzip > "$BACKUPS/pre-deploy-$STAMP.sql.gz"
   [ "$(zcat "$BACKUPS/pre-deploy-$STAMP.sql.gz" | grep -c '^COPY ')" -gt 0 ] || { echo "Sauvegarde avant migration invalide : arrêt."; exit 1; }
   ls -1t "$BACKUPS"/pre-deploy-*.sql.gz | tail -n +6 | xargs -r rm -f   # keep the last 5
 
