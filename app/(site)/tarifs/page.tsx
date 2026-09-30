@@ -15,7 +15,9 @@ const euros = (n: number) => n.toLocaleString("fr-FR", { maximumFractionDigits: 
 
 function features(p: PlanLimits) {
   return [
-    p.maxQuizzes === null ? "Quiz illimités" : `${p.maxQuizzes} quiz enregistrés`,
+    p.maxQuizzes === null
+      ? "Quiz illimités"
+      : `${p.maxQuizzes} quiz enregistré${p.maxQuizzes > 1 ? "s" : ""}`,
     `Jusqu’à ${p.maxPlayersPerGame} joueurs par partie`,
     p.maxMembers === null
       ? "Animateurs illimités"
