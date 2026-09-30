@@ -69,7 +69,7 @@ export const PLANS: Record<Plan, PlanLimits> = {
     maxMembers: 10,
     mediaBytes: 1 * GB,
     support: "priority",
-    stripe: null,
+    stripe: "prod_VMBsvDgBcwGRS5",
   },
 };
 
