@@ -45,7 +45,7 @@ export const PLANS: Record<Plan, PlanLimits> = {
     maxMembers: 2,
     mediaBytes: 250 * MB,
     support: "email",
-    stripe: "prod_VMBlVgVHl9co7O",
+    stripe: "prod_VMCL9yfrMKdVQM",
   },
   PRO: {
     label: "Pro",
@@ -57,7 +57,7 @@ export const PLANS: Record<Plan, PlanLimits> = {
     maxMembers: 5,
     mediaBytes: 500 * MB,
     support: "priority",
-    stripe: "prod_VMBp6zj9SGvvE6",
+    stripe: "prod_VMCMxkLAkRlY4k",
   },
   PREMIUM: {
     label: "Premium annuel",
@@ -69,7 +69,7 @@ export const PLANS: Record<Plan, PlanLimits> = {
     maxMembers: 10,
     mediaBytes: 1 * GB,
     support: "priority",
-    stripe: "prod_VMBsvDgBcwGRS5",
+    stripe: "prod_VMCPukMyaGNMd6",
   },
 };
 
