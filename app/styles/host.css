@@ -916,3 +916,7 @@
     border-radius: 0;
   }
 }
+/* Drop-down lists open above the pop-up windows (which sit at z-index 70–71). */
+.setting-options {
+  z-index: 90;
+}
