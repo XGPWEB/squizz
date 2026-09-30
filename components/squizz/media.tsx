@@ -1,4 +1,6 @@
 "use client";
+import { MEDIA_LIMITS, formatSize, limitFor } from "@/lib/media-limits";
+import { compressImage } from "@/lib/client/compress-image";
 import { useState, type KeyboardEvent } from "react";
 import { ExternalLink, Upload, X } from "lucide-react";
 import { youtubeId, safeMediaUrl, type Media } from "@/lib/question";
@@ -123,18 +125,38 @@ export function MediaEditor({
   onBusy: (busy: boolean) => void;
   onError: (error: string) => void;
 }) {
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(false),
+    [saved, setSaved] = useState("");
   async function upload(file: File) {
     setUploading(true);
+    setSaved("");
     onBusy(true);
     try {
-      if (file.size > 20 * 1024 * 1024) throw new Error("Fichier trop lourd : 20 Mo maximum.");
+      const image = file.type.startsWith("image/");
+      if (file.size > (image ? MEDIA_LIMITS.source : MEDIA_LIMITS.video))
+        throw new Error(
+          image
+            ? `Photo trop lourde : ${formatSize(MEDIA_LIMITS.source)} maximum.`
+            : `Vidéo trop lourde : ${formatSize(MEDIA_LIMITS.video)} maximum. Pensez à YouTube pour les vidéos longues.`,
+        );
+      const sent = await compressImage(file);
+      if (sent.size > limitFor(sent.type))
+        throw new Error(
+          sent.type === "image/gif"
+            ? `GIF trop lourd : ${formatSize(MEDIA_LIMITS.gif)} maximum.`
+            : `Fichier trop lourd : ${formatSize(limitFor(sent.type))} maximum.`,
+        );
       const form = new FormData();
-      form.append("file", file);
+      form.append("file", sent);
       const r = await fetch("/api/media", { method: "POST", body: form });
       const d = (await r.json().catch(() => ({}))) as { error?: string; media?: Media };
       if (!r.ok || !d.media) throw new Error(d.error ?? "L’import a échoué.");
       onChange([...media, d.media]);
+      setSaved(
+        sent !== file && file.size > sent.size
+          ? `Photo optimisée : ${formatSize(file.size)} → ${formatSize(sent.size)}.`
+          : `Fichier importé (${formatSize(sent.size)}).`,
+      );
     } catch (e) {
       onError((e as Error).message);
     } finally {
@@ -145,7 +167,11 @@ export function MediaEditor({
   return (
     <section className="media-editor">
       <h3>Photos, vidéos & liens</h3>
-      <p className="hint">Images : JPG, PNG, GIF, WebP, 8 Mo. Vidéos : MP4, WebM, 20 Mo. Jusqu’à 4 médias.</p>
+      <p className="hint">
+        Photos JPG, PNG ou WebP : optimisées automatiquement ({MEDIA_LIMITS.maxSide} px,{" "}
+        {formatSize(MEDIA_LIMITS.image)} maximum). GIF : {formatSize(MEDIA_LIMITS.gif)}. Vidéos MP4 ou WebM :{" "}
+        {formatSize(MEDIA_LIMITS.video)}. Jusqu’à 4 médias.
+      </p>
       {media.map((m, i) => (
         <div className="media-edit-row" key={i}>
           <div className="row">
@@ -196,7 +222,7 @@ export function MediaEditor({
       <div className="row">
         <label className={`button secondary small upload-button ${media.length >= 4 ? "disabled" : ""}`}>
           <Upload size={17} />
-          {uploading ? "Import en cours…" : "Importer une photo ou vidéo"}
+          {uploading ? "Optimisation et import…" : "Importer une photo ou vidéo"}
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
@@ -217,6 +243,11 @@ export function MediaEditor({
           Ajouter un lien
         </button>
       </div>
+      {saved && (
+        <p className="hint" role="status">
+          {saved}
+        </p>
+      )}
     </section>
   );
 }

@@ -13,6 +13,9 @@ def upload(data,mime,name,expect=200):
     assert status==expect,(status,out)
     return out
 upload(b'<html>not an image</html>','image/png','fake.png',400)
+# Photos over 2 MB (not optimised by the editor) and GIFs over 5 MB are refused by the server.
+upload(png+b'\0'*(2*1024*1024),'image/png','lourde.png',413)
+upload(b'GIF89a'+b'\0'*(5*1024*1024),'image/gif','lourd.gif',413)
 media=upload(png,'image/png','pixel.png')['media']
 assert host.open(BASE+media['url']).read()==png
 r=host.open(urllib.request.Request(BASE+media['url'],headers={'Range':'bytes=0-7'}))

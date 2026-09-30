@@ -4,6 +4,7 @@ import { planLimits } from "@/lib/plans";
 import { HttpError, assertSameOrigin, fail } from "@/lib/server/http";
 import { requireMember } from "@/lib/server/guard";
 import { mediaDir, mediaPath } from "@/lib/server/media-store";
+import { MEDIA_LIMITS, formatSize, limitFor } from "@/lib/media-limits";
 export const dynamic = "force-dynamic";
 
 const MB = 1024 * 1024;
@@ -26,15 +27,18 @@ export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
     const user = await requireMember();
-    if (Number(req.headers.get("content-length")) > 21 * MB) fail("Fichier trop lourd : 20 Mo maximum.", 413);
+    if (Number(req.headers.get("content-length")) > MEDIA_LIMITS.video + MB)
+      fail(`Fichier trop lourd : ${formatSize(MEDIA_LIMITS.video)} maximum.`, 413);
     const file = (await req.formData()).get("file");
     if (!file || typeof file === "string") fail("Choisissez un fichier image ou vidéo.");
-    if (
-      !types.includes(file.type) ||
-      file.size === 0 ||
-      file.size > (file.type.startsWith("image/") ? 8 : 20) * MB
-    )
-      fail("Formats : JPG, PNG, WebP, GIF (8 Mo maximum), MP4 ou WebM (20 Mo maximum).");
+    if (!types.includes(file.type) || file.size === 0)
+      fail("Formats acceptés : JPG, PNG, WebP, GIF, MP4 ou WebM.");
+    // Photos arrive already optimised by the editor; anything heavier did not go through it.
+    if (file.size > limitFor(file.type))
+      fail(
+        `Fichier trop lourd : ${formatSize(limitFor(file.type))} maximum pour ce format. Les photos importées depuis l’éditeur sont optimisées automatiquement.`,
+        413,
+      );
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (!matchesSignature(file.type, bytes.slice(0, 32)))
       fail("Le contenu du fichier ne correspond pas à son format.");
