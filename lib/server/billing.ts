@@ -190,7 +190,9 @@ export async function handleWebhook(payload: string, signature: string | null) {
     case "customer.subscription.created":
     case "customer.subscription.updated":
     case "customer.subscription.deleted":
-      await syncSubscription(event.data.object);
+      // Re-read the subscription: its current state whatever the delivery order, and in this library's API
+      // version whatever version the webhook endpoint uses.
+      await syncSubscription(await stripe().subscriptions.retrieve(event.data.object.id));
       break;
   }
 }
