@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
+import { COMPANY_INFO } from "@/lib/company-info";
 
-const SITE = process.env.APP_URL || "https://www.squizz.fun";
+// Fixed address: these files are generated at build time, where APP_URL may point to localhost.
+const SITE = COMPANY_INFO.siteUrl;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const page = (path: string, priority: number, changeFrequency: "weekly" | "monthly" | "yearly") => ({
