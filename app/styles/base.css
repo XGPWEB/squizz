@@ -285,6 +285,10 @@ textarea {
   background: var(--pink);
   color: var(--ink);
 }
+.tangerine {
+  background: var(--orange);
+  color: var(--ink);
+}
 .pill {
   position: absolute;
   left: 14px;

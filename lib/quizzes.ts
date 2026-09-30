@@ -1,4 +1,5 @@
 import { newQuestion, type Question } from "./question";
+import { managementFpt } from "./originals/management-fpt";
 export type { Question } from "./question";
 export type Quiz = {
   id: string;
@@ -81,5 +82,14 @@ export const demos: Quiz[] = [
         0,
       ),
     ],
+  },
+  {
+    id: "management-fpt",
+    title: "Manager dans la fonction publique territoriale",
+    tag: "MANAGEMENT PUBLIC",
+    symbol: "✦",
+    color: "tangerine",
+    desc: "Statut, dialogue social, entretien pro : testez votre culture de manager territorial.",
+    questions: managementFpt,
   },
 ];

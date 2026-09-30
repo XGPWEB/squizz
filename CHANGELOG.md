@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.4.1] — 2026-10-01
+
+### Contenu
+- Nouveau SQuizz Original « Manager dans la fonction publique territoriale » : 10 questions de 7 types (choix, vrai/faux, curseur, puzzle, réponse libre, sondage, nuage de mots), corrections sourcées, 6 illustrations aux couleurs de SQuizz.
+
 ## [1.4.0] — 2026-10-01
 
 ### Éditeur
@@ -93,6 +98,7 @@ Première version publique, en ligne sur www.squizz.fun.
 - Purge automatique des données, export et suppression de compte.
 - Déploiement avec sauvegarde de la base et retour automatique en cas d'échec ; sauvegardes quotidiennes vérifiées, contrôle de santé, alertes.
 
+[1.4.1]: https://github.com/XGPWEB/squizz/releases/tag/v1.4.1
 [1.4.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.4.0
 [1.3.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.3.0
 [1.2.2]: https://github.com/XGPWEB/squizz/releases/tag/v1.2.2
