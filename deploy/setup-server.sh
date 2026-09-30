@@ -84,7 +84,8 @@ alerte() {
   exit 1
 }
 URL=$(grep '^DATABASE_URL=' /opt/squizz-secrets.env | cut -d= -f2-)
-URL=${URL%%\?*}   # pg_dump rejects Prisma's pool parameters
+URL=${URL#\"}; URL=${URL%\"}   # the value may be quoted in the secrets file
+URL=${URL%%\?*}               # pg_dump rejects Prisma's pool parameters
 pg_dump --no-owner "$URL" | gzip > "$DIR/squizz-$STAMP.sql.gz" || alerte "pg_dump a échoué"
 # A real check of the content, not just the size: every table must be in the dump.
 [ "$(zcat "$DIR/squizz-$STAMP.sql.gz" | grep -c '^COPY ')" -ge 10 ] || alerte "dump incomplet (tables manquantes)"
