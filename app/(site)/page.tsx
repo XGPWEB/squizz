@@ -84,7 +84,7 @@ export default function HomePage() {
               <Sparkles />
             </span>
             <h3>Préparez</h3>
-            <p>Choisissez parmi 14 types de questions et 6 diapos, ajoutez vos images et vidéos.</p>
+            <p>Choisissez parmi 13 types de questions et 6 diapos, ajoutez vos images et vidéos.</p>
           </li>
           <li>
             <span className="step-icon">
@@ -109,7 +109,7 @@ export default function HomePage() {
             <p className="eyebrow">TESTER, SONDER, PRÉSENTER</p>
             <h2 id="features-title">Tous les formats pour faire participer</h2>
           </div>
-          <span className="hint">{questionTypes.length} types de questions</span>
+          <span className="hint">{questionTypes.length - 1} types de questions</span>
         </div>
         <div className="type-grid showcase" data-stagger="zoom">
           {featured.map((id) => {
@@ -158,7 +158,7 @@ export default function HomePage() {
           <article>
             <PartyPopper />
             <h3>Événements</h3>
-            <p>Soirées quiz, associations, mariages : jusqu’à 100 joueurs par partie.</p>
+            <p>Soirées quiz, associations, mariages : jusqu’à 100 joueurs par partie avec l’offre Pro.</p>
           </article>
         </div>
       </section>
@@ -166,7 +166,7 @@ export default function HomePage() {
       <Marquee
         tone="acid"
         items={[
-          "Jusqu’à 100 joueurs",
+          "Jusqu’à 100 joueurs avec Pro",
           "Sans application",
           "Classement en direct",
           "QR code",

@@ -46,7 +46,7 @@ function layout(opts: {
     </td></tr>
     <tr><td style="padding:22px 6px 0;font:700 11px/1.7 'Courier New',monospace;letter-spacing:1px;color:${C.ink}">
       SQUIZZ · ON JOUE ENSEMBLE. ON BRILLE CHACUN SON TOUR.<br>
-      <span style="font-weight:400;color:${C.muted}">${esc(COMPANY_INFO.editor.name)} · <a href="mailto:${COMPANY_INFO.editor.email}" style="color:${C.muted}">${COMPANY_INFO.editor.email}</a> · <a href="${site}" style="color:${C.muted}">${site.replace(/^https?:\/\//, "")}</a></span>
+      <span style="font-weight:400;color:${C.muted}">${esc(COMPANY_INFO.editor.name)} · <a href="mailto:${COMPANY_INFO.editor.email}" style="color:${C.muted}">${COMPANY_INFO.editor.email}</a> · <a href="${site}" style="color:${C.muted}">${site.replace(/^https?:\/\//, "")}</a> · <a href="${site}/confidentialite" style="color:${C.muted}">Confidentialité</a></span>
     </td></tr>
   </table>
 </td></tr></table>

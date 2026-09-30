@@ -1,9 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Download, Trash2 } from "lucide-react";
 import { postJson } from "@/lib/client/api";
 import { signInOrThrow } from "@/components/auth/auth-form";
+import { signOut } from "next-auth/react";
 import { PasswordInput } from "@/components/site/password-input";
 
 export function AccountForms({
@@ -115,6 +116,44 @@ export function AccountForms({
           </button>
         </form>
       </section>
+      {!viewingAs && (
+        <section className="panel">
+          <h2>Mes données</h2>
+          <p>
+            Téléchargez une copie de votre compte et des quiz que vous avez créés (format JSON). Pour toute
+            autre demande (rectification, opposition…), écrivez à{" "}
+            <a href="mailto:contact@pressweb.fr">contact@pressweb.fr</a>.
+          </p>
+          <a className="button secondary" href="/api/account/export" download>
+            <Download size={18} /> Exporter mes données
+          </a>
+          <h3 style={{ marginTop: 28 }}>Supprimer mon compte</h3>
+          <p className="hint">
+            Définitif. Vos quiz restent à l’organisation. Si vous en êtes le seul membre, l’organisation, ses
+            quiz et ses médias sont supprimés aussi.
+          </p>
+          <form
+            className="invite-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const password = String(new FormData(e.currentTarget).get("password"));
+              if (!confirm("Supprimer définitivement votre compte ? Cette action est irréversible.")) return;
+              run(async () => {
+                await postJson("/api/account", { password }, "DELETE");
+                await signOut({ callbackUrl: "/" });
+              }, "Compte supprimé.");
+            }}
+          >
+            <label>
+              Mot de passe, pour confirmer
+              <PasswordInput name="password" required autoComplete="current-password" />
+            </label>
+            <button className="button secondary danger-button" disabled={busy}>
+              <Trash2 size={18} /> Supprimer mon compte
+            </button>
+          </form>
+        </section>
+      )}
     </>
   );
 }

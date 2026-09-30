@@ -20,10 +20,17 @@ export default function PolitiqueConfidentialitePage() {
         loi Informatique et Libertés (loi n° 78-17 modifiée).
       </p>
 
-      <h2>1. Responsable du traitement</h2>
+      <h2>1. Qui est responsable de vos données</h2>
       <p>
-        Le responsable du traitement est <strong>{c.editor.name}</strong>, éditeur du Service, joignable à
-        l’adresse <Mail />. Délégué à la protection des données (DPO) : {c.dpo.name} ({c.dpo.email}).
+        <strong>{c.editor.name}</strong>, éditeur du Service, est responsable du traitement pour les comptes
+        des organisations, le formulaire de contact et la sécurité du Service. Référent pour les données
+        personnelles : {c.dpo.name}, joignable à <Mail email={c.dpo.email} />.
+      </p>
+      <p>
+        Pour les données des <strong>joueurs</strong> et des <strong>membres invités</strong>, l’organisation
+        qui utilise SQuizz décide de l’usage de ces données (contenu des quiz, contexte de la partie) : elle
+        en est responsable, et {c.editor.name} agit pour son compte en tant que sous-traitant, dans les
+        conditions de l’article 12 des <a href="/cgu#donnees">CGU</a>.
       </p>
 
       <h2>2. Quelles données nous collectons</h2>
@@ -53,7 +60,10 @@ export default function PolitiqueConfidentialitePage() {
       </ul>
       <h3>2.4 Données techniques</h3>
       <ul>
-        <li>Adresse IP (limitation des tentatives de connexion et d’inscription, logs serveur)</li>
+        <li>
+          Adresse IP (limitation des tentatives de connexion, d’inscription et d’entrée dans les parties)
+        </li>
+        <li>Journaux du serveur web (adresse IP, page demandée, date), conservés 14 jours</li>
         <li>Journal des actions sensibles (invitations, changements de rôle, suspensions, suppressions)</li>
       </ul>
 
@@ -67,14 +77,14 @@ export default function PolitiqueConfidentialitePage() {
           <strong>Gestion des droits</strong> : rôles des membres, invitations, limites de l’offre
         </li>
         <li>
-          <strong>Sécurité</strong> : prévention du brute force, verrouillage des comptes, journal d’audit
+          <strong>Sécurité</strong> : limitation des tentatives de connexion, anti-robot, journal d’audit
         </li>
         <li>
           <strong>Support</strong> : réponse aux demandes du Client
         </li>
         <li>
           <strong>Communication</strong> : emails transactionnels (invitation, réinitialisation du mot de
-          passe, changements importants du Service)
+          passe, réponse à vos messages)
         </li>
       </ul>
 
@@ -84,8 +94,12 @@ export default function PolitiqueConfidentialitePage() {
           <strong>Exécution du contrat</strong> (art. 6.1.b RGPD) : pour fournir le Service
         </li>
         <li>
-          <strong>Obligation légale</strong> (art. 6.1.c RGPD) : conservation des factures de l’offre Pro (10
-          ans, Code de commerce)
+          <strong>Obligation légale</strong> (art. 6.1.c RGPD) : conservation des factures de l’offre Pro, si
+          elle est souscrite (10 ans, Code de commerce)
+        </li>
+        <li>
+          <strong>Consentement</strong> (art. 6.1.a RGPD) : traitement de votre message envoyé par le
+          formulaire de contact (case à cocher), que vous pouvez retirer à tout moment par email
         </li>
         <li>
           <strong>Intérêt légitime</strong> (art. 6.1.f RGPD) : sécurité du Service, lutte contre la fraude,
@@ -116,18 +130,25 @@ export default function PolitiqueConfidentialitePage() {
           </tr>
           <tr>
             <td>Messages du formulaire de contact</td>
-            <td>3 ans après le dernier échange</td>
+            <td>3 ans après leur réception</td>
           </tr>
           <tr>
             <td>Journal des actions sensibles</td>
             <td>12 mois</td>
           </tr>
           <tr>
-            <td>Sauvegardes de la base de données</td>
-            <td>7 jours glissants</td>
+            <td>Sauvegardes (base de données et médias)</td>
+            <td>
+              7 jours, plus une copie hebdomadaire gardée 5 semaines : une donnée supprimée peut y subsister
+              jusqu’à 5 semaines
+            </td>
           </tr>
           <tr>
-            <td>Factures (offre Pro)</td>
+            <td>Compteurs anti-abus, invitations et liens de mot de passe expirés</td>
+            <td>Supprimés chaque nuit après expiration</td>
+          </tr>
+          <tr>
+            <td>Factures (offre Pro, si souscrite)</td>
             <td>10 ans (obligation comptable)</td>
           </tr>
         </tbody>
@@ -137,19 +158,28 @@ export default function PolitiqueConfidentialitePage() {
       <p>Nous utilisons les sous-traitants suivants pour fournir le Service :</p>
       <ul>
         <li>
-          <strong>{c.host.name}</strong> — location du serveur (VPS) qui héberge l’application, la base de
-          données, les médias et les sauvegardes
+          <strong>{c.host.name}</strong> — location du serveur (VPS) situé à Francfort (Allemagne, Union
+          européenne), qui héberge l’application, la base de données, les médias et les sauvegardes
         </li>
         <li>
-          <strong>Cloudflare, Inc.</strong> — vérification anti-robot (Turnstile) du formulaire de contact,
-          sans cookie publicitaire
+          <strong>Resend, Inc.</strong> (États-Unis) — envoi des emails transactionnels (invitations, mot de
+          passe oublié) et transmission des messages du formulaire de contact
+        </li>
+        <li>
+          <strong>Cloudflare, Inc.</strong> (États-Unis) — vérification anti-robot (Turnstile) du formulaire
+          de contact, qui reçoit votre adresse IP ; sans cookie publicitaire
         </li>
       </ul>
       <p>
-        Aucune donnée n’est vendue à des tiers à des fins commerciales. Aucun transfert de donnée hors UE/EEE
-        n’est effectué sans garantie appropriée (clauses contractuelles types ou décision d’adéquation de la
-        Commission européenne). Les vidéos YouTube intégrées dans un quiz sont chargées en mode «
-        confidentialité renforcée » (youtube-nocookie.com) uniquement lorsque la question est affichée.
+        Les transferts vers les États-Unis (Resend, Cloudflare) reposent sur le cadre de protection des
+        données UE–États-Unis (Data Privacy Framework) ou, à défaut, sur les clauses contractuelles types de
+        la Commission européenne. Aucune donnée n’est vendue à des tiers.
+      </p>
+      <p>
+        <strong>Vidéos YouTube</strong> : lorsqu’un quiz contient une vidéo YouTube, elle est chargée en mode
+        « confidentialité renforcée » (youtube-nocookie.com) seulement à l’affichage de la question. Google
+        reçoit alors votre adresse IP et peut utiliser le stockage local de votre navigateur, selon sa propre
+        politique de confidentialité.
       </p>
 
       <h2>7. Vos droits</h2>
@@ -182,8 +212,11 @@ export default function PolitiqueConfidentialitePage() {
         </li>
       </ul>
       <p>
-        Pour exercer vos droits, contactez-nous à <Mail email={c.dpo.email} />. Nous nous engageons à répondre
-        sous un délai d’un mois.
+        Depuis <strong>Mon compte</strong>, vous pouvez vous-même exporter vos données (format JSON) et
+        supprimer votre compte. Pour toute autre demande, écrivez-nous à <Mail email={c.dpo.email} /> : nous
+        répondons sous un mois. Les joueurs n’ont pas de compte : leurs données sont effacées automatiquement
+        24 heures après la partie ; pour une demande avant ce délai, adressez-vous à l’organisation qui anime
+        la partie ou à nous.
       </p>
 
       <h2 id="cookies">8. Cookies</h2>
@@ -202,16 +235,32 @@ export default function PolitiqueConfidentialitePage() {
         </thead>
         <tbody>
           <tr>
-            <td>Cookie de session (NextAuth)</td>
+            <td>
+              <code>__Secure-next-auth.session-token</code>
+            </td>
             <td>Maintient la connexion des administrateurs et animateurs</td>
             <td>30 jours</td>
+          </tr>
+          <tr>
+            <td>
+              <code>__Host-next-auth.csrf-token</code>, <code>__Secure-next-auth.callback-url</code>
+            </td>
+            <td>Protection du formulaire de connexion et page de retour après connexion</td>
+            <td>Session du navigateur</td>
           </tr>
           <tr>
             <td>
               <code>sq_identity</code>
             </td>
             <td>Identifiant anonyme du joueur, pour retrouver sa partie après un rafraîchissement</td>
-            <td>12 mois</td>
+            <td>48 heures</td>
+          </tr>
+          <tr>
+            <td>
+              <code>sq_view</code>
+            </td>
+            <td>Réservé au support SQuizz : consultation d’une organisation à sa demande</td>
+            <td>2 heures</td>
           </tr>
         </tbody>
       </table>
@@ -227,10 +276,11 @@ export default function PolitiqueConfidentialitePage() {
       </p>
       <ul>
         <li>Chiffrement HTTPS/TLS sur toutes les communications</li>
-        <li>Hachage bcrypt (12 rounds) des mots de passe, verrouillage après échecs répétés</li>
+        <li>Hachage bcrypt (12 rounds) des mots de passe, limitation des tentatives de connexion</li>
         <li>Isolation entre organisations (chaque organisation ne voit que ses propres données)</li>
         <li>Journal des actions sensibles pour traçabilité</li>
         <li>Séparation production / développement</li>
+        <li>Application exécutée sous un compte système dédié, sans droits d’administration</li>
         <li>Sauvegardes automatiques quotidiennes de la base de données et des médias</li>
       </ul>
 
@@ -244,7 +294,8 @@ export default function PolitiqueConfidentialitePage() {
       <h2>11. Modifications</h2>
       <p>
         Cette politique peut être mise à jour. La date de dernière mise à jour figure en haut de cette page.
-        Les modifications substantielles sont notifiées par email aux administrateurs des organisations.
+        En cas de modification substantielle, nous en informons les administrateurs des organisations par
+        email.
       </p>
 
       <h2>12. Contact</h2>

@@ -52,7 +52,7 @@ npx next build
 STANDALONE=.next/standalone
 cp -R public "$STANDALONE/public"
 mkdir -p "$STANDALONE/.next" && cp -R .next/static "$STANDALONE/.next/static"
-cp deploy/create-super-admin.mjs "$STANDALONE/"
+cp deploy/create-super-admin.mjs deploy/purge.mjs "$STANDALONE/"
 # The script runs outside Next, so it needs bcryptjs as a real package.
 cp -R node_modules/bcryptjs "$STANDALONE/node_modules/"
 # Linux query engine for the VPS (Ubuntu 24.04, OpenSSL 3).

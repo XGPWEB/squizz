@@ -34,7 +34,7 @@ export default function CGUPage() {
       </p>
       <ul>
         <li>
-          La création de quiz, sondages et diapositives (14 types de questions, 6 mises en page de diapo)
+          La création de quiz, sondages et diapositives (13 types de questions et 6 mises en page de diapo)
         </li>
         <li>L’animation de parties en direct, rejointes par les participants via un code ou un QR code</li>
         <li>Le classement en temps réel et le podium final</li>
@@ -68,9 +68,9 @@ export default function CGUPage() {
           de quiz, de membres, de joueurs par partie et volume de médias).
         </li>
         <li>
-          <strong>Pro</strong> : limites étendues, sur devis. Les conditions tarifaires, la durée et les
-          modalités de paiement font l’objet d’un devis accepté par le Client. Les prix sont exprimés en euros
-          ; TVA non applicable, art. 293 B du CGI.
+          <strong>Pro</strong> : limites étendues et support prioritaire, sur devis. Les conditions
+          tarifaires, la durée et les modalités de paiement font l’objet d’un devis accepté par le Client. Les
+          prix sont exprimés en euros ; TVA non applicable, art. 293 B du CGI.
         </li>
       </ul>
       <p>
@@ -135,10 +135,47 @@ export default function CGUPage() {
         générateur du dommage.
       </p>
 
-      <h2>9. Données personnelles</h2>
+      <h2 id="donnees">9. Données personnelles et sous-traitance</h2>
       <p>
-        Les modalités de traitement des données personnelles sont décrites dans la{" "}
-        <Link href="/confidentialite">Politique de confidentialité</Link> accessible séparément.
+        Les traitements réalisés par l’Éditeur pour son propre compte sont décrits dans la{" "}
+        <Link href="/confidentialite">Politique de confidentialité</Link>.
+      </p>
+      <p>
+        Pour les données des joueurs et des membres qu’elle invite, l’Organisation est responsable du
+        traitement et l’Éditeur agit en qualité de <strong>sous-traitant</strong> au sens de l’article 28 du
+        RGPD. À ce titre, l’Éditeur s’engage à :
+      </p>
+      <ul>
+        <li>
+          ne traiter ces données que pour fournir le Service et selon les instructions de l’Organisation ;
+        </li>
+        <li>garantir la confidentialité des personnes habilitées à les traiter ;</li>
+        <li>
+          mettre en œuvre les mesures de sécurité décrites dans la Politique de confidentialité (chiffrement
+          des échanges, isolation entre organisations, sauvegardes, journal des actions sensibles) ;
+        </li>
+        <li>
+          ne recourir qu’aux sous-traitants ultérieurs listés dans la Politique de confidentialité et informer
+          l’Organisation de tout changement, qu’elle peut refuser en résiliant ;
+        </li>
+        <li>
+          aider l’Organisation à répondre aux demandes d’exercice des droits et à ses obligations de sécurité
+          ;
+        </li>
+        <li>
+          notifier toute violation de données dans les meilleurs délais, et au plus tard sous 48 heures ;
+        </li>
+        <li>
+          supprimer ces données à la fin du Service (suppression de l’organisation) et en permettre l’export
+          auparavant ;
+        </li>
+        <li>
+          mettre à disposition les informations nécessaires pour démontrer le respect de ces obligations.
+        </li>
+      </ul>
+      <p>
+        Les données concernées sont les pseudos, réponses et scores des joueurs (conservés 24 heures) et les
+        nom, email et rôle des membres (conservés tant que l’organisation existe).
       </p>
 
       <h2>10. Modifications des CGU/CGV</h2>
@@ -151,18 +188,20 @@ export default function CGUPage() {
       <h2>11. Médiation</h2>
       <p>
         En cas de litige avec l’Éditeur, le Client est invité à contacter en priorité le service client à
-        l’adresse <Mail />. À défaut d’accord amiable, le Client professionnel peut saisir le tribunal
-        compétent (cf. clause attributive de juridiction ci-après).
+        l’adresse <Mail />. À défaut d’accord amiable, le litige est porté devant les juridictions compétentes
+        dans les conditions de l’article 12.
       </p>
 
       <h2>12. Droit applicable et juridiction</h2>
       <p>
         Les présentes CGU/CGV sont régies par le droit français.{" "}
         <strong>
-          Tout litige relatif à leur interprétation ou exécution relève de la compétence exclusive du Tribunal
-          de commerce du siège social de l’Éditeur, même en cas d’appel en garantie ou de pluralité de
-          défendeurs.
-        </strong>
+          Entre professionnels, tout litige relatif à leur interprétation ou exécution relève de la compétence
+          exclusive du Tribunal de commerce du siège social de l’Éditeur, même en cas d’appel en garantie ou
+          de pluralité de défendeurs.
+        </strong>{" "}
+        Si le Client est un consommateur, il peut saisir la juridiction de son lieu de domicile ou celle du
+        lieu d’exécution du Service, conformément au Code de la consommation.
       </p>
 
       <h2>13. Contact</h2>

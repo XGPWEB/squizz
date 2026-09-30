@@ -3603,3 +3603,6 @@ body {
 .player .kick:hover {
   background: var(--pink);
 }
+.button.danger-button:hover:not(:disabled) {
+  background: var(--pink);
+}

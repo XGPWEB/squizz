@@ -118,7 +118,15 @@ if [ ! -f "$STAMP" ] || [ $(( $(date +%s) - $(stat -c %Y "$STAMP") )) -gt 1800 ]
   fi
 fi
 SH
-chmod 700 /opt/scripts/backup-squizz.sh /opt/scripts/check-health-squizz.sh
+# --- Daily purge: retention periods promised by the privacy policy -------------------------------
+cat > /opt/scripts/purge-squizz.sh <<'SH'
+#!/bin/bash
+# SQuizz — daily clean-up (games 24 h, journal 12 months, contact 3 years, unused media…).
+set -uo pipefail
+set -a; . /opt/squizz-secrets.env; set +a
+cd /opt/squizz/app && /opt/node24/bin/node purge.mjs >> /var/log/squizz-purge.log 2>&1
+SH
+chmod 700 /opt/scripts/backup-squizz.sh /opt/scripts/check-health-squizz.sh /opt/scripts/purge-squizz.sh
 
 # --- Off-site copy: read-only rsync module pulled by the NAS, like the other apps -------------------
 # Same access rules as [pj-backups] (NAS range + loopback only, not listable, NAS account).
@@ -160,8 +168,9 @@ cat > /etc/logrotate.d/squizz <<'ROT'
 ROT
 
 # --- Cron (added once, other apps' entries untouched) --------------------------------------------
-( crontab -l 2>/dev/null | grep -v 'backup-squizz.sh\|check-health-squizz.sh'
+( crontab -l 2>/dev/null | grep -v 'backup-squizz.sh\|check-health-squizz.sh\|purge-squizz.sh'
   echo "15 2 * * * /opt/scripts/backup-squizz.sh"
+  echo "30 3 * * * /opt/scripts/purge-squizz.sh"
   echo "*/5 * * * * /opt/scripts/check-health-squizz.sh" ) | crontab -
 
 # --- Prisma CLI for migrations (pinned to the app's version) ---------------------------------------
