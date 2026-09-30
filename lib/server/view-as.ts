@@ -10,10 +10,11 @@ export const VIEW_TTL_SECONDS = 2 * 60 * 60;
 
 type ViewToken = { adminId: string; organizationId: string; exp: number };
 
+/** A key derived for this purpose only, so it is never the same as the session-signing key. */
 function secret() {
   const s = process.env.AUTH_SECRET;
   if (!s) throw new Error("AUTH_SECRET manquant.");
-  return s;
+  return createHmac("sha256", s).update("squizz:view-as:v1").digest();
 }
 const sign = (payload: string) => createHmac("sha256", secret()).update(payload).digest("base64url");
 

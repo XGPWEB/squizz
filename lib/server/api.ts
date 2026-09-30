@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { HttpError } from "./http";
+import { assertJson, assertSameOrigin, HttpError } from "./http";
 
 type Ctx<P> = { params: Promise<P> };
 
@@ -7,6 +7,7 @@ type Ctx<P> = { params: Promise<P> };
 export function route<P = Record<string, never>>(fn: (req: Request, params: P) => Promise<unknown>) {
   return async (req: Request, ctx: Ctx<P>) => {
     try {
+      assertSameOrigin(req);
       const result = await fn(req, (await ctx?.params) as P);
       return result instanceof Response
         ? result
@@ -18,13 +19,14 @@ export function route<P = Record<string, never>>(fn: (req: Request, params: P) =
       console.error(e);
       return Response.json(
         { error: "Une erreur empêche cette action. Réessaie dans un instant." },
-        { status: 503 },
+        { status: 500 },
       );
     }
   };
 }
 
 export async function json<S extends z.ZodTypeAny>(req: Request, schema: S): Promise<z.output<S>> {
+  assertJson(req);
   const body = await req.json().catch(() => {
     throw new HttpError("Requête invalide.");
   });

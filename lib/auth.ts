@@ -6,8 +6,9 @@ import { prisma } from "@/lib/prisma";
 import { clearRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
 
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
-const MAX_FAILED_LOGINS = 5;
-const LOCK_MINUTES = 15;
+/** Compared against when the account does not exist, so the response time never reveals it. */
+const DUMMY_HASH = bcrypt.hashSync("squizz-compte-inexistant", 12);
+const WINDOW = 15 * 60;
 
 if (process.env.NODE_ENV === "production" && !process.env.AUTH_SECRET)
   throw new Error("AUTH_SECRET est obligatoire en production.");
@@ -25,35 +26,29 @@ export const authOptions: NextAuthOptions = {
         if (!parsed.success) return null;
         const email = parsed.data.email.toLowerCase();
         // Throttle before touching bcrypt so brute force costs the attacker, not the server.
-        const ipKey = `login:ip:${clientIp(req?.headers)}`;
-        const emailKey = `login:email:${email}`;
-        if (!(await rateLimit(ipKey, 20, 15 * 60)).allowed)
+        // No account is ever locked outright (that would let anyone lock anyone out): the tight
+        // limit applies to one address guessing one account, looser ones to each side alone.
+        const ip = clientIp(req?.headers);
+        const pairKey = `login:pair:${ip}:${email}`;
+        if (!(await rateLimit(pairKey, 8, WINDOW)).allowed)
+          throw new Error("Trop de tentatives. Réessayez dans 15 minutes.");
+        if (!(await rateLimit(`login:ip:${ip}`, 30, WINDOW)).allowed)
           throw new Error("Trop de tentatives depuis votre adresse. Réessayez plus tard.");
-        if (!(await rateLimit(emailKey, 8, 15 * 60)).allowed)
+        if (!(await rateLimit(`login:email:${email}`, 60, WINDOW)).allowed)
           throw new Error("Trop de tentatives sur ce compte. Réessayez plus tard.");
 
         const user = await prisma.user.findUnique({ where: { email }, include: { organization: true } });
-        if (!user || !user.active) return null;
-        if (user.lockedUntil && user.lockedUntil > new Date()) return null;
-        if (!(await bcrypt.compare(parsed.data.password, user.passwordHash))) {
-          const updated = await prisma.user.update({
-            where: { id: user.id },
-            data: { failedLoginCount: { increment: 1 } },
-          });
-          if (updated.failedLoginCount >= MAX_FAILED_LOGINS)
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { lockedUntil: new Date(Date.now() + LOCK_MINUTES * 60_000), failedLoginCount: 0 },
-            });
-          return null;
-        }
+        const valid = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? DUMMY_HASH);
+        if (!user || !user.active || !valid) return null;
         if (user.organization?.status === "SUSPENDED")
           throw new Error("Votre organisation est suspendue. Contactez le support SQuizz.");
         await prisma.user.update({
           where: { id: user.id },
           data: { failedLoginCount: 0, lockedUntil: null, lastLoginAt: new Date() },
         });
-        await Promise.all([clearRateLimit(ipKey), clearRateLimit(emailKey)]);
+        // Only this address+account counter is reset: a successful login must not refill an
+        // attacker's allowance for other accounts.
+        await clearRateLimit(pairKey);
         return { id: user.id, email: user.email, name: user.name, sessionVersion: user.sessionVersion };
       },
     }),

@@ -46,10 +46,15 @@ const randomInt = () => crypto.getRandomValues(new Uint32Array(1))[0];
 function shufflePuzzles(quiz: Quiz): Quiz {
   const questions = quiz.questions.map((q) => {
     if (q.type !== "puzzle") return q;
-    const shuffled = q.options
-      .map((_, i) => ({ i, key: randomInt() }))
-      .sort((a, b) => a.key - b.key)
-      .map((x) => x.i);
+    // Reshuffle until the stored order differs from the solution: players see this order as is.
+    let shuffled = q.options.map((_, i) => i);
+    for (let attempt = 0; attempt < 20; attempt++) {
+      shuffled = q.options
+        .map((_, i) => ({ i, key: randomInt() }))
+        .sort((a, b) => a.key - b.key)
+        .map((x) => x.i);
+      if (q.order.some((solutionIndex, position) => shuffled.indexOf(solutionIndex) !== position)) break;
+    }
     return {
       ...q,
       options: shuffled.map((i) => q.options[i]),

@@ -459,12 +459,10 @@ export function evaluateAnswer(
 }
 export function publicQuestion(q: Question, revealed: boolean, index = 0) {
   const { correct, correctAnswers, accepted, target, tolerance, pin, order, ...visible } = q;
-  // Stable shuffled indices for players; never send the answer order before reveal.
-  const puzzleOrder =
-    q.type === "puzzle"
-      ? q.options.map((_, i) => i).sort((a, b) => ((a * 7 + index * 3) % 11) - ((b * 7 + index * 3) % 11))
-      : undefined;
-  if (puzzleOrder && puzzleOrder.every((v, i) => v === q.order[i])) puzzleOrder.reverse();
+  // Games store puzzle options already shuffled, never in the solution order (see shufflePuzzles),
+  // so the stored order is shown as is: nothing in it points to the answer.
+  void index;
+  const puzzleOrder = q.type === "puzzle" ? q.options.map((_, i) => i) : undefined;
   return {
     ...visible,
     puzzleOrder,

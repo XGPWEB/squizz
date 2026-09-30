@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { prisma } from "@/lib/prisma";
 import { planLimits } from "@/lib/plans";
-import { HttpError, fail } from "@/lib/server/http";
+import { HttpError, assertSameOrigin, fail } from "@/lib/server/http";
 import { requireMember } from "@/lib/server/guard";
 import { mediaDir, mediaPath } from "@/lib/server/media-store";
 export const dynamic = "force-dynamic";
@@ -24,6 +24,7 @@ function matchesSignature(type: string, b: Uint8Array) {
 export async function POST(req: Request) {
   const headers = { "Cache-Control": "no-store" };
   try {
+    assertSameOrigin(req);
     const user = await requireMember();
     if (Number(req.headers.get("content-length")) > 21 * MB) fail("Fichier trop lourd : 20 Mo maximum.", 413);
     const file = (await req.formData()).get("file");

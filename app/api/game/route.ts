@@ -1,7 +1,7 @@
 import { demos } from "@/lib/quizzes";
 import { identity, identityHeaders, lightIdentity } from "@/lib/identity";
 import { planLimits } from "@/lib/plans";
-import { fail, HttpError, readBody, type Body } from "@/lib/server/http";
+import { assertSameOrigin, fail, HttpError, readBody, type Body } from "@/lib/server/http";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { requireMember } from "@/lib/server/guard";
 import { createQuiz, deleteQuiz, findQuiz, listQuizzes, updateQuiz } from "@/lib/server/quiz-store";
@@ -77,6 +77,7 @@ async function handle(req: Request) {
   const reply = (data: unknown, status = 200) =>
     Response.json(data, { status, headers: identityHeaders(req, who) });
   try {
+    assertSameOrigin(req);
     const body = await readBody(req);
     const action = String(body.action || "list");
     const handler = Object.hasOwn(actions, action) ? actions[action] : null;
@@ -86,7 +87,7 @@ async function handle(req: Request) {
   } catch (error) {
     if (error instanceof HttpError) return reply({ error: error.message }, error.status);
     console.error(error);
-    return reply({ error: "Une erreur empêche cette action. Réessaie dans un instant." }, 503);
+    return reply({ error: "Une erreur empêche cette action. Réessaie dans un instant." }, 500);
   }
 }
 export const GET = handle;

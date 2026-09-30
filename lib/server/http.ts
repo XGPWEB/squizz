@@ -25,6 +25,7 @@ export type Body = Record<string, any>;
 
 export async function readBody(req: Request): Promise<Body> {
   let body: unknown;
+  if (req.method === "POST") assertJson(req);
   try {
     body = req.method === "POST" ? await req.json() : Object.fromEntries(new URL(req.url).searchParams);
   } catch {
@@ -32,4 +33,28 @@ export async function readBody(req: Request): Promise<Body> {
   }
   if (!body || typeof body !== "object" || Array.isArray(body)) fail("Requête invalide.");
   return body as Body;
+}
+
+/**
+ * CSRF defence in depth (on top of SameSite cookies): a request that changes something must come
+ * from this site. Browsers always send Origin on cross-site POSTs; tools and tests send none.
+ */
+export function assertSameOrigin(req: Request) {
+  if (req.method === "GET" || req.method === "HEAD") return;
+  const origin = req.headers.get("origin");
+  if (!origin) return;
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  let originHost = "";
+  try {
+    originHost = new URL(origin).host;
+  } catch {
+    // malformed Origin: rejected below
+  }
+  if (!host || originHost !== host) fail("Requête refusée.", 403);
+}
+
+/** JSON bodies only: an HTML form from another site cannot send application/json. */
+export function assertJson(req: Request) {
+  if (!(req.headers.get("content-type") ?? "").toLowerCase().includes("application/json"))
+    fail("Format de requête non pris en charge.", 415);
 }
