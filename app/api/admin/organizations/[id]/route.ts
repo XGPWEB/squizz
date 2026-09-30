@@ -8,7 +8,7 @@ import { fail } from "@/lib/server/http";
 import { mediaPath } from "@/lib/server/media-store";
 import { sendMail } from "@/lib/server/mail";
 import { organizationUpdateEmail } from "@/lib/server/email-templates";
-import { planLimits } from "@/lib/plans";
+import { PLAN_KEYS } from "@/lib/plans";
 
 export const GET = route<{ id: string }>(async (_, { id }) => {
   await requireSuperAdmin();
@@ -48,7 +48,7 @@ export const GET = route<{ id: string }>(async (_, { id }) => {
 
 const schema = z.object({
   name: nameSchema.optional(),
-  plan: z.enum(["FREE", "PRO"]).optional(),
+  plan: z.enum(PLAN_KEYS).optional(),
   status: z.enum(["ACTIVE", "SUSPENDED"]).optional(),
 });
 
@@ -57,7 +57,9 @@ export const PATCH = route<{ id: string }>(async (req, { id }) => {
   const input = await json(req, schema);
   const org = await prisma.organization.findUnique({ where: { id } });
   if (!org) fail("Organisation introuvable.", 404);
-  await prisma.organization.update({ where: { id }, data: input });
+  // A new plan settles any pending cancellation (usually: the move to FREE at the end of the paid period).
+  const settles = input.plan && input.plan !== org.plan ? { cancelRequestedAt: null } : {};
+  await prisma.organization.update({ where: { id }, data: { ...input, ...settles } });
   // Suspension signs every member out immediately.
   if (input.status === "SUSPENDED")
     await prisma.user.updateMany({
@@ -72,7 +74,6 @@ export const PATCH = route<{ id: string }>(async (req, { id }) => {
     const admins = await prisma.user.findMany({
       where: { organizationId: id, role: "ORG_ADMIN", active: true },
     });
-    const l = planLimits(plan ?? org.plan);
     for (const a of admins)
       void sendMail(
         a.email,
@@ -81,7 +82,6 @@ export const PATCH = route<{ id: string }>(async (req, { id }) => {
           organization: input.name ?? org.name,
           plan,
           status,
-          limits: { players: l.maxPlayersPerGame, quizzes: l.maxQuizzes, members: l.maxMembers },
         }),
       );
   }

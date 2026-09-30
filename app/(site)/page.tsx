@@ -8,6 +8,7 @@ import { Marquee } from "@/components/site/marquee";
 import { JsonLd } from "@/components/site/json-ld";
 import { Advantages, Faq } from "@/components/site/seo-sections";
 import { faqLd, softwareLd } from "@/lib/seo";
+import { PLANS } from "@/lib/plans";
 
 const featured = ["quiz", "truefalse", "slider", "puzzle", "wordcloud", "pin"] as const;
 
@@ -161,7 +162,10 @@ export default function HomePage() {
           <article>
             <PartyPopper />
             <h3>Événements</h3>
-            <p>Soirées quiz, associations, mariages : jusqu’à 100 joueurs par partie avec l’offre Pro.</p>
+            <p>
+              Soirées quiz, associations, mariages : jusqu’à {PLANS.PREMIUM.maxPlayersPerGame} joueurs par
+              partie avec l’offre Premium.
+            </p>
           </article>
         </div>
       </section>

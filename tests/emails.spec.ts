@@ -8,7 +8,6 @@ process.env.APP_URL = "https://www.squizz.fun";
 describe("e-mails SQuizz", async () => {
   const t = await import("@/lib/server/email-templates");
   const evil = "<script>alert(1)</script>";
-  const limits = { players: 100, quizzes: null, members: null };
   const emails = {
     bienvenue: t.welcomeEmail({ name: "Xavier", organization: "Pressweb" }),
     invitation: t.invitationEmail({
@@ -34,7 +33,7 @@ describe("e-mails SQuizz", async () => {
     contact: t.contactEmail({ name: "Léa", email: "lea@example.fr", subject: "Devis", message: "Bonjour !" }),
     "contact-accuse": t.contactAckEmail({ name: "Léa", subject: "Devis", message: "Bonjour, un devis svp." }),
     suppression: t.accountDeletedEmail({ name: "Xavier", organization: "Pressweb" }),
-    "offre-pro": t.organizationUpdateEmail({ name: "Xavier", organization: "Pressweb", plan: "PRO", limits }),
+    "offre-pro": t.organizationUpdateEmail({ name: "Xavier", organization: "Pressweb", plan: "PRO" }),
     suspension: t.organizationUpdateEmail({ name: "Xavier", organization: "Pressweb", status: "SUSPENDED" }),
     reactivation: t.organizationUpdateEmail({ name: "Xavier", organization: "Pressweb", status: "ACTIVE" }),
   };

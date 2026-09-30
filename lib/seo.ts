@@ -1,5 +1,5 @@
 import { COMPANY_INFO } from "@/lib/company-info";
-import { PLANS } from "@/lib/plans";
+import { PLAN_KEYS, PLANS, limitsSummary, priceLabel } from "@/lib/plans";
 
 /**
  * Facts about SQuizz shared by the visible pages, the structured data (JSON-LD) and /llms.txt, so
@@ -7,7 +7,13 @@ import { PLANS } from "@/lib/plans";
  */
 const SITE = COMPANY_INFO.siteUrl;
 const free = PLANS.FREE;
-const pro = PLANS.PRO;
+const top = PLANS.PREMIUM;
+
+/** « Essentiel à 15 € / mois, Pro à 30 € / mois et Premium annuel à 310 € / an ». */
+export const PAID_PLANS_TEXT = PLAN_KEYS.filter((k) => k !== "FREE")
+  .map((k) => `${PLANS[k].label} à ${priceLabel(PLANS[k])}`)
+  .join(", ")
+  .replace(/, ([^,]*)$/, " et $1");
 
 export const SUMMARY =
   "SQuizz est une plateforme française de quiz interactifs en direct, dans l’esprit de Kahoot! : " +
@@ -25,7 +31,7 @@ export const ADVANTAGES = [
   },
   {
     title: `${free.maxPlayersPerGame} joueurs gratuits par partie`,
-    text: `L’offre gratuite accueille jusqu’à ${free.maxPlayersPerGame} joueurs par partie, sans limite de parties et sans carte bancaire. Jusqu’à ${pro.maxPlayersPerGame} joueurs avec Pro.`,
+    text: `L’offre gratuite accueille jusqu’à ${free.maxPlayersPerGame} joueurs par partie, sans limite de parties et sans carte bancaire. Jusqu’à ${top.maxPlayersPerGame} joueurs avec les offres payantes.`,
   },
   {
     title: "Rien à installer, aucun compte joueur",
@@ -74,11 +80,11 @@ export const FAQ: { q: string; a: string }[] = [
     q: "SQuizz est-il gratuit ?",
     a:
       `Oui, l’offre gratuite comprend ${free.maxQuizzes} quiz, ${free.maxPlayersPerGame} joueurs par partie et ${free.maxMembers} membres d’équipe, ` +
-      `sans carte bancaire. L’offre Pro (sur devis) débloque les quiz illimités, ${pro.maxPlayersPerGame} joueurs par partie et les membres illimités.`,
+      `sans carte bancaire. Pour aller plus loin : ${PAID_PLANS_TEXT}, sans engagement et résiliables à tout moment.`,
   },
   {
     q: "Combien de joueurs peuvent participer à une partie ?",
-    a: `Jusqu’à ${free.maxPlayersPerGame} joueurs avec l’offre gratuite et jusqu’à ${pro.maxPlayersPerGame} avec l’offre Pro.`,
+    a: `Jusqu’à ${free.maxPlayersPerGame} joueurs avec l’offre gratuite, ${PLANS.STARTER.maxPlayersPerGame} avec Essentiel, ${PLANS.PRO.maxPlayersPerGame} avec Pro et ${top.maxPlayersPerGame} avec Premium annuel.`,
   },
   {
     q: "Quels types de questions propose SQuizz ?",
@@ -139,13 +145,30 @@ export const softwareLd = {
   image: `${SITE}/opengraph-image.png`,
   publisher: { "@id": `${SITE}/#organization` },
   featureList: [...ADVANTAGES.map((a) => a.title), ...QUESTION_TYPES],
-  offers: {
-    "@type": "Offer",
-    name: "Gratuit",
-    price: "0",
-    priceCurrency: "EUR",
-    url: `${SITE}/tarifs`,
-  },
+  offers: PLAN_KEYS.map((k) => {
+    const p = PLANS[k];
+    return {
+      "@type": "Offer",
+      name: p.label,
+      description: limitsSummary(p),
+      price: String(p.price),
+      priceCurrency: "EUR",
+      url: `${SITE}/tarifs`,
+      ...(p.period && {
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: String(p.price),
+          priceCurrency: "EUR",
+          unitCode: p.period === "an" ? "ANN" : "MON",
+          referenceQuantity: {
+            "@type": "QuantitativeValue",
+            value: 1,
+            unitCode: p.period === "an" ? "ANN" : "MON",
+          },
+        },
+      }),
+    };
+  }),
 };
 
 export const faqLd = {

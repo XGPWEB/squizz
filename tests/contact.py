@@ -3,7 +3,7 @@ import secrets
 from helpers import client, request, signup, login, env, admin_login
 
 tag = secrets.token_hex(4)
-ok = {'name': 'Jean Test', 'email': 'jean@example.test', 'subject': 'Offre Pro / devis',
+ok = {'name': 'Jean Test', 'email': 'jean@example.test', 'subject': 'Souscrire à un abonnement',
       'message': f'Bonjour, je voudrais un devis. {tag}', 'consent': True}
 anon = client()
 request(anon, 'POST', '/api/contact', {**ok, 'consent': False}, expect=400)

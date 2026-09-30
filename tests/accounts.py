@@ -1,5 +1,5 @@
 """Roles, rights and plans: python3 tests/accounts.py (needs the seeded super-admin in .env)."""
-from helpers import client, call, request, signup, invite, login, env, admin_login
+from helpers import client, call, request, signup, invite, login, env, admin_login, set_plan
 
 q = lambda title: {'title': title, 'questions': [{'text': 'Q ?', 'options': ['a', 'b'], 'correct': 0}]}
 
@@ -12,6 +12,16 @@ request(client(), 'POST', '/api/account/signup',
 request(client(), 'POST', '/api/account/signup',
         {'organization': 'X', 'name': 'Y', 'email': 'court@example.test', 'password': 'court'}, expect=400)
 login(client(), admin_email, 'mauvais-mot-de-passe', ok=False)
+
+# --- Gratuit: 3 quiz, 1 membre (l'administrateur), 20 joueurs ------------------------------
+request(admin, 'POST', '/api/org/invitations', {'email': 'seul@example.test', 'role': 'HOST'}, expect=403)
+free, _, _ = signup()
+for i in range(3):
+    call(free, 'save', quiz=q(f'Gratuit {i}'))
+call(free, 'save', expect=403, quiz=q('Quatrième'))
+# Nothing to stop on the free plan.
+request(free, 'POST', '/api/org/subscription', {'action': 'cancel'}, expect=400)
+set_plan('Org droits', 'STARTER')
 
 # --- Invitations and roles ----------------------------------------------------------------
 host, host_email, host_pw = invite(admin, 'HOST', 'Hugo')
@@ -39,18 +49,18 @@ call(outsider, 'create', expect=404, quizId=host_quiz)
 member_ids = [m['id'] for m in org['members']]
 request(outsider, 'PATCH', f'/api/org/members/{member_ids[0]}', {'role': 'HOST'}, expect=404)
 
-# --- Plan limits (Gratuit: 5 quiz, 3 membres, 20 joueurs) ---------------------------------
-for i in range(3):
+# --- Plan limits (Essentiel: 20 quiz, 3 membres, 50 joueurs) ------------------------------
+for i in range(18):
     call(admin, 'save', quiz=q(f'Remplissage {i}'))
-call(admin, 'save', expect=403, quiz=q('Sixième'))
+call(admin, 'save', expect=403, quiz=q('Vingt et unième'))
 invite(admin, 'HOST', 'Troisième')
 request(admin, 'POST', '/api/org/invitations', {'email': 'quatrieme@example.test', 'role': 'HOST'}, expect=403)
 code = call(admin, 'create', quizId='general')['code']
-assert call(admin, 'state', code=code)['maxPlayers'] == 20
-players = [client() for _ in range(21)]
-for i, p in enumerate(players[:20]):
+assert call(admin, 'state', code=code)['maxPlayers'] == 50
+players = [client() for _ in range(51)]
+for i, p in enumerate(players[:50]):
     call(p, 'join', code=code, name=f'Joueur {i}')
-call(players[20], 'join', expect=400, code=code, name='En trop')
+call(players[50], 'join', expect=400, code=code, name='En trop')
 
 # --- The organisation always keeps an admin -----------------------------------------------
 admin_id = next(m['id'] for m in request(admin, 'GET', '/api/org')['members'] if m['role'] == 'ORG_ADMIN')
@@ -67,8 +77,16 @@ login(client(), host_email, host_pw, ok=False)
 root = admin_login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
 orgs = request(root, 'GET', '/api/admin/organizations')['organizations']
 org_id = next(o['id'] for o in orgs if o['name'] == 'Org droits')
+# Stopping the subscription: administrators only, at any time, and a new plan settles it.
+request(admin, 'POST', '/api/org/subscription', {'action': 'cancel'})
+assert request(admin, 'GET', '/api/org')['organization']['cancelRequestedAt']
+assert next(o for o in request(root, 'GET', '/api/admin/organizations')['organizations'] if o['id'] == org_id)['cancelRequestedAt']
+request(admin, 'POST', '/api/org/subscription', {'action': 'resume'})
+assert request(admin, 'GET', '/api/org')['organization']['cancelRequestedAt'] is None
+request(admin, 'POST', '/api/org/subscription', {'action': 'cancel'})
 request(root, 'PATCH', f'/api/admin/organizations/{org_id}', {'plan': 'PRO'})
-call(admin, 'save', quiz=q('Sixième, en Pro'))
+assert request(admin, 'GET', '/api/org')['organization']['cancelRequestedAt'] is None
+call(admin, 'save', quiz=q('Vingt et unième, en Pro'))
 request(admin, 'PATCH', f'/api/org/members/{host_id}', {'active': True})
 assert call(admin, 'state', code=call(admin, 'create', quizId='geo')['code'])['maxPlayers'] == 100
 
@@ -85,7 +103,8 @@ admin = login(client(), admin_email, admin_pw)
 call(admin, 'list')
 
 actions = {e['action'] for e in request(root, 'GET', '/api/admin/audit')['entries']}
-assert {'organization.update', 'member.update', 'user.reset_link', 'invitation.create'} <= actions
+assert {'organization.update', 'member.update', 'user.reset_link', 'invitation.create', 'subscription.cancel',
+        'subscription.resume'} <= actions
 
 request(root, 'DELETE', f'/api/admin/organizations/{org_id}', {'confirm': 'mauvais nom'}, expect=400)
 request(root, 'DELETE', f'/api/admin/organizations/{org_id}', {'confirm': 'Org droits'})
@@ -101,4 +120,4 @@ request(client(), 'POST', '/api/account/forgot', {'email': 'inconnu@example.test
 request(client(), 'POST', '/api/account/forgot', {'email': email})
 
 print('PASS: signup, invitations, roles, cross-organisation isolation, plan limits, last-admin guard, '
-      'deactivation, super-admin plans/suspension/reset/audit/deletion, password change and reset.')
+      'deactivation, subscription stop/resume, super-admin plans/suspension/reset/audit/deletion, password change and reset.')

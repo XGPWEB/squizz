@@ -3,6 +3,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/site/json-ld";
 import { Advantages, Faq } from "@/components/site/seo-sections";
 import { PLANS } from "@/lib/plans";
+import { PAID_PLANS_TEXT } from "@/lib/seo";
 import { COMPANY_INFO } from "@/lib/company-info";
 
 export const metadata: Metadata = {
@@ -13,7 +14,6 @@ export const metadata: Metadata = {
 };
 
 const free = PLANS.FREE;
-const pro = PLANS.PRO;
 const CHECKED = "30 septembre 2026";
 
 /** Competitor facts come from their public pricing and help pages, dated below. Update them together. */
@@ -41,7 +41,7 @@ const rows: { label: string; squizz: string; kahoot: string; menti: string; wooc
   },
   {
     label: "Offres payantes",
-    squizz: `Pro sur devis : ${pro.maxPlayersPerGame} joueurs par partie, quiz et membres illimités`,
+    squizz: `${PAID_PLANS_TEXT}, sans engagement ; jusqu’à ${PLANS.PREMIUM.maxPlayersPerGame} joueurs par partie`,
     kahoot: "Offres entreprise à partir de 19 $ par mois (50 participants), facturées à l’année",
     menti: "Abonnements par présentateur, facturés à l’année",
     wooclap: "À partir de 9,99 € par utilisateur et par mois (entreprise), facturés à l’année",
@@ -156,7 +156,7 @@ export default function AlternativePage() {
             <ul>
               <li>vous animez en français et voulez un outil simple à prendre en main ;</li>
               <li>vos données doivent rester en Europe (RGPD) ;</li>
-              <li>vos parties comptent jusqu’à {pro.maxPlayersPerGame} joueurs ;</li>
+              <li>vos parties comptent jusqu’à {PLANS.PREMIUM.maxPlayersPerGame} joueurs ;</li>
               <li>plusieurs animateurs partagent les mêmes quiz ;</li>
               <li>vous voulez commencer gratuitement avec un vrai groupe, pas seulement un test.</li>
             </ul>

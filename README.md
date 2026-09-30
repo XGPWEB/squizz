@@ -46,14 +46,20 @@ Une organisation garde toujours au moins un administrateur actif. Désactiver un
 
 ## Offres
 
-Définies dans `lib/plans.ts`, attribuées à la main depuis le super-admin (Stripe viendra plus tard).
+Définies dans `lib/plans.ts` (limites, prix, textes), qui alimente la page Tarifs, les CGU, la FAQ, les données structurées et `/llms.txt`. Toutes les offres payantes sont **sans engagement** et résiliables à tout moment. Prix nets, TVA non applicable (art. 293 B du CGI).
 
-| | Gratuit | Pro |
-|---|---|---|
-| Quiz | 5 | illimités |
-| Joueurs par partie | 20 | 100 |
-| Membres | 3 | illimités |
-| Médias | 100 Mo | 5 Go |
+| | Gratuit | Essentiel | Pro | Premium annuel |
+|---|---|---|---|---|
+| Prix | 0 € | 15 € / mois | 30 € / mois | 310 € / an |
+| Quiz | 3 | 20 | illimités | illimités |
+| Joueurs par partie | 20 | 50 | 100 | 200 |
+| Membres (animateurs) | 1 | 3 | 10 | illimités |
+| Médias | 50 Mo | 1 Go | 5 Go | 20 Go |
+| Support | e-mail | e-mail | prioritaire | prioritaire |
+
+**Souscription** (pas encore de paiement en ligne) : « Choisir … » sur `/tarifs` ouvre le formulaire de contact pré-rempli ; Pressweb active l'offre depuis le super-admin et envoie la facture.
+
+**Arrêt** : un administrateur clique sur « Arrêter mon abonnement » (page Équipe). Pressweb et l'administrateur reçoivent un e-mail, l'organisation est marquée « Arrêt demandé » dans le super-admin. À la fin de la période payée (fin du mois, ou de l'année pour Premium), repasser l'organisation sur Gratuit : la demande est alors soldée. Les quiz sont conservés.
 
 ## Stack
 

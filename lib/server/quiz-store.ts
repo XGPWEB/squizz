@@ -1,5 +1,5 @@
 import "server-only";
-import type { Prisma, Quiz as QuizRow } from "@prisma/client";
+import type { Plan, Prisma, Quiz as QuizRow } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { demos, type Quiz } from "@/lib/quizzes";
 import { normalizeQuestion, validateQuestion, type Question } from "@/lib/question";
@@ -10,7 +10,7 @@ import type { SessionUser } from "./guard";
 export const MAX_QUESTIONS = 30;
 export const MAX_TITLE = 90;
 
-type Member = SessionUser & { organizationId: string; organization: { plan: "FREE" | "PRO" } };
+type Member = SessionUser & { organizationId: string; organization: { plan: Plan } };
 
 export function normalizeQuiz(raw: Quiz): Quiz {
   return { ...raw, questions: raw.questions.map(normalizeQuestion) };
@@ -79,7 +79,10 @@ export async function createQuiz(user: Member, draft: unknown): Promise<OrgQuiz>
   if (maxQuizzes !== null) {
     const count = await prisma.quiz.count({ where: { organizationId: user.organizationId } });
     if (count >= maxQuizzes)
-      fail(`Votre offre permet ${maxQuizzes} quiz. Supprimez-en un ou passez à l’offre Pro.`, 403);
+      fail(
+        `Votre offre permet ${maxQuizzes} quiz. Supprimez-en un ou passez à une offre supérieure (page Tarifs).`,
+        403,
+      );
   }
   const row = await prisma.quiz.create({
     data: {

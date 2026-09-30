@@ -548,3 +548,23 @@ main:focus {
 .admin-login .auth-footer a {
   color: var(--cream);
 }
+.panel.subscription {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+.panel.subscription h2,
+.panel.subscription p {
+  margin: 0;
+}
+.cancel-flag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: var(--pink);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font: 700 11px monospace;
+  white-space: nowrap;
+}

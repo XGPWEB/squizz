@@ -94,8 +94,8 @@ export default function PolitiqueConfidentialitePage() {
           <strong>Exécution du contrat</strong> (art. 6.1.b RGPD) : pour fournir le Service
         </li>
         <li>
-          <strong>Obligation légale</strong> (art. 6.1.c RGPD) : conservation des factures de l’offre Pro, si
-          elle est souscrite (10 ans, Code de commerce)
+          <strong>Obligation légale</strong> (art. 6.1.c RGPD) : conservation des factures des offres
+          payantes, si l’une d’elles est souscrite (10 ans, Code de commerce)
         </li>
         <li>
           <strong>Consentement</strong> (art. 6.1.a RGPD) : traitement de votre message envoyé par le
@@ -148,7 +148,7 @@ export default function PolitiqueConfidentialitePage() {
             <td>Supprimés chaque nuit après expiration</td>
           </tr>
           <tr>
-            <td>Factures (offre Pro, si souscrite)</td>
+            <td>Factures (offres payantes, si souscrites)</td>
             <td>10 ans (obligation comptable)</td>
           </tr>
         </tbody>

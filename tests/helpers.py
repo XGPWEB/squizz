@@ -71,6 +71,15 @@ def invite(admin, role='HOST', name='Membre Test'):
     return c, email, password
 
 
+def set_plan(org_name, plan):
+    """Moves an organisation to another plan through the super-admin (the seeded account in .env)."""
+    root = admin_login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
+    orgs = request(root, 'GET', '/api/admin/organizations')['organizations']
+    org_id = next(o['id'] for o in orgs if o['name'] == org_name)
+    request(root, 'PATCH', f'/api/admin/organizations/{org_id}', {'plan': plan})
+    return org_id
+
+
 def env(name):
     """Reads a value from the project's .env (used for the seeded super-admin)."""
     path = os.path.join(os.path.dirname(__file__), '..', '.env')

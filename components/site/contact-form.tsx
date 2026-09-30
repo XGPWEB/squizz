@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
 import Script from "next/script";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Send } from "lucide-react";
 import { CONTACT_SUBJECTS } from "@/lib/contact";
+import { PLANS, priceLabel } from "@/lib/plans";
 import { postJson } from "@/lib/client/api";
 
 type TurnstileOptions = {
@@ -22,18 +23,39 @@ declare global {
   }
 }
 
+function offerFromSearch(search: string) {
+  const key = new URLSearchParams(search).get("offre");
+  if (!key || !Object.hasOwn(PLANS, key)) return null;
+  const plan = PLANS[key as keyof typeof PLANS];
+  return plan.price ? plan : null;
+}
+
 type Status = { kind: "idle" | "sending" | "sent" } | { kind: "error"; message: string };
 
 export function ContactForm({ siteKey, email }: { siteKey: string; email: string }) {
   const [name, setName] = useState(""),
     [from, setFrom] = useState(""),
-    [subject, setSubject] = useState<string>(CONTACT_SUBJECTS[0]),
-    [message, setMessage] = useState(""),
+    [chosenSubject, setSubject] = useState<string | null>(null),
+    [typedMessage, setMessage] = useState<string | null>(null),
     [consent, setConsent] = useState(false),
     [website, setWebsite] = useState(""),
     [token, setToken] = useState(""),
     [widgetFailed, setWidgetFailed] = useState(false),
     [status, setStatus] = useState<Status>({ kind: "idle" });
+  // « Choisir Essentiel » on /tarifs lands here with ?offre=STARTER: the request is filled in until the
+  // visitor changes it. Read from the URL after hydration (the server renders the empty form).
+  const search = useSyncExternalStore(
+    () => () => {},
+    () => window.location.search,
+    () => "",
+  );
+  const offer = offerFromSearch(search);
+  const subject = chosenSubject ?? (offer ? "Souscrire à un abonnement" : CONTACT_SUBJECTS[0]);
+  const message =
+    typedMessage ??
+    (offer
+      ? `Bonjour, je souhaite souscrire à l’offre ${offer.label} (${priceLabel(offer)}, sans engagement). Nom de mon organisation sur SQuizz : `
+      : "");
   const box = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);
 

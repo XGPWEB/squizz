@@ -133,7 +133,10 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
           </p>
         </div>
         {full ? (
-          <span className="info-box">Limite de quiz atteinte : supprimez-en un ou passez à l’offre Pro.</span>
+          <span className="info-box">
+            Limite de quiz atteinte : supprimez-en un ou{" "}
+            <Link href="/tarifs">passez à une offre supérieure</Link>.
+          </span>
         ) : (
           <Link className="button" href="/app/quiz/nouveau">
             <Plus size={18} /> Créer un quiz

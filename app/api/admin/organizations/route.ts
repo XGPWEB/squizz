@@ -5,6 +5,7 @@ import { requireSuperAdmin } from "@/lib/server/guard";
 import { createInvitation } from "@/lib/server/accounts";
 import { audit } from "@/lib/server/audit";
 import { ROOM_TTL } from "@/lib/server/game";
+import { PLAN_KEYS } from "@/lib/plans";
 
 export const GET = route(async () => {
   await requireSuperAdmin();
@@ -26,6 +27,7 @@ export const GET = route(async () => {
       id: o.id,
       name: o.name,
       plan: o.plan,
+      cancelRequestedAt: o.cancelRequestedAt,
       status: o.status,
       createdAt: o.createdAt,
       members: o._count.users,
@@ -36,7 +38,7 @@ export const GET = route(async () => {
   };
 });
 
-const createSchema = z.object({ name: nameSchema, adminEmail: emailSchema, plan: z.enum(["FREE", "PRO"]) });
+const createSchema = z.object({ name: nameSchema, adminEmail: emailSchema, plan: z.enum(PLAN_KEYS) });
 
 /** Creates an organisation and invites its first administrator. */
 export const POST = route(async (req) => {

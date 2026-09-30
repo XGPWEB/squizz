@@ -31,6 +31,9 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 - **Éditeur** : création d’étape dans une fenêtre en 4 temps (type, contenu, réglages, aperçu), aperçu « téléphone » et « écran » de chaque question, explication facultative de la réponse (affichée avec la correction), photos optimisées automatiquement (1600 px, WebP, sans GPS ; limites 2 Mo photo, 5 Mo GIF, 20 Mo vidéo).
 - **Super-admin** déplacé sur **/super-admin**, avec sa **propre connexion** (/super-admin/connexion) et sa propre session : on peut être connecté en même temps au super-admin et à un compte client personnel dans le même navigateur.
 - **Serveur** : mises à jour Ubuntu (24.04.5, noyau 6.8.0-146) et redémarrage ; SQuizz repart seul.
+- **GitHub** : dépôt privé [XGPWEB/squizz](https://github.com/XGPWEB/squizz), README détaillé, versions numérotées (CHANGELOG, étiquettes `v1.0.0`, `v1.1.0`).
+- **Pied de page** réorganisé (logo et slogan, trois colonnes de liens, barre de crédit).
+- **Quatre offres sans engagement** : Gratuit, Essentiel 15 €/mois, Pro 30 €/mois, Premium annuel 310 €/an ; page Tarifs refaite, CGU mises à jour, bouton « Arrêter mon abonnement » dans l’espace client. Souscription par message, activation et facture à la main depuis le super-admin.
 
 ## Reste à faire
 
@@ -38,4 +41,5 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 - **Compte client personnel** à créer avec une autre adresse que contact@pressweb.fr.
 - **NAS** : ajouter la récupération du module rsync `squizz-backups`.
 - **Mentions légales** : adresse postale complète de Pressweb.
-- Facultatif : changer la clé secrète Turnstile ; paiement en ligne (Stripe) plus tard ; revoir les chiffres du comparatif concurrents de temps en temps.
+- **Abonnements** : paiement en ligne (Stripe) à brancher ; d’ici là, activer les offres et repasser en Gratuit à la main, et prévenir les abonnés Premium 1 à 3 mois avant la reconduction (promis dans les CGU).
+- Facultatif : changer la clé secrète Turnstile ; revoir les chiffres du comparatif concurrents de temps en temps.

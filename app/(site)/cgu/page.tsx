@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Legal, Mail } from "@/components/site/legal";
 import { COMPANY_INFO } from "@/lib/company-info";
+import { PLAN_KEYS, PLANS, priceLabel } from "@/lib/plans";
 
 export const metadata: Metadata = {
   title: "Conditions générales d’utilisation et de vente",
@@ -58,32 +59,66 @@ export default function CGUPage() {
         d’identifiants imputable au Client.
       </p>
 
-      <h2>3. Offres</h2>
+      <h2>3. Offres et prix</h2>
       <p>
-        Le Service est proposé selon deux formules décrites sur la page <Link href="/tarifs">Tarifs</Link> :
+        Le Service est proposé selon quatre formules, dont le contenu et les limites (nombre de quiz, de
+        membres, de joueurs par partie, volume de médias) sont décrits sur la page{" "}
+        <Link href="/tarifs">Tarifs</Link> :
+      </p>
+      <ul>
+        {PLAN_KEYS.map((k) => (
+          <li key={k}>
+            <strong>{PLANS[k].label}</strong> :{" "}
+            {PLANS[k].price === 0
+              ? "gratuit, sans moyen de paiement"
+              : `${priceLabel(PLANS[k])}, abonnement ${PLANS[k].period === "an" ? "annuel payable d’avance" : "mensuel"}`}
+            .
+          </li>
+        ))}
+      </ul>
+      <p>
+        Les prix sont exprimés en euros, nets de taxes : TVA non applicable, art. 293 B du CGI. Les offres
+        payantes sont souscrites en écrivant à l’Éditeur (formulaire de contact ou <Mail />) ; l’Éditeur
+        active l’offre sur l’espace du Client et lui adresse une facture, payable à réception. Les abonnements
+        sont reconduits tacitement à chaque échéance (mois ou année) tant qu’ils ne sont pas arrêtés. Pour
+        l’abonnement annuel, l’Éditeur rappelle au Client par e-mail, un à trois mois avant l’échéance, la
+        date de reconduction et la possibilité de ne pas la reconduire.
+      </p>
+      <p>
+        Le Client peut changer d’offre à tout moment. L’Éditeur peut faire évoluer le contenu, les limites et
+        les prix des offres ; les Clients abonnés en sont informés par e-mail au moins trente (30) jours à
+        l’avance et peuvent arrêter leur abonnement avant l’entrée en vigueur du changement.
+      </p>
+
+      <h2>4. Sans engagement : arrêt de l’abonnement et résiliation</h2>
+      <p>
+        Les abonnements sont <strong>sans engagement de durée</strong>. Un administrateur de l’Organisation
+        peut arrêter l’abonnement à tout moment, en un clic depuis la page « Équipe » de son espace (bouton «
+        Arrêter mon abonnement ») ou en écrivant à <Mail />. Un e-mail confirme l’arrêt.
       </p>
       <ul>
         <li>
-          <strong>Gratuit</strong> : sans engagement ni moyen de paiement, dans les limites indiquées (nombre
-          de quiz, de membres, de joueurs par partie et volume de médias).
+          <strong>Abonnements mensuels</strong> (Essentiel, Pro) : l’arrêt prend effet à la fin du mois en
+          cours ; aucun nouveau paiement n’est demandé.
         </li>
         <li>
-          <strong>Pro</strong> : limites étendues et support prioritaire, sur devis. Les conditions
-          tarifaires, la durée et les modalités de paiement font l’objet d’un devis accepté par le Client. Les
-          prix sont exprimés en euros ; TVA non applicable, art. 293 B du CGI.
+          <strong>Abonnement annuel</strong> (Premium) : l’abonnement n’est pas reconduit et reste actif
+          jusqu’à la fin de l’année déjà payée.
         </li>
       </ul>
       <p>
-        L’Éditeur peut faire évoluer le contenu et les limites des offres ; les Clients Pro en sont informés
-        par email au moins trente (30) jours à l’avance.
+        La période en cours déjà payée n’est pas remboursée prorata temporis, sauf exercice du droit de
+        rétractation ci-dessous. À la fin de l’abonnement, l’Organisation repasse sur l’offre Gratuit : ses
+        quiz et médias sont conservés, mais la création de nouveaux contenus est soumise aux limites de cette
+        offre. Le Client peut aussi cesser d’utiliser le Service et demander la suppression de son
+        Organisation à tout moment.
       </p>
-
-      <h2>4. Résiliation</h2>
       <p>
-        Le Client peut cesser d’utiliser le Service à tout moment et demander la suppression de son
-        Organisation en écrivant à <Mail />. Pour l’offre Pro, la résiliation prend effet à la fin de la
-        période en cours déjà facturée ; aucun remboursement prorata temporis n’est effectué pour la période
-        restante.
+        <strong>Droit de rétractation.</strong> Le Client consommateur dispose d’un délai de quatorze (14)
+        jours à compter de la souscription pour se rétracter, sans motif, en écrivant à <Mail /> (art. L221-18
+        du Code de la consommation). S’il a demandé que l’offre soit activée avant la fin de ce délai, il paie
+        le montant correspondant au service fourni jusqu’à sa rétractation ; le reste lui est remboursé sous
+        quatorze (14) jours.
       </p>
       <p>
         L’Éditeur se réserve le droit de suspendre ou de résilier le compte d’une Organisation en cas de

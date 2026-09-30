@@ -1,5 +1,5 @@
 import type { SessionUser } from "@/lib/server/guard";
-import { PLANS } from "@/lib/plans";
+import { PLANS, isPaid } from "@/lib/plans";
 import { Brand } from "./brand";
 import { AppBar } from "./app-bar";
 import { ViewAsBanner } from "./view-as-banner";
@@ -22,7 +22,7 @@ export function AppHeader({ user, area }: { user: SessionUser; area: "app" | "ad
           email={user.email}
           roleLabel={user.viewingAs ? "Super-admin · vue administrateur" : roleLabel[user.realRole]}
           organization={org?.name ?? (area === "admin" ? "Super-admin" : null)}
-          plan={org ? { label: PLANS[org.plan].label, pro: org.plan === "PRO" } : null}
+          plan={org ? { label: PLANS[org.plan].label, pro: isPaid(org.plan) } : null}
           canTeam={user.role !== "HOST"}
           isSuperAdmin={user.realRole === "SUPER_ADMIN"}
           viewingAs={user.viewingAs}

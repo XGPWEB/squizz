@@ -26,7 +26,7 @@ export async function assertSeatAvailable(organizationId: string) {
   ]);
   if (members + pending >= maxMembers)
     fail(
-      `Votre offre permet ${maxMembers} membres. Passez à l’offre Pro pour inviter plus d’animateurs.`,
+      `Votre offre permet ${maxMembers} membre${maxMembers > 1 ? "s" : ""}. Passez à une offre supérieure (page Tarifs) pour inviter plus d’animateurs.`,
       403,
     );
 }

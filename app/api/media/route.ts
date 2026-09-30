@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { prisma } from "@/lib/prisma";
-import { planLimits } from "@/lib/plans";
+import { planLimits, sizeLabel } from "@/lib/plans";
 import { HttpError, assertSameOrigin, fail } from "@/lib/server/http";
 import { requireMember } from "@/lib/server/guard";
 import { mediaDir, mediaPath } from "@/lib/server/media-store";
@@ -53,7 +53,10 @@ export async function POST(req: Request) {
     if (recent >= UPLOADS_PER_HOUR) fail("Trop d’imports en peu de temps. Réessayez dans une heure.", 429);
     const quota = planLimits(user.organization.plan).mediaBytes;
     if ((usage._sum.size ?? 0) + file.size > quota)
-      fail(`Votre organisation a atteint sa limite de ${Math.round(quota / MB)} Mo de médias.`, 429);
+      fail(
+        `Votre organisation a atteint sa limite de ${sizeLabel(quota)} de médias. Passez à une offre supérieure (page Tarifs) pour en ajouter.`,
+        429,
+      );
 
     const id = crypto.randomUUID();
     await mkdir(mediaDir(), { recursive: true });

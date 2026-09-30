@@ -1,5 +1,7 @@
 import "server-only";
 import { COMPANY_INFO } from "@/lib/company-info";
+import type { Plan } from "@prisma/client";
+import { PLANS, isPaid, limitsSummary, priceLabel } from "@/lib/plans";
 import { appUrl } from "./mail";
 
 /**
@@ -285,9 +287,8 @@ export function accountDeletedEmail(o: { name: string; organization?: string }):
 export function organizationUpdateEmail(o: {
   name: string;
   organization: string;
-  plan?: "FREE" | "PRO";
+  plan?: Plan;
   status?: "ACTIVE" | "SUSPENDED";
-  limits?: { players: number; quizzes: number | null; members: number | null };
 }): Email {
   const site = appUrl();
   if (o.status === "SUSPENDED")
@@ -316,21 +317,72 @@ export function organizationUpdateEmail(o: {
         cta: { label: "Me connecter", url: `${site}/connexion` },
       }),
     };
-  const pro = o.plan === "PRO";
-  const l = o.limits!;
-  const detail = `${l.quizzes === null ? "quiz illimités" : `${l.quizzes} quiz`}, ${l.players} joueurs par partie, ${l.members === null ? "membres illimités" : `${l.members} membres`}`;
+  const paid = isPaid(o.plan!);
+  const p = PLANS[o.plan!];
+  const detail = limitsSummary(p);
+  const offer = paid ? `${p.label} (${priceLabel(p)}, sans engagement)` : p.label;
   return {
-    subject: pro
-      ? `L’offre Pro est activée pour ${o.organization}`
+    subject: paid
+      ? `L’offre ${p.label} est activée pour ${o.organization}`
       : `Votre espace ${o.organization} passe à l’offre Gratuit`,
-    text: `Bonjour ${o.name},\n\nL’espace « ${o.organization} » est maintenant sur l’offre ${pro ? "Pro" : "Gratuit"} : ${detail}.\n\n${site}/app`,
+    text: `Bonjour ${o.name},\n\nL’espace « ${o.organization} » est maintenant sur l’offre ${offer} : ${detail}.\n\n${site}/app`,
     html: layout({
-      preheader: `Votre espace est maintenant sur l’offre ${pro ? "Pro" : "Gratuit"}.`,
+      preheader: `Votre espace est maintenant sur l’offre ${p.label}.`,
       eyebrow: "Votre offre",
-      title: pro ? "Bienvenue en Pro !" : "Offre Gratuit.",
-      highlight: pro ? "Pro" : "Gratuit.",
-      body: `<p style="margin:0 0 12px">Bonjour ${esc(o.name)},</p><p style="margin:0">L’espace <strong>${esc(o.organization)}</strong> est maintenant sur l’offre <strong>${pro ? "Pro" : "Gratuit"}</strong> : ${detail}.</p>`,
+      title: paid ? `Bienvenue en ${p.label} !` : "Offre Gratuit.",
+      highlight: paid ? p.label : "Gratuit.",
+      body: `<p style="margin:0 0 12px">Bonjour ${esc(o.name)},</p><p style="margin:0">L’espace <strong>${esc(o.organization)}</strong> est maintenant sur l’offre <strong>${esc(offer)}</strong> : ${detail}.</p>`,
       cta: { label: "Ouvrir mon espace", url: `${site}/app` },
+    }),
+  };
+}
+
+/** Confirmation sent to the administrator who stops a paid plan. */
+export function subscriptionCancelEmail(o: { name: string; organization: string; plan: Plan }): Email {
+  const p = PLANS[o.plan];
+  const until =
+    p.period === "an"
+      ? "L’abonnement ne sera pas renouvelé : il reste actif jusqu’à la fin de l’année déjà payée."
+      : "L’offre reste active jusqu’à la fin du mois en cours, sans nouveau paiement.";
+  const site = appUrl();
+  return {
+    subject: `Arrêt de votre abonnement ${p.label} — ${o.organization}`,
+    text: `Bonjour ${o.name},\n\nNous avons bien enregistré l’arrêt de l’abonnement ${p.label} de « ${o.organization} » le ${when()}. ${until} Votre espace passera ensuite sur l’offre Gratuit : vos quiz sont conservés.\n\nVous avez changé d’avis ? ${site}/app/equipe`,
+    html: layout({
+      preheader: `L’arrêt de votre abonnement ${p.label} est enregistré.`,
+      eyebrow: "Votre abonnement",
+      title: "Arrêt enregistré.",
+      highlight: "enregistré.",
+      body: `<p style="margin:0 0 12px">Bonjour ${esc(o.name)},</p><p style="margin:0 0 12px">Nous avons bien enregistré l’arrêt de l’abonnement <strong>${esc(p.label)}</strong> de <strong>${esc(o.organization)}</strong> le ${when()}.</p><p style="margin:0">${until} Votre espace passera ensuite sur l’offre Gratuit : vos quiz sont conservés.</p>`,
+      cta: {
+        label: "Reprendre mon abonnement",
+        url: `${site}/app/equipe`,
+        intro: "Vous avez changé d’avis ?",
+      },
+    }),
+  };
+}
+
+/** Tells Pressweb that an organisation stopped (or resumed) its paid plan. */
+export function subscriptionCancelNoticeEmail(o: {
+  organization: string;
+  organizationId: string;
+  plan: Plan;
+  by: string;
+  resumed?: boolean;
+}): Email {
+  const p = PLANS[o.plan];
+  const what = o.resumed ? "reprend son abonnement" : "arrête son abonnement";
+  const site = appUrl();
+  return {
+    subject: `[SQuizz] ${o.organization} ${what} ${p.label}`,
+    text: `${o.organization} ${what} ${p.label} (${priceLabel(p)}), demande de ${o.by} le ${when()}.\n\n${o.resumed ? "Rien à faire : l’offre continue." : "À faire : repasser l’organisation sur l’offre Gratuit à la fin de la période payée et arrêter la facturation."}\n\n${site}/super-admin/organisations/${o.organizationId}`,
+    html: layout({
+      preheader: `${o.organization} ${what} ${p.label}.`,
+      eyebrow: "Abonnement",
+      title: o.resumed ? "Abonnement repris." : "Arrêt d’abonnement.",
+      body: `<p style="margin:0 0 12px"><strong>${esc(o.organization)}</strong> ${what} <strong>${esc(p.label)}</strong> (${esc(priceLabel(p))}), demande de ${esc(o.by)} le ${when()}.</p><p style="margin:0">${o.resumed ? "Rien à faire : l’offre continue." : "À faire : repasser l’organisation sur l’offre Gratuit à la fin de la période payée et arrêter la facturation."}</p>`,
+      cta: { label: "Voir l’organisation", url: `${site}/super-admin/organisations/${o.organizationId}` },
     }),
   };
 }

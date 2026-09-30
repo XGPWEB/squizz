@@ -4,11 +4,14 @@ import { useMemo, useState } from "react";
 import { Check, Copy, Plus } from "lucide-react";
 import { postJson } from "@/lib/client/api";
 import { useResource } from "@/lib/client/use-resource";
+import { PLAN_KEYS, PLANS } from "@/lib/plans";
+import type { Plan } from "@prisma/client";
 
 type Org = {
   id: string;
   name: string;
-  plan: "FREE" | "PRO";
+  plan: Plan;
+  cancelRequestedAt: string | null;
   status: "ACTIVE" | "SUSPENDED";
   createdAt: string;
   members: number;
@@ -106,8 +109,11 @@ export function Organizations() {
           <label>
             Offre
             <select name="plan" defaultValue="FREE">
-              <option value="FREE">Gratuit</option>
-              <option value="PRO">Pro</option>
+              {PLAN_KEYS.map((k) => (
+                <option key={k} value={k}>
+                  {PLANS[k].label}
+                </option>
+              ))}
             </select>
           </label>
           <button className="button" disabled={busy}>
@@ -165,9 +171,20 @@ export function Organizations() {
                         patch(o.id, { plan: e.target.value }, `Offre de ${o.name} mise à jour.`)
                       }
                     >
-                      <option value="FREE">Gratuit</option>
-                      <option value="PRO">Pro</option>
+                      {PLAN_KEYS.map((k) => (
+                        <option key={k} value={k}>
+                          {PLANS[k].label}
+                        </option>
+                      ))}
                     </select>
+                    {o.cancelRequestedAt && (
+                      <span
+                        className="cancel-flag"
+                        title={`Arrêt demandé le ${new Date(o.cancelRequestedAt).toLocaleDateString("fr-FR")}`}
+                      >
+                        Arrêt demandé
+                      </span>
+                    )}
                   </td>
                   <td>
                     <button

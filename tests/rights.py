@@ -1,9 +1,10 @@
 """Self-service data rights: python3 tests/rights.py (needs the seeded super-admin in .env)."""
 import json, secrets
-from helpers import BASE, client, call, request, signup, invite, login, env, admin_login
+from helpers import BASE, client, call, request, signup, invite, login, env, admin_login, set_plan
 
 tag = secrets.token_hex(3)
 admin, admin_email, admin_pw = signup(f'Org droits RGPD {tag}')
+set_plan(f'Org droits RGPD {tag}', 'STARTER')  # Gratuit n'a qu'un membre
 host, host_email, host_pw = invite(admin, 'HOST', 'Hôte')
 call(host, 'save', quiz={'title': f'Quiz export {tag}', 'questions': [{'text': 'Q ?', 'options': ['a', 'b'], 'correct': 0}]})
 

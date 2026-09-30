@@ -5,12 +5,15 @@ import { useState } from "react";
 import { ArrowLeft, Check, Copy, Eye, KeyRound } from "lucide-react";
 import { postJson } from "@/lib/client/api";
 import { useResource } from "@/lib/client/use-resource";
+import { PLANS } from "@/lib/plans";
+import type { Plan } from "@prisma/client";
 
 type Role = "ORG_ADMIN" | "HOST";
 type Detail = {
   id: string;
   name: string;
-  plan: "FREE" | "PRO";
+  plan: Plan;
+  cancelRequestedAt: string | null;
   status: "ACTIVE" | "SUSPENDED";
   createdAt: string;
   users: {
@@ -61,8 +64,10 @@ export function OrganizationDetail({ id }: { id: string }) {
           <p className="eyebrow">ORGANISATION · CRÉÉE LE {date(org.createdAt)}</p>
           <h1>{org.name}</h1>
           <p className="hint">
-            Offre {org.plan === "PRO" ? "Pro" : "Gratuite"} ·{" "}
-            {org.status === "ACTIVE" ? "active" : "suspendue"} · {org.mediaCount} médias (
+            Offre {PLANS[org.plan].label}
+            {org.cancelRequestedAt &&
+              ` (arrêt demandé le ${new Date(org.cancelRequestedAt).toLocaleDateString("fr-FR")})`}{" "}
+            · {org.status === "ACTIVE" ? "active" : "suspendue"} · {org.mediaCount} médias (
             {Math.round(org.mediaBytes / 1024 / 1024)} Mo)
           </p>
         </div>

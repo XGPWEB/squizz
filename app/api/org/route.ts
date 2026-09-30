@@ -39,6 +39,7 @@ export const GET = route(async () => {
       name: user.organization.name,
       plan: user.organization.plan,
       limits: planLimits(user.organization.plan),
+      cancelRequestedAt: user.organization.cancelRequestedAt,
     },
     me: { id: user.id, role: user.role },
     members,

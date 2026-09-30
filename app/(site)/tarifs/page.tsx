@@ -1,80 +1,114 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { PLANS } from "@/lib/plans";
+import { Faq } from "@/components/site/seo-sections";
+import { PLAN_KEYS, PLANS, sizeLabel, type PlanLimits } from "@/lib/plans";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/tarifs" },
   title: "Tarifs",
-  description: "Commencez gratuitement avec SQuizz, passez à l’offre Pro quand votre équipe grandit.",
+  description:
+    "SQuizz gratuit, Essentiel à 15 € / mois, Pro à 30 € / mois ou Premium à 310 € / an : sans engagement, résiliable à tout moment.",
 };
 
-const MB = 1024 * 1024;
-const size = (bytes: number) => (bytes >= 1024 * MB ? `${bytes / (1024 * MB)} Go` : `${bytes / MB} Mo`);
+const euros = (n: number) => n.toLocaleString("fr-FR", { maximumFractionDigits: 2 });
+
+function features(p: PlanLimits) {
+  return [
+    p.maxQuizzes === null ? "Quiz illimités" : `${p.maxQuizzes} quiz enregistrés`,
+    `Jusqu’à ${p.maxPlayersPerGame} joueurs par partie`,
+    p.maxMembers === null
+      ? "Animateurs illimités"
+      : p.maxMembers === 1
+        ? "1 animateur"
+        : `${p.maxMembers} animateurs dans l’équipe`,
+    `${sizeLabel(p.mediaBytes)} de médias`,
+    "Tous les types de questions et de diapos",
+    p.prioritySupport ? "Support prioritaire" : "Support par e-mail",
+  ];
+}
+
+const PRICING_FAQ = [
+  {
+    q: "Suis-je engagé ?",
+    a: "Non. Toutes les offres sont sans engagement et vous pouvez arrêter votre abonnement à tout moment, par simple e-mail à contact@pressweb.fr.",
+  },
+  {
+    q: "Que se passe-t-il si j’arrête mon abonnement ?",
+    a: "Pour Essentiel et Pro, l’arrêt prend effet à la fin du mois en cours, sans nouveau paiement. Pour Premium, l’abonnement n’est pas renouvelé et reste actif jusqu’à la fin de l’année déjà payée. Votre espace repasse ensuite sur l’offre Gratuit : vos quiz sont conservés.",
+  },
+  {
+    q: "Comment souscrire ?",
+    a: "Choisissez votre offre : un message nous parvient, nous activons l’offre sur votre espace et vous envoyons la facture. Vous pouvez créer votre espace gratuit dès maintenant et passer à une offre payante plus tard.",
+  },
+  {
+    q: "Puis-je changer d’offre ?",
+    a: "Oui, à tout moment, vers une offre plus complète ou plus simple. Le changement est appliqué à votre espace dès qu’il est activé.",
+  },
+  {
+    q: "Les prix incluent-ils la TVA ?",
+    a: "Les prix sont nets : TVA non applicable, article 293 B du Code général des impôts.",
+  },
+];
 
 export default function PricingPage() {
-  const free = PLANS.FREE;
-  const pro = PLANS.PRO;
   return (
     <>
       <div className="page-heading" data-reveal="up">
         <p className="eyebrow">TARIFS</p>
         <h1>Simple comme un quiz.</h1>
-        <p className="lead">Démarrez gratuitement. Passez à Pro quand vos parties prennent de l’ampleur.</p>
+        <p className="lead">
+          Démarrez gratuitement, puis choisissez l’offre qui suit le rythme de vos parties.
+        </p>
+        <ul className="price-promises">
+          <li>Sans engagement</li>
+          <li>Résiliable à tout moment</li>
+          <li>Sans publicité</li>
+        </ul>
       </div>
       <div className="price-grid" data-stagger="pop">
-        <article className="price-card">
-          <h2>{free.label}</h2>
-          <p className="price">0 €</p>
-          <p className="hint">Pour découvrir et animer de petits groupes.</p>
-          <ul>
-            <li>
-              <Check size={18} /> {free.maxQuizzes} quiz enregistrés
-            </li>
-            <li>
-              <Check size={18} /> Jusqu’à {free.maxPlayersPerGame} joueurs par partie
-            </li>
-            <li>
-              <Check size={18} /> {free.maxMembers} membres dans l’équipe
-            </li>
-            <li>
-              <Check size={18} /> {size(free.mediaBytes)} de médias
-            </li>
-            <li>
-              <Check size={18} /> Tous les types de questions et de diapos
-            </li>
-          </ul>
-          <Link className="button secondary" href="/inscription">
-            Créer mon espace
-          </Link>
-        </article>
-        <article className="price-card featured">
-          <span className="sticker pink-sticker">LE PLUS COMPLET</span>
-          <h2>{pro.label}</h2>
-          <p className="price">Sur devis</p>
-          <p className="hint">Pour les équipes, les écoles et les événements.</p>
-          <ul>
-            <li>
-              <Check size={18} /> Quiz illimités
-            </li>
-            <li>
-              <Check size={18} /> Jusqu’à {pro.maxPlayersPerGame} joueurs par partie
-            </li>
-            <li>
-              <Check size={18} /> Animateurs illimités
-            </li>
-            <li>
-              <Check size={18} /> {size(pro.mediaBytes)} de médias
-            </li>
-            <li>
-              <Check size={18} /> Support prioritaire
-            </li>
-          </ul>
-          <Link className="button" href="/#contact">
-            Nous contacter
-          </Link>
-        </article>
+        {PLAN_KEYS.map((key) => {
+          const p = PLANS[key];
+          const featured = key === "PREMIUM";
+          return (
+            <article key={key} className={`price-card${featured ? " featured" : ""}`}>
+              {featured && <span className="sticker pink-sticker">LE PLUS COMPLET</span>}
+              <h2>{p.label}</h2>
+              <p className="price">
+                {p.price} €{p.period && <small> / {p.period}</small>}
+              </p>
+              <p className="price-note">
+                {p.period === "an"
+                  ? `Soit ${euros(p.price / 12)} € par mois, payé une fois par an`
+                  : p.period
+                    ? "Sans engagement, arrêt à tout moment"
+                    : "Sans carte bancaire"}
+              </p>
+              <p className="hint">{p.pitch}</p>
+              <ul>
+                {features(p).map((f) => (
+                  <li key={f}>
+                    <Check size={18} /> {f}
+                  </li>
+                ))}
+              </ul>
+              {p.price === 0 ? (
+                <Link className="button secondary" href="/inscription">
+                  Créer mon espace
+                </Link>
+              ) : (
+                <Link className={`button${featured ? "" : " secondary"}`} href={`/?offre=${key}#contact`}>
+                  Choisir {p.label.split(" ")[0]}
+                </Link>
+              )}
+            </article>
+          );
+        })}
       </div>
+      <section className="price-faq">
+        <h2>Abonnement : vos questions</h2>
+        <Faq items={PRICING_FAQ} />
+      </section>
     </>
   );
 }

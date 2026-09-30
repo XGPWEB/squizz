@@ -2,6 +2,19 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.1.0] — 2026-09-30
+
+### Offres
+- Quatre offres sans engagement : Gratuit (3 quiz, 20 joueurs, 1 membre, 50 Mo), Essentiel à 15 € / mois (20 quiz, 50 joueurs, 3 membres, 1 Go), Pro à 30 € / mois (quiz illimités, 100 joueurs, 10 membres, 5 Go, support prioritaire) et Premium annuel à 310 € / an (200 joueurs, membres illimités, 20 Go, support prioritaire).
+- Nouvelle page Tarifs sur 4 colonnes, avec les questions fréquentes sur l'abonnement ; « Choisir … » pré-remplit le formulaire de contact.
+- Bouton « Arrêter mon abonnement » (et « Reprendre ») sur la page Équipe, e-mails de confirmation à l'administrateur et à Pressweb, repère « Arrêt demandé » dans le super-admin.
+- Super-admin : choix entre les 4 offres, revenu mensuel estimé des abonnements actifs.
+- CGU : prix, reconduction, arrêt à tout moment, droit de rétractation de 14 jours.
+- FAQ, comparatif, données structurées et `/llms.txt` mis à jour avec les 4 offres.
+
+### Site
+- Pied de page réorganisé : logo et slogan, trois colonnes de liens, barre de crédit.
+
 ## [1.0.0] — 2026-09-30
 
 Première version publique, en ligne sur www.squizz.fun.
@@ -25,4 +38,5 @@ Première version publique, en ligne sur www.squizz.fun.
 - Purge automatique des données, export et suppression de compte.
 - Déploiement avec sauvegarde de la base et retour automatique en cas d'échec ; sauvegardes quotidiennes vérifiées, contrôle de santé, alertes.
 
+[1.1.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.1.0
 [1.0.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.0.0

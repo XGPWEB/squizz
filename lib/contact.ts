@@ -1,7 +1,7 @@
 export const CONTACT_SUBJECTS = [
   "Question générale",
   "Demande de démonstration",
-  "Offre Pro / devis",
+  "Souscrire à un abonnement",
   "Aide pour démarrer",
   "Support technique",
   "Partenariat",

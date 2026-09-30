@@ -1,9 +1,11 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { Check, Copy, Mail, Trash2, UserPlus, X } from "lucide-react";
 import { postJson } from "@/lib/client/api";
 import { useResource } from "@/lib/client/use-resource";
-import type { PlanLimits } from "@/lib/plans";
+import type { Plan } from "@prisma/client";
+import { priceLabel, type PlanLimits } from "@/lib/plans";
 
 type Role = "ORG_ADMIN" | "HOST";
 type Member = {
@@ -15,7 +17,13 @@ type Member = {
   lastLoginAt: string | null;
 };
 type Overview = {
-  organization: { id: string; name: string; plan: "FREE" | "PRO"; limits: PlanLimits };
+  organization: {
+    id: string;
+    name: string;
+    plan: Plan;
+    limits: PlanLimits;
+    cancelRequestedAt: string | null;
+  };
   me: { id: string; role: Role | "SUPER_ADMIN" };
   members: Member[];
   invitations: { id: string; email: string; role: Role; expiresAt: string }[];
@@ -23,7 +31,8 @@ type Overview = {
 };
 
 const roleLabel: Record<Role, string> = { ORG_ADMIN: "Administrateur", HOST: "Animateur" };
-const mb = (b: number) => `${Math.round(b / 1024 / 1024)} Mo`;
+const mb = (b: number) =>
+  b >= 1024 ** 3 ? `${Math.round((b / 1024 ** 3) * 10) / 10} Go` : `${Math.round(b / 1024 / 1024)} Mo`;
 const date = (d: string | null) => (d ? new Date(d).toLocaleDateString("fr-FR") : "Jamais");
 
 export function TeamManager() {
@@ -71,7 +80,9 @@ export function TeamManager() {
         <div>
           <p className="eyebrow">{admin ? "GESTION DES DROITS" : "TON ORGANISATION"}</p>
           <h1>{data.organization.name}</h1>
-          <p className="hint">Offre : {limits.label}</p>
+          <p className="hint">
+            Offre : {limits.label} · <Link href="/tarifs">Voir les offres</Link>
+          </p>
         </div>
       </div>
 
@@ -84,6 +95,65 @@ export function TeamManager() {
           <strong>{limits.maxPlayersPerGame}</strong>
         </div>
       </div>
+
+      {admin && limits.price > 0 && (
+        <section className="panel subscription">
+          <h2>Votre abonnement</h2>
+          <p>
+            <strong>{limits.label}</strong> · {priceLabel(limits)} · sans engagement
+          </p>
+          {data.organization.cancelRequestedAt ? (
+            <>
+              <p className="info-box">
+                Arrêt demandé le {date(data.organization.cancelRequestedAt)}.{" "}
+                {limits.period === "an"
+                  ? "L’abonnement ne sera pas renouvelé : il reste actif jusqu’à la fin de l’année déjà payée."
+                  : "L’offre reste active jusqu’à la fin du mois en cours, sans nouveau paiement."}{" "}
+                Votre espace passera ensuite sur l’offre Gratuit ; vos quiz sont conservés.
+              </p>
+              <button
+                className="button secondary"
+                disabled={busy}
+                onClick={() =>
+                  run(
+                    () => postJson("/api/org/subscription", { action: "resume" }).then(() => undefined),
+                    "Votre abonnement continue.",
+                  )
+                }
+              >
+                Reprendre mon abonnement
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="hint">
+                Vous pouvez arrêter votre abonnement à tout moment.{" "}
+                {limits.period === "an"
+                  ? "Il ne sera pas renouvelé et restera actif jusqu’à la fin de l’année déjà payée."
+                  : "L’offre reste active jusqu’à la fin du mois en cours, sans nouveau paiement."}
+              </p>
+              <button
+                className="button secondary danger-button"
+                disabled={busy}
+                onClick={() => {
+                  if (
+                    !confirm(
+                      `Arrêter l’abonnement ${limits.label} ? Votre espace repassera ensuite sur l’offre Gratuit.`,
+                    )
+                  )
+                    return;
+                  run(
+                    () => postJson("/api/org/subscription", { action: "cancel" }).then(() => undefined),
+                    "Arrêt de l’abonnement enregistré. Un e-mail de confirmation vous a été envoyé.",
+                  );
+                }}
+              >
+                Arrêter mon abonnement
+              </button>
+            </>
+          )}
+        </section>
+      )}
 
       <section className="panel">
         <h2>Membres</h2>

@@ -1,11 +1,12 @@
 """Super-admin extras: python3 tests/super-admin.py (needs the seeded super-admin in .env)."""
 import secrets
 from helpers import BASE
-from helpers import client, call, request, signup, invite, login, env, admin_login
+from helpers import client, call, request, signup, invite, login, env, admin_login, set_plan
 
 root_email, root_pw = env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD')
 tag = secrets.token_hex(3)
 admin, admin_email, _ = signup(f'Org vue {tag}')
+set_plan(f'Org vue {tag}', 'STARTER')  # Gratuit n'a qu'un membre
 host, host_email, _ = invite(admin, 'HOST', f'Animateur {tag}')
 root = admin_login(client(), root_email, root_pw)
 org_id = next(o['id'] for o in request(root, 'GET', '/api/admin/organizations')['organizations'] if o['name'] == f'Org vue {tag}')

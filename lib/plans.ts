@@ -2,24 +2,86 @@ import type { Plan } from "@prisma/client";
 
 export type PlanLimits = {
   label: string;
+  /** Price in euros per billing period (0 for the free plan). No VAT: art. 293 B du CGI. */
+  price: number;
+  period: "mois" | "an" | null;
+  /** Who the plan is for, shown under the price. */
+  pitch: string;
   /** Quizzes an organisation can keep; null means unlimited. */
   maxQuizzes: number | null;
   maxPlayersPerGame: number;
   maxMembers: number | null;
   mediaBytes: number;
+  prioritySupport: boolean;
 };
 
 const MB = 1024 * 1024;
+const GB = 1024 * MB;
 
+/** Plans are assigned by hand from the super-admin until online payment is wired in. */
 export const PLANS: Record<Plan, PlanLimits> = {
-  FREE: { label: "Gratuit", maxQuizzes: 5, maxPlayersPerGame: 20, maxMembers: 3, mediaBytes: 100 * MB },
+  FREE: {
+    label: "Gratuit",
+    price: 0,
+    period: null,
+    pitch: "Pour découvrir SQuizz et animer de petits groupes.",
+    maxQuizzes: 3,
+    maxPlayersPerGame: 20,
+    maxMembers: 1,
+    mediaBytes: 50 * MB,
+    prioritySupport: false,
+  },
+  STARTER: {
+    label: "Essentiel",
+    price: 15,
+    period: "mois",
+    pitch: "Pour les animateurs réguliers et les petites équipes.",
+    maxQuizzes: 20,
+    maxPlayersPerGame: 50,
+    maxMembers: 3,
+    mediaBytes: 1 * GB,
+    prioritySupport: false,
+  },
   PRO: {
     label: "Pro",
+    price: 30,
+    period: "mois",
+    pitch: "Pour les équipes, les écoles et les formations.",
     maxQuizzes: null,
     maxPlayersPerGame: 100,
+    maxMembers: 10,
+    mediaBytes: 5 * GB,
+    prioritySupport: true,
+  },
+  PREMIUM: {
+    label: "Premium annuel",
+    price: 310,
+    period: "an",
+    pitch: "Pour les événements et les grandes organisations, toute l’année.",
+    maxQuizzes: null,
+    maxPlayersPerGame: 200,
     maxMembers: null,
-    mediaBytes: 5 * 1024 * MB,
+    mediaBytes: 20 * GB,
+    prioritySupport: true,
   },
 };
 
+/** From the smallest to the most complete. */
+export const PLAN_KEYS = ["FREE", "STARTER", "PRO", "PREMIUM"] as const satisfies readonly Plan[];
+
 export const planLimits = (plan: Plan) => PLANS[plan];
+export const isPaid = (plan: Plan) => plan !== "FREE";
+
+/** « 15 € / mois », « 0 € ». */
+export const priceLabel = (p: PlanLimits) => `${p.price} €${p.period ? ` / ${p.period}` : ""}`;
+
+export const sizeLabel = (bytes: number) => (bytes >= GB ? `${bytes / GB} Go` : `${bytes / MB} Mo`);
+
+/** « 20 quiz, 50 joueurs par partie, 3 membres » — used in emails and summaries. */
+export const limitsSummary = (p: PlanLimits) =>
+  [
+    p.maxQuizzes === null ? "quiz illimités" : `${p.maxQuizzes} quiz`,
+    `${p.maxPlayersPerGame} joueurs par partie`,
+    p.maxMembers === null ? "membres illimités" : `${p.maxMembers} membre${p.maxMembers > 1 ? "s" : ""}`,
+    `${sizeLabel(p.mediaBytes)} de médias`,
+  ].join(", ");

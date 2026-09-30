@@ -1,19 +1,30 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { recentRooms } from "@/lib/server/game";
+import { PLANS } from "@/lib/plans";
 import { Organizations } from "./organizations";
 
 export const metadata: Metadata = { title: "Super-admin" };
 
 export default async function AdminHome() {
-  const [orgs, pro, suspended, users, quizzes, games] = await Promise.all([
+  const [orgs, byPlan, suspended, users, quizzes, games] = await Promise.all([
     prisma.organization.count(),
-    prisma.organization.count({ where: { plan: "PRO" } }),
+    prisma.organization.groupBy({
+      by: ["plan"],
+      where: { plan: { not: "FREE" }, status: "ACTIVE" },
+      _count: true,
+    }),
     prisma.organization.count({ where: { status: "SUSPENDED" } }),
     prisma.user.count({ where: { role: { not: "SUPER_ADMIN" } } }),
     prisma.quiz.count(),
     recentRooms(),
   ]);
+  const paid = byPlan.reduce((n, p) => n + p._count, 0);
+  // Monthly equivalent of the active paid plans (annual price spread over 12 months).
+  const monthly = byPlan.reduce((sum, p) => {
+    const { price, period } = PLANS[p.plan];
+    return sum + (p._count * price) / (period === "an" ? 12 : 1);
+  }, 0);
   return (
     <>
       <div className="dash-heading">
@@ -26,7 +37,7 @@ export default async function AdminHome() {
         <Stat
           label="Organisations"
           value={orgs}
-          note={`${pro} Pro · ${suspended} suspendue${suspended > 1 ? "s" : ""}`}
+          note={`${paid} payante${paid > 1 ? "s" : ""} (≈ ${Math.round(monthly)} € / mois) · ${suspended} suspendue${suspended > 1 ? "s" : ""}`}
         />
         <Stat label="Utilisateurs" value={users} />
         <Stat label="Quiz" value={quizzes} />
