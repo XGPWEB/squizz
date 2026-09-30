@@ -36,7 +36,7 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 - **Quatre offres sans engagement** : Gratuit, Essentiel 15 €/mois, Pro 30 €/mois, Premium annuel 310 €/an ; page Tarifs refaite, CGU mises à jour, bouton « Arrêter mon abonnement » dans l’espace client. Souscription par message, activation et facture à la main depuis le super-admin.
 - **Paiement Stripe** (page « Abonnement », webhook), **statut partenaire** (Premium offert) depuis le super-admin, couleurs par offre, limites verrouillées contre les requêtes simultanées.
 
-## 1er octobre 2026 — Confort d’édition et fiabilité (non publié)
+## 1er octobre 2026 — Confort d’édition et fiabilité (version 1.4.0)
 
 - **Éditeur** : brouillons gardés automatiquement sur l’appareil (par compte et par quiz) et proposés après un rechargement ; état « Brouillon gardé… / Tout est enregistré » ; alerte avant de quitter ; dupliquer une étape et annuler une suppression.
 - **Travail à plusieurs** : si un collègue enregistre le même quiz entre-temps, rien n’est écrasé ; une fenêtre propose d’enregistrer sa version comme nouveau quiz, de remplacer, ou de reprendre l’autre version.
@@ -47,7 +47,6 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 
 ## Reste à faire
 
-- **Publier la version « Non publié »** (brouillons, conflits, vérification e-mail…) : migration de base incluse, les comptes existants restent connectables.
 
 - **Search Console** : vérifier vers le 3 octobre que Google a lu `sitemap.xml` (il ne l’avait encore jamais demandé) ; importer le site dans **Bing Webmaster Tools**.
 - **Compte client personnel** à créer avec une autre adresse que contact@pressweb.fr.

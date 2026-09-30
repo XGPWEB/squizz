@@ -2,7 +2,7 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
-## [Non publié]
+## [1.4.0] — 2026-10-01
 
 ### Éditeur
 - Brouillons gardés automatiquement dans le navigateur (par compte et par quiz), proposés après un rechargement, effacés après l'enregistrement ; état de sauvegarde affiché et alerte avant de quitter.
@@ -93,6 +93,7 @@ Première version publique, en ligne sur www.squizz.fun.
 - Purge automatique des données, export et suppression de compte.
 - Déploiement avec sauvegarde de la base et retour automatique en cas d'échec ; sauvegardes quotidiennes vérifiées, contrôle de santé, alertes.
 
+[1.4.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.4.0
 [1.3.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.3.0
 [1.2.2]: https://github.com/XGPWEB/squizz/releases/tag/v1.2.2
 [1.2.1]: https://github.com/XGPWEB/squizz/releases/tag/v1.2.1
