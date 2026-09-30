@@ -1,6 +1,6 @@
 /**
  * Legal information about the publisher, shared by the legal pages and contact links.
- * Same publisher as Barber Q PRO (Pressweb).
+ * Publisher: Pressweb.
  */
 export const COMPANY_INFO = {
   brand: "SQuizz",

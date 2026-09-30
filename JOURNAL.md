@@ -2,7 +2,7 @@
 
 Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque étape est dans l’historique git (`git log`), l’exploitation dans le [README](README.md), l’audit dans [AUDIT-2026-09-30.md](AUDIT-2026-09-30.md).
 
-**SQuizz** : quiz collectif en direct, en français, sur **www.squizz.fun**. Éditeur et responsable : Pressweb (Xavier Gerinette, contact@pressweb.fr), sur le modèle de Barber Q PRO.
+**SQuizz** : quiz collectif en direct, en français, sur **www.squizz.fun**. Éditeur et responsable : Pressweb (Xavier Gerinette, contact@pressweb.fr).
 
 ## 29 septembre 2026 — De l’application au service en ligne
 
