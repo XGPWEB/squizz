@@ -10,6 +10,7 @@ import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play
 import { type PublicQuestion, type Aggregate, type AnswerPayload } from "@/lib/question";
 import { invitationOrigin } from "@/lib/invitation";
 import { gameApi as api } from "@/lib/client/api";
+import { Brand } from "@/components/site/brand";
 
 type RankedPlayer = {
   name: string;
@@ -154,263 +155,323 @@ export function GameView({ code }: { code: string }) {
           </Link>
         </div>
       )}
-      {game && (
-        <section className={`panel game-panel ${game.phase === "finished" ? "final-panel" : ""}`}>
-          <div className="row spaced">
-            <span className="eyebrow">{game.host ? "ÉCRAN ANIMATEUR" : "TU ES DANS LA PARTIE"}</span>
-            <span className="hint">{game.title}</span>
-          </div>
-          {game.phase === "lobby" ? (
-            <>
-              <div className="lobby-heading">
-                <span className="sticker">LE DÉFI VA COMMENCER</span>
-                <h1>Ramène ton équipe.</h1>
-                <p className="handnote">Scanne. Choisis ton pseudo. Joue !</p>
-              </div>
-              <div className="lobby-connect">
-                <div className="invitation">
-                  <span className="eyebrow">LE CODE DE LA PARTIE</span>
-                  <div className="code">{game.code}</div>
-                  <p>
-                    Ouvre SQuizz sur ton téléphone
-                    <br />
-                    et entre ce code, ou scanne à côté.
-                  </p>
-                  <button
-                    className="button secondary small"
-                    onClick={() =>
-                      run(async () => {
-                        const url = joinUrl;
-                        if (navigator.clipboard) {
-                          await navigator.clipboard.writeText(url);
-                          setCopied(true);
-                          setTimeout(() => setCopied(false), 2000);
-                        } else {
-                          setError(`Copie ce lien : ${url}`);
-                        }
-                      })
-                    }
-                  >
-                    <Copy size={16} />
-                    {copied ? "Lien copié !" : "Copier l’invitation"}
-                  </button>
+      {game && !game.host && game.phase === "lobby" ? (
+        <PlayerWaiting game={game} />
+      ) : (
+        game && (
+          <>
+            <div className="play-top">
+              <Brand href={game.host ? "/app" : null} />
+            </div>
+            <section className={`panel game-panel ${game.phase === "finished" ? "final-panel" : ""}`}>
+              {game.host && (
+                <div className="row spaced">
+                  <span className="eyebrow">ÉCRAN ANIMATEUR</span>
+                  <span className="hint">{game.title}</span>
                 </div>
-                <div className="qr-sticker">
-                  {origin && (
-                    <QRCodeSVG
-                      value={joinUrl}
-                      size={224}
-                      level="M"
-                      marginSize={4}
-                      title="Scanner pour rejoindre cette partie SQuizz"
-                    />
-                  )}
-                  <strong>SCANNE & JOUE</strong>
-                  <a href={joinUrl} target="_blank" rel="noopener noreferrer">
-                    Ouvrir le lien de la partie
-                  </a>
-                </div>
-              </div>
-              {origin && /localhost|127\.0\.0\.1/.test(origin) && (
-                <p className="preview-note">
-                  Aperçu sur cet ordinateur : ouvre l’adresse réseau de SQuizz pour scanner depuis un
-                  téléphone connecté au même Wi-Fi.
-                </p>
               )}
-              <h3 style={{ marginTop: 30 }}>
-                <Users size={20} style={{ display: "inline", verticalAlign: "middle" }} />{" "}
-                {game.players.length} joueur{game.players.length > 1 ? "s" : ""}
-                <span className="hint"> · {game.maxPlayers} maximum</span>
-              </h3>
-              <div className="row" style={{ margin: "20px 0 30px" }}>
-                {game.players.length ? (
-                  game.players.map((p) => (
-                    <span className="player" key={p.name}>
-                      {p.name}
-                      {p.me ? " (toi)" : ""}
-                      {game.host && !p.me && (
-                        <button
-                          className="kick"
-                          disabled={busy}
-                          aria-label={`Retirer ${p.name} de la partie`}
-                          title="Retirer ce joueur"
-                          onClick={() => {
-                            if (confirm(`Retirer ${p.name} de la partie ? Ce joueur ne pourra pas revenir.`))
-                              run(async () => {
-                                await api("kick", { code, name: p.name });
-                              });
+              {game.phase === "lobby" ? (
+                <>
+                  <div className="lobby-heading">
+                    <span className="sticker">LE DÉFI VA COMMENCER</span>
+                    <h1>Ramène ton équipe.</h1>
+                    <p className="handnote">Scanne. Choisis ton pseudo. Joue !</p>
+                  </div>
+                  <div className="lobby-connect">
+                    <div className="invitation">
+                      <span className="eyebrow">LE CODE DE LA PARTIE</span>
+                      <div className="code">{game.code}</div>
+                      <p>
+                        Ouvre SQuizz sur ton téléphone
+                        <br />
+                        et entre ce code, ou scanne à côté.
+                      </p>
+                      <button
+                        className="button secondary small"
+                        onClick={() =>
+                          run(async () => {
+                            const url = joinUrl;
+                            if (navigator.clipboard) {
+                              await navigator.clipboard.writeText(url);
+                              setCopied(true);
+                              setTimeout(() => setCopied(false), 2000);
+                            } else {
+                              setError(`Copie ce lien : ${url}`);
+                            }
+                          })
+                        }
+                      >
+                        <Copy size={16} />
+                        {copied ? "Lien copié !" : "Copier l’invitation"}
+                      </button>
+                    </div>
+                    <div className="qr-sticker">
+                      {origin && (
+                        <QRCodeSVG
+                          value={joinUrl}
+                          size={224}
+                          level="M"
+                          marginSize={4}
+                          title="Scanner pour rejoindre cette partie SQuizz"
+                        />
+                      )}
+                      <strong>SCANNE & JOUE</strong>
+                      <a href={joinUrl} target="_blank" rel="noopener noreferrer">
+                        Ouvrir le lien de la partie
+                      </a>
+                    </div>
+                  </div>
+                  {origin && /localhost|127\.0\.0\.1/.test(origin) && (
+                    <p className="preview-note">
+                      Aperçu sur cet ordinateur : ouvre l’adresse réseau de SQuizz pour scanner depuis un
+                      téléphone connecté au même Wi-Fi.
+                    </p>
+                  )}
+                  <h3 style={{ marginTop: 30 }}>
+                    <Users size={20} style={{ display: "inline", verticalAlign: "middle" }} />{" "}
+                    {game.players.length} joueur{game.players.length > 1 ? "s" : ""}
+                    <span className="hint"> · {game.maxPlayers} maximum</span>
+                  </h3>
+                  <div className="row" style={{ margin: "20px 0 30px" }}>
+                    {game.players.length ? (
+                      game.players.map((p) => (
+                        <span className="player" key={p.name}>
+                          {p.name}
+                          {p.me ? " (toi)" : ""}
+                          {game.host && !p.me && (
+                            <button
+                              className="kick"
+                              disabled={busy}
+                              aria-label={`Retirer ${p.name} de la partie`}
+                              title="Retirer ce joueur"
+                              onClick={() => {
+                                if (
+                                  confirm(`Retirer ${p.name} de la partie ? Ce joueur ne pourra pas revenir.`)
+                                )
+                                  run(async () => {
+                                    await api("kick", { code, name: p.name });
+                                  });
+                              }}
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="hint">Les joueurs apparaîtront ici dès leur arrivée.</p>
+                    )}
+                  </div>
+                  {game.host ? (
+                    <>
+                      <button
+                        className="button"
+                        disabled={busy || game.players.length === 0}
+                        onClick={() =>
+                          run(async () => {
+                            await api("start", { code });
+                          })
+                        }
+                      >
+                        <Play size={18} /> Lancer le quiz
+                      </button>
+                      {!game.players.some((p) => p.me) && (
+                        <form
+                          className="row"
+                          style={{ marginTop: 20 }}
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            run(async () => {
+                              await api("join", { code, name });
+                            });
                           }}
                         >
-                          <X size={14} />
-                        </button>
+                          <input
+                            style={{ flex: 1, width: 200 }}
+                            aria-label="Ton pseudo pour jouer aussi"
+                            placeholder="Ton pseudo pour jouer aussi"
+                            required
+                            maxLength={24}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                          />
+                          <button disabled={busy} className="button secondary">
+                            Jouer aussi
+                          </button>
+                        </form>
                       )}
-                    </span>
-                  ))
-                ) : (
-                  <p className="hint">Les joueurs apparaîtront ici dès leur arrivée.</p>
-                )}
-              </div>
-              {game.host ? (
-                <>
-                  <button
-                    className="button"
-                    disabled={busy || game.players.length === 0}
-                    onClick={() =>
-                      run(async () => {
-                        await api("start", { code });
-                      })
-                    }
-                  >
-                    <Play size={18} /> Lancer le quiz
-                  </button>
-                  {!game.players.some((p) => p.me) && (
-                    <form
-                      className="row"
-                      style={{ marginTop: 20 }}
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        run(async () => {
-                          await api("join", { code, name });
-                        });
-                      }}
-                    >
-                      <input
-                        style={{ flex: 1, width: 200 }}
-                        aria-label="Ton pseudo pour jouer aussi"
-                        placeholder="Ton pseudo pour jouer aussi"
-                        required
-                        maxLength={24}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                      />
-                      <button disabled={busy} className="button secondary">
-                        Jouer aussi
-                      </button>
-                    </form>
+                    </>
+                  ) : (
+                    <p className="center lead">Tu es prêt ! L’animateur va lancer le quiz.</p>
                   )}
                 </>
-              ) : (
-                <p className="center lead">Tu es prêt ! L’animateur va lancer le quiz.</p>
-              )}
-            </>
-          ) : game.phase === "finished" ? (
-            <>
-              <div className="center final-heading">
-                <span className="sticker pink-sticker">FIN DU GAME</span>
-                <h1>Place aux légendes.</h1>
-                <p className="handnote">
-                  {game.players.filter((p) => p.rank === 1).length > 1
-                    ? "Ex æquo au sommet. Bien joué !"
-                    : `${game.players[0]?.name} prend la couronne !`}
-                </p>
-              </div>
-              <Podium players={game.players} />
-              {game.personal && <PersonalResult game={game} final />}
-              <div className="section-heading">
-                <h2>Tout le classement</h2>
-                <span className="eyebrow">
-                  {game.total} QUESTIONS · {game.players.length} JOUEURS
-                </span>
-              </div>
-              <Leaderboard players={game.players} />
-              <div className="center" style={{ marginTop: 25 }}>
-                <Link className="button" href={game.host ? "/app" : "/"}>
-                  {game.host ? "Retour à mes quiz" : "On remet ça ?"}
-                </Link>
-              </div>
-            </>
-          ) : !game.question ? (
-            // "Ready?" countdown: the question opens at the same moment on every screen.
-            <div className="ready-countdown" role="status" aria-live="assertive">
-              <span className="eyebrow">
-                ÉTAPE {game.index + 1} / {game.total}
-              </span>
-              <strong>Prêt ?</strong>
-              <span className="ready-number" key={Math.ceil(startsLeft / 1000)}>
-                {Math.max(1, Math.ceil(startsLeft / 1000))}
-              </span>
-            </div>
-          ) : (
-            <>
-              <div className="row spaced" style={{ marginTop: 22 }}>
-                <span>
-                  {game.question?.type === "slide" ? "Étape" : "Question"} {game.index + 1} / {game.total}
-                </span>
-                <span className="timer">
-                  {game.question?.type === "slide" ? "Diapo" : game.revealed ? "Terminé" : `${remaining} s`}
-                </span>
-              </div>
-              <Progress
-                value={game.revealed ? 0 : (remaining / game.duration) * 100}
-                className="question-progress"
-                aria-label="Temps restant"
-              />
-              {game.question?.type !== "slide" && (
-                <h2 className="question-title" aria-live="polite">
-                  {game.question?.text}
-                </h2>
-              )}
-              {game.question && (
-                <QuestionPlay
-                  key={`${code}-${game.index}`}
-                  question={game.question}
-                  revealed={game.revealed}
-                  disabled={busy || game.revealed || remaining === 0 || !game.players.some((p) => p.me)}
-                  submitted={game.myAnswer?.answer ?? null}
-                  onSubmit={(answer) =>
-                    run(async () => {
-                      await api("answer", { code, question: game.index, answer });
-                      setGame((g) =>
-                        g ? { ...g, myAnswer: { choice: answer.choices?.[0] ?? -1, answer } } : g,
-                      );
-                    })
-                  }
-                />
-              )}{" "}
-              {game.question?.type !== "slide" && (
-                <p className="center hint" role="status">
-                  {game.myAnswer && !game.revealed
-                    ? "Réponse envoyée. On attend les autres…"
-                    : `${game.answered} / ${game.players.length} réponses reçues`}
-                </p>
-              )}
-              {game.revealed && (
+              ) : game.phase === "finished" ? (
                 <>
-                  {game.personal && game.question?.type !== "slide" && <PersonalResult game={game} />}{" "}
-                  {game.question && <QuestionResults question={game.question} aggregate={game.aggregate} />}{" "}
+                  <div className="center final-heading">
+                    <span className="sticker pink-sticker">FIN DU GAME</span>
+                    <h1>Place aux légendes.</h1>
+                    <p className="handnote">
+                      {game.players.filter((p) => p.rank === 1).length > 1
+                        ? "Ex æquo au sommet. Bien joué !"
+                        : `${game.players[0]?.name} prend la couronne !`}
+                    </p>
+                  </div>
+                  <Podium players={game.players} />
+                  {game.personal && <PersonalResult game={game} final />}
+                  <div className="section-heading">
+                    <h2>Tout le classement</h2>
+                    <span className="eyebrow">
+                      {game.total} QUESTIONS · {game.players.length} JOUEURS
+                    </span>
+                  </div>
+                  <Leaderboard players={game.players} />
+                  <div className="center" style={{ marginTop: 25 }}>
+                    <Link className="button" href={game.host ? "/app" : "/"}>
+                      {game.host ? "Retour à mes quiz" : "On remet ça ?"}
+                    </Link>
+                  </div>
+                </>
+              ) : !game.question ? (
+                // "Ready?" countdown: the question opens at the same moment on every screen.
+                <div className="ready-countdown" role="status" aria-live="assertive">
+                  <span className="eyebrow">
+                    ÉTAPE {game.index + 1} / {game.total}
+                  </span>
+                  <strong>Prêt ?</strong>
+                  <span className="ready-number" key={Math.ceil(startsLeft / 1000)}>
+                    {Math.max(1, Math.ceil(startsLeft / 1000))}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="row spaced" style={{ marginTop: 22 }}>
+                    <span>
+                      {game.question?.type === "slide" ? "Étape" : "Question"} {game.index + 1} / {game.total}
+                    </span>
+                    <span className="timer">
+                      {game.question?.type === "slide"
+                        ? "Diapo"
+                        : game.revealed
+                          ? "Terminé"
+                          : `${remaining} s`}
+                    </span>
+                  </div>
+                  <Progress
+                    value={game.revealed ? 0 : (remaining / game.duration) * 100}
+                    className="question-progress"
+                    aria-label="Temps restant"
+                  />
                   {game.question?.type !== "slide" && (
-                    <>
-                      <h2 style={{ marginTop: 24 }}>Qui mène le jeu ?</h2>
-                      <Leaderboard players={game.players} />
-                    </>
+                    <h2 className="question-title" aria-live="polite">
+                      {game.question?.text}
+                    </h2>
                   )}
-                  {game.host ? (
-                    <button
-                      className="button"
-                      style={{ marginTop: 24 }}
-                      disabled={busy}
-                      onClick={() =>
+                  {game.question && (
+                    <QuestionPlay
+                      key={`${code}-${game.index}`}
+                      question={game.question}
+                      revealed={game.revealed}
+                      disabled={busy || game.revealed || remaining === 0 || !game.players.some((p) => p.me)}
+                      submitted={game.myAnswer?.answer ?? null}
+                      onSubmit={(answer) =>
                         run(async () => {
-                          await api("next", { code, question: game.index });
+                          await api("answer", { code, question: game.index, answer });
+                          setGame((g) =>
+                            g ? { ...g, myAnswer: { choice: answer.choices?.[0] ?? -1, answer } } : g,
+                          );
                         })
                       }
-                    >
-                      {game.index + 1 === game.total
-                        ? "Voir le podium"
-                        : game.question?.type === "slide"
-                          ? "Continuer"
-                          : "Question suivante"}
-                    </button>
-                  ) : (
-                    <p className="center lead">L’animateur prépare la suite…</p>
+                    />
+                  )}{" "}
+                  {game.question?.type !== "slide" && (
+                    <p className="center hint" role="status">
+                      {game.myAnswer && !game.revealed
+                        ? "Réponse envoyée. On attend les autres…"
+                        : `${game.answered} / ${game.players.length} réponses reçues`}
+                    </p>
+                  )}
+                  {game.revealed && (
+                    <>
+                      {game.personal && game.question?.type !== "slide" && <PersonalResult game={game} />}{" "}
+                      {game.question && (
+                        <QuestionResults question={game.question} aggregate={game.aggregate} />
+                      )}{" "}
+                      {game.question?.type !== "slide" && (
+                        <>
+                          <h2 style={{ marginTop: 24 }}>Qui mène le jeu ?</h2>
+                          <Leaderboard players={game.players} />
+                        </>
+                      )}
+                      {game.host ? (
+                        <button
+                          className="button"
+                          style={{ marginTop: 24 }}
+                          disabled={busy}
+                          onClick={() =>
+                            run(async () => {
+                              await api("next", { code, question: game.index });
+                            })
+                          }
+                        >
+                          {game.index + 1 === game.total
+                            ? "Voir le podium"
+                            : game.question?.type === "slide"
+                              ? "Continuer"
+                              : "Question suivante"}
+                        </button>
+                      ) : (
+                        <p className="center lead">L’animateur prépare la suite…</p>
+                      )}
+                    </>
                   )}
                 </>
               )}
-            </>
-          )}
-        </section>
+            </section>
+          </>
+        )
       )}
     </>
+  );
+}
+
+/** What a player sees once registered, until the host starts the quiz. */
+function PlayerWaiting({ game }: { game: Game }) {
+  const me = game.players.find((p) => p.me);
+  const others = game.players.length - (me ? 1 : 0);
+  return (
+    <div className="play-waiting" role="status" aria-live="polite">
+      <Brand href={null} className="brand-live brand-big" />
+      {me ? (
+        <>
+          <h1>
+            C’est bon, <span>{me.name}</span> !
+          </h1>
+          <p className="lead">Tu es bien inscrit·e à la partie.</p>
+          <p className="play-waiting-note">
+            On attend tous les joueurs
+            <span className="dots" aria-hidden>
+              <i>.</i>
+              <i>.</i>
+              <i>.</i>
+            </span>
+          </p>
+          <p className="hint">
+            {others === 0
+              ? "Tu es le premier joueur arrivé."
+              : `${others} autre${others > 1 ? "s" : ""} joueur${others > 1 ? "s" : ""} avec toi.`}{" "}
+            L’animateur va lancer le quiz.
+          </p>
+        </>
+      ) : (
+        <>
+          <h1>Presque prêt !</h1>
+          <p className="lead">Choisis un pseudo pour rejoindre cette partie.</p>
+          <Link className="button" href={`/jouer?code=${game.code}`}>
+            Rejoindre la partie
+          </Link>
+        </>
+      )}
+    </div>
   );
 }
 function Leaderboard({ players }: { players: Game["players"] }) {
