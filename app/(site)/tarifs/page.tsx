@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { PLANS } from "@/lib/plans";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/tarifs" },
   title: "Tarifs",
   description: "Commencez gratuitement avec SQuizz, passez à l’offre Pro quand votre équipe grandit.",
 };

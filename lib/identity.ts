@@ -1,3 +1,4 @@
+import "server-only";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 import { getSessionUser } from "@/lib/server/guard";

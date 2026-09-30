@@ -1,3 +1,4 @@
+import "server-only";
 import { PrismaClient } from "@prisma/client";
 
 // One client per process; the global cache survives hot reloads in development.

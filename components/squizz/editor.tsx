@@ -67,8 +67,8 @@ export function QuizEditor({
   return (
     <section className="quiz-editor">
       <div className="editor-title">
-        <span className="sticker pink-sticker">{editing ? "RETOUCHES EN COURS" : "À TOI DE CRÉER"}</span>
-        <h1>{editing ? "On peaufine ton quiz." : "Ton quiz. Tes règles."}</h1>
+        <span className="sticker pink-sticker">{editing ? "RETOUCHES EN COURS" : "À VOUS DE CRÉER"}</span>
+        <h1>{editing ? "On peaufine votre quiz." : "Votre quiz. Vos règles."}</h1>
       </div>
       <form
         onSubmit={(e) => {
@@ -95,6 +95,7 @@ export function QuizEditor({
                   key={i}
                   type="button"
                   className={`step-button ${i === index ? "active" : ""}`}
+                  aria-current={i === index ? "step" : undefined}
                   onClick={() => setActive(i)}
                 >
                   <b>{i + 1}</b>
@@ -155,7 +156,7 @@ export function QuizEditor({
               )}
               <label className="question-label">
                 {q.type !== "slide"
-                  ? "Ta question"
+                  ? "Votre question"
                   : q.layout === "quote"
                     ? "La citation"
                     : q.layout === "bigimage"
@@ -165,7 +166,7 @@ export function QuizEditor({
                   value={q.text}
                   onChange={(e) => patch({ text: e.target.value })}
                   maxLength={300}
-                  placeholder="Écris ici…"
+                  placeholder="Écrivez ici…"
                   rows={2}
                   required
                 />
@@ -236,12 +237,12 @@ export function QuizEditor({
                   <h3>{q.type === "puzzle" ? "Les éléments dans le bon ordre" : "Les réponses"}</h3>
                   <p className="hint">
                     {q.type === "puzzle"
-                      ? "Saisis l’ordre attendu. Les éléments seront mélangés pour les joueurs."
+                      ? "Saisissez l’ordre attendu. Les éléments seront mélangés pour les joueurs."
                       : q.type === "poll"
                         ? "Pas de bonne ou de mauvaise réponse."
                         : q.multiple
-                          ? "Coche toutes les bonnes réponses. Le joueur doit trouver la combinaison exacte."
-                          : "Coche la bonne réponse."}
+                          ? "Cochez toutes les bonnes réponses. Le joueur doit trouver la combinaison exacte."
+                          : "Cochez la bonne réponse."}
                   </p>
                   {q.options.map((opt, j) => (
                     <div className="option-edit" key={j}>
@@ -394,7 +395,7 @@ export function QuizEditor({
                   />
                   <span className="hint">
                     {q.layout === "bigimage" || q.layout === "titletext"
-                      ? "Ajoute une image ci-dessous : elle sera mise en avant. "
+                      ? "Ajoutez une image ci-dessous : elle sera mise en avant. "
                       : ""}
                     Sans chronomètre ni réponse. L’animateur décide quand poursuivre.
                   </span>
@@ -443,7 +444,7 @@ export function QuizEditor({
                     </>
                   ) : (
                     <p className="info-box">
-                      Ajoute une photo ci-dessus pour définir le support de cette question.
+                      Ajoutez une photo ci-dessus pour définir le support de cette question.
                     </p>
                   )}
                 </section>
@@ -522,7 +523,7 @@ export function QuizEditor({
           )}
           <div className="editor-save">
             <span>
-              {busy ? "Import ou enregistrement en cours…" : "Tout est prêt ? Enregistre ton quiz."}
+              {busy ? "Import ou enregistrement en cours…" : "Tout est prêt ? Enregistrez votre quiz."}
             </span>
             <button type="submit" className="button" disabled={busy}>
               {busy ? "Un instant…" : editing ? "Enregistrer les modifications" : "Enregistrer le quiz"}

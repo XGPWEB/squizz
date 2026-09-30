@@ -1,3 +1,4 @@
+import "server-only";
 import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -57,7 +58,7 @@ export async function requireMember(): Promise<
   SessionUser & { organizationId: string; organization: Organization }
 > {
   const user = await getSessionUser();
-  if (!user) fail("Connecte-toi pour continuer.", 401);
+  if (!user) fail("Connectez-vous pour continuer.", 401);
   if (blocked(user)) fail("Votre organisation est suspendue.", 403);
   if (!user.organizationId || !user.organization) fail("Aucune organisation associée à ce compte.", 403);
   return user as SessionUser & { organizationId: string; organization: Organization };
@@ -72,7 +73,7 @@ export async function requireOrgAdmin() {
 
 export async function requireSuperAdmin() {
   const user = await getSessionUser();
-  if (!user) fail("Connecte-toi pour continuer.", 401);
+  if (!user) fail("Connectez-vous pour continuer.", 401);
   if (user.realRole !== "SUPER_ADMIN") fail("Réservé au super-administrateur.", 403);
   return user;
 }

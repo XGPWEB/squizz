@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { ROOM_TTL } from "@/lib/server/game";
+import { recentRooms } from "@/lib/server/game";
 import { Organizations } from "./organizations";
 
 export const metadata: Metadata = { title: "Super-admin" };
 
 export default async function AdminHome() {
-  const since = BigInt(Date.now() - ROOM_TTL);
   const [orgs, pro, suspended, users, quizzes, games] = await Promise.all([
     prisma.organization.count(),
     prisma.organization.count({ where: { plan: "PRO" } }),
     prisma.organization.count({ where: { status: "SUSPENDED" } }),
     prisma.user.count({ where: { role: { not: "SUPER_ADMIN" } } }),
     prisma.quiz.count(),
-    prisma.room.count({ where: { created: { gt: since } } }),
+    recentRooms(),
   ]);
   return (
     <>

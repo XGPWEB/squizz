@@ -6,7 +6,7 @@ import { fail } from "@/lib/server/http";
 /** Right of access and portability: the account and the quizzes the user created, as JSON. */
 export const GET = route(async () => {
   const user = await getSessionUser();
-  if (!user) fail("Connecte-toi pour continuer.", 401);
+  if (!user) fail("Connectez-vous pour continuer.", 401);
   const row = await prisma.user.findUniqueOrThrow({
     where: { id: user.id },
     select: {

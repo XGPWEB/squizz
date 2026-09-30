@@ -7,8 +7,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await pageUser();
   return (
     <>
+      <a className="skip-link" href="#contenu">
+        Aller au contenu
+      </a>
       <AppHeader user={user} area="app" />
-      <main>{children}</main>
+      <main id="contenu" tabIndex={-1}>
+        {children}
+      </main>
     </>
   );
 }

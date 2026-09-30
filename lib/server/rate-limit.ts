@@ -1,3 +1,4 @@
+import "server-only";
 import { prisma } from "@/lib/prisma";
 
 /** Fixed-window counter stored in Postgres, so it holds across restarts and PM2 workers. */

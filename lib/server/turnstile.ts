@@ -1,3 +1,4 @@
+import "server-only";
 /**
  * Cloudflare Turnstile verification. Without TURNSTILE_SECRET_KEY the check is skipped
  * (development), the honeypot and rate limit still apply.

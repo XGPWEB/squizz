@@ -94,14 +94,14 @@ export const slideLayouts = [
   {
     id: "title",
     label: "Grand titre",
-    hint: "Écris un titre et un sous-titre pour le début d’une présentation.",
+    hint: "Un titre et un sous-titre pour le début d’une présentation.",
   },
   {
     id: "titletext",
     label: "Titre et texte",
-    hint: "Ajoute un paragraphe pour donner plus de contexte aux joueurs.",
+    hint: "Un paragraphe pour donner plus de contexte aux joueurs.",
   },
-  { id: "bullets", label: "Liste à puces", hint: "Écris une liste à puces plutôt qu’un paragraphe." },
+  { id: "bullets", label: "Liste à puces", hint: "Une liste à puces plutôt qu’un paragraphe." },
   { id: "quote", label: "Citation", hint: "Partage une citation marquante et affiche le nom de son auteur." },
   {
     id: "bigimage",
@@ -222,7 +222,7 @@ export function validateQuestion(raw: unknown): Question {
   };
   check(
     questionTypes.some((t) => t.id === q.type),
-    "Choisis un type de question.",
+    "Choisissez un type de question.",
   );
   check(
     typeof q.text === "string" && q.text.trim() && q.text.length <= 300,
@@ -239,7 +239,7 @@ export function validateQuestion(raw: unknown): Question {
     slideLayouts.some((l) => l.id === q.layout),
     "Mise en page de diapo invalide.",
   );
-  check(Array.isArray(q.media) && q.media.length <= 4, "Ajoute au maximum quatre médias.");
+  check(Array.isArray(q.media) && q.media.length <= 4, "Ajoutez au maximum quatre médias.");
   for (const m of q.media) {
     check(
       m &&
@@ -258,7 +258,7 @@ export function validateQuestion(raw: unknown): Question {
         q.options.length >= 2 &&
         q.options.length <= 6 &&
         q.options.every((o) => typeof o === "string" && o.trim() && o.length <= 150),
-      "Ajoute de 2 à 6 réponses non vides, de 150 caractères maximum.",
+      "Ajoutez de 2 à 6 réponses non vides, de 150 caractères maximum.",
     );
     if (q.type === "truefalse") {
       q.options = ["Vrai", "Faux"];
@@ -293,7 +293,7 @@ export function validateQuestion(raw: unknown): Question {
         q.accepted.length >= 1 &&
         q.accepted.length <= 10 &&
         q.accepted.every((t) => typeof t === "string" && t.trim() && t.length <= 150),
-      "Indique de 1 à 10 réponses acceptées.",
+      "Indiquez de 1 à 10 réponses acceptées.",
     );
   if (["slider", "scale", "nps"].includes(q.type)) {
     if (q.type === "nps") {
@@ -337,7 +337,7 @@ export function validateQuestion(raw: unknown): Question {
   if (["pin", "pinpoll"].includes(q.type)) {
     check(
       q.media.some((m) => m.kind === "image"),
-      "Ajoute une image pour placer les repères.",
+      "Ajoutez une image pour placer les repères.",
     );
     if (q.type === "pin")
       check(

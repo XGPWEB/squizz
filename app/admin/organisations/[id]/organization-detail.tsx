@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft, Check, Copy, Eye, KeyRound } from "lucide-react";
-import { getJson, postJson } from "@/lib/client/api";
+import { postJson } from "@/lib/client/api";
+import { useResource } from "@/lib/client/use-resource";
 
 type Role = "ORG_ADMIN" | "HOST";
 type Detail = {
@@ -30,15 +31,11 @@ const date = (d: string | null) => (d ? new Date(d).toLocaleDateString("fr-FR") 
 
 export function OrganizationDetail({ id }: { id: string }) {
   const router = useRouter();
-  const [org, setOrg] = useState<Detail | null>(null),
-    [error, setError] = useState(""),
+  const { data: org, error: loadError, reload: load } = useResource<Detail>(`/api/admin/organizations/${id}`);
+  const [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
     [link, setLink] = useState("");
-  const load = useCallback(async () => setOrg(await getJson<Detail>(`/api/admin/organizations/${id}`)), [id]);
-  useEffect(() => {
-    load().catch((e) => setError(e.message));
-  }, [load]);
   async function run(task: () => Promise<void>, done: string) {
     setBusy(true);
     setError("");
@@ -53,7 +50,7 @@ export function OrganizationDetail({ id }: { id: string }) {
       setBusy(false);
     }
   }
-  if (!org) return <div className="panel center">{error || "Chargement…"}</div>;
+  if (!org) return <div className="panel center">{loadError || "Chargement…"}</div>;
   return (
     <>
       <Link href="/admin" className="nav-link">

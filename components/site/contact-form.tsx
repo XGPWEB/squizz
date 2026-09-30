@@ -59,13 +59,16 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
     };
   }, [siteKey]);
 
-  const canSend =
-    name.trim().length > 0 &&
-    /^\S+@\S+\.\S+$/.test(from) &&
-    message.trim().length >= 10 &&
-    consent &&
-    (!siteKey || token.length > 0) &&
-    status.kind !== "sending";
+  // What is still missing, shown in words when the visitor tries to send (never a silently greyed-out button).
+  const missing = [
+    !name.trim() && "votre nom",
+    !/^\S+@\S+\.\S+$/.test(from) && "une adresse email valide",
+    message.trim().length < 10 && "un message d’au moins 10 caractères",
+    !consent && "votre accord sur le traitement de vos données",
+    siteKey && !token && "la vérification anti-robot (quelques secondes)",
+  ].filter(Boolean) as string[];
+  const [tried, setTried] = useState(false);
+  const invalid = (bad: boolean) => (tried && bad ? { "aria-invalid": true as const } : {});
 
   if (status.kind === "sent")
     return (
@@ -81,7 +84,8 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
       className="contact-form"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!canSend) return;
+        setTried(true);
+        if (missing.length || status.kind === "sending") return;
         setStatus({ kind: "sending" });
         try {
           await postJson("/api/contact", {
@@ -109,6 +113,7 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Jean Dupont"
+          {...invalid(!name.trim())}
           required
           maxLength={100}
           autoComplete="name"
@@ -121,6 +126,7 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
           value={from}
           onChange={(e) => setFrom(e.target.value)}
           placeholder="jean@monorganisation.fr"
+          {...invalid(!/^\S+@\S+\.\S+$/.test(from))}
           required
           autoComplete="email"
         />
@@ -134,8 +140,9 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
         </select>
       </label>
       <label>
-        Message
+        Message (10 caractères minimum)
         <textarea
+          {...invalid(message.trim().length < 10)}
           rows={5}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -145,7 +152,12 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
         />
       </label>
       <label className="check-line">
-        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          {...invalid(!consent)}
+        />
         <span>
           J’accepte que mes données soient traitées dans le cadre de ma demande (
           <Link href="/confidentialite">politique de confidentialité</Link>).
@@ -187,7 +199,12 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
           {status.message}
         </div>
       )}
-      <button className="button" disabled={!canSend}>
+      {tried && missing.length > 0 && (
+        <div className="error" role="alert">
+          Pour envoyer, il manque : {missing.join(", ")}.
+        </div>
+      )}
+      <button className="button" disabled={status.kind === "sending"}>
         {status.kind === "sending" ? "Envoi…" : "Envoyer le message"} <Send size={18} />
       </button>
     </form>

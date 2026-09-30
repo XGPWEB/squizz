@@ -1,3 +1,4 @@
+import "server-only";
 import path from "node:path";
 
 /** Uploaded files live outside the code so deployments never erase them. */

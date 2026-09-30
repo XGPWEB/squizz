@@ -42,20 +42,33 @@ export function AppBar(p: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const menu = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  // A disclosure (not an ARIA menu): focus moves in on open, Escape returns it to the button,
+  // and the panel closes on a click or a Tab outside it.
   useEffect(() => {
     if (!open) return;
-    const close = (e: MouseEvent | KeyboardEvent) => {
-      if (e instanceof KeyboardEvent ? e.key === "Escape" : !menu.current?.contains(e.target as Node))
-        setOpen(false);
+    panel.current?.querySelector<HTMLElement>("a, button")?.focus();
+    const onPointer = (e: MouseEvent) => {
+      if (!menu.current?.contains(e.target as Node)) setOpen(false);
     };
-    document.addEventListener("mousedown", close);
-    document.addEventListener("keydown", close);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      button.current?.focus();
+    };
+    const onFocus = (e: FocusEvent) => {
+      if (!menu.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("focusin", onFocus);
     return () => {
-      document.removeEventListener("mousedown", close);
-      document.removeEventListener("keydown", close);
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("focusin", onFocus);
     };
   }, [open]);
-  useEffect(() => setOpen(false), [pathname]);
 
   const items: Item[] =
     p.area === "app"
@@ -102,9 +115,11 @@ export function AppBar(p: Props) {
         )}
         <div className="account" ref={menu}>
           <button
+            ref={button}
             className="account-button"
-            aria-haspopup="menu"
+            aria-controls="account-panel"
             aria-expanded={open}
+            aria-label={`Mon compte : ${p.name}`}
             onClick={() => setOpen((v) => !v)}
           >
             <span className="avatar" aria-hidden>
@@ -114,7 +129,7 @@ export function AppBar(p: Props) {
             <ChevronDown size={16} aria-hidden className={open ? "flip" : ""} />
           </button>
           {open && (
-            <div className="account-menu" role="menu">
+            <div className="account-menu" id="account-panel" ref={panel}>
               <div className="account-head">
                 <span className="avatar big" aria-hidden>
                   {initials(p.name)}
@@ -125,19 +140,15 @@ export function AppBar(p: Props) {
                   <span className="role-pill">{p.roleLabel}</span>
                 </span>
               </div>
-              <Link href={accountHref} role="menuitem" className="menu-item">
+              <Link href={accountHref} className="menu-item" onClick={() => setOpen(false)}>
                 <UserRound size={18} /> Mon compte
               </Link>
               {p.isSuperAdmin && p.area === "app" && !p.viewingAs && (
-                <Link href="/admin" role="menuitem" className="menu-item">
+                <Link href="/admin" className="menu-item" onClick={() => setOpen(false)}>
                   <Shield size={18} /> Super-admin
                 </Link>
               )}
-              <button
-                role="menuitem"
-                className="menu-item danger"
-                onClick={() => signOut({ callbackUrl: "/" })}
-              >
+              <button className="menu-item danger" onClick={() => signOut({ callbackUrl: "/" })}>
                 <LogOut size={18} /> Déconnexion
               </button>
             </div>

@@ -125,8 +125,8 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
       )}
       <div className="dash-heading">
         <div>
-          <p className="eyebrow">TA BIBLIOTHÈQUE</p>
-          <h1>Salut {firstName} !</h1>
+          <p className="eyebrow">VOTRE BIBLIOTHÈQUE</p>
+          <h1>Bonjour {firstName} !</h1>
           <p className="hint">
             {quota.max === null ? `${quota.used} quiz` : `${quota.used} / ${quota.max} quiz`} · jusqu’à{" "}
             {quota.players} joueurs par partie
@@ -149,8 +149,8 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
         <div className="creator">
           <Sparkles />
           <div>
-            <h3>Tes questions. Ton terrain de jeu.</h3>
-            <p>Aucun quiz pour l’instant. Prépare le premier, ou lance un SQuizz Original ci-dessous.</p>
+            <h3>Vos questions. Votre terrain de jeu.</h3>
+            <p>Aucun quiz pour l’instant. Préparez le premier, ou lancez un SQuizz Original ci-dessous.</p>
           </div>
           {!full && (
             <Link className="button dark" href="/app/quiz/nouveau">

@@ -360,7 +360,7 @@ export function QuestionResults({
   const pinMedia = q.media.find((m) => m.kind === "image");
   return (
     <section className="question-results">
-      <h3>{isScored(q.type) ? "La correction" : "Vos réponses"}</h3>
+      <h3>{isScored(q.type) ? "La correction" : "Les réponses"}</h3>
       {["quiz", "truefalse"].includes(q.type) && (
         <p className="info-box">
           Bonne{(q.correctAnswers?.length ?? 0) > 1 ? "s" : ""} réponse

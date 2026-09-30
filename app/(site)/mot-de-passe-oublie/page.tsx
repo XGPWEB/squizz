@@ -10,7 +10,7 @@ export default function ForgotPage() {
     return (
       <section className="panel narrow">
         <p className="eyebrow">MOT DE PASSE OUBLIÉ</p>
-        <h1 className="auth-title">Vérifie ta boîte mail.</h1>
+        <h1 className="auth-title">Vérifiez votre boîte mail.</h1>
         <p>
           Si un compte existe avec cette adresse, un lien de réinitialisation valable une heure vient d’être
           envoyé.
@@ -23,7 +23,7 @@ export default function ForgotPage() {
   return (
     <AuthForm
       eyebrow="MOT DE PASSE OUBLIÉ"
-      title="On t’envoie un lien."
+      title="On vous envoie un lien."
       submit="Envoyer le lien"
       onSubmit={async (data) => {
         await postJson("/api/account/forgot", { email: data.get("email") });

@@ -117,7 +117,7 @@ export default function HomePage() {
             return (
               <article key={id}>
                 <TypePreview type={id} />
-                <strong>{t.label}</strong>
+                <h3>{t.label}</h3>
                 <span>{t.hint}</span>
               </article>
             );
@@ -130,7 +130,7 @@ export default function HomePage() {
           {slideLayouts.slice(0, 3).map((l) => (
             <article key={l.id}>
               <LayoutPreview layout={l.id} />
-              <strong>Diapo · {l.label}</strong>
+              <h3>Diapo · {l.label}</h3>
               <span>{l.hint}</span>
             </article>
           ))}

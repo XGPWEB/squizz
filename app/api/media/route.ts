@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const user = await requireMember();
     if (Number(req.headers.get("content-length")) > 21 * MB) fail("Fichier trop lourd : 20 Mo maximum.", 413);
     const file = (await req.formData()).get("file");
-    if (!file || typeof file === "string") fail("Choisis un fichier image ou vidéo.");
+    if (!file || typeof file === "string") fail("Choisissez un fichier image ou vidéo.");
     if (
       !types.includes(file.type) ||
       file.size === 0 ||
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     const recent = await prisma.media.count({
       where: { uploadedById: user.id, createdAt: { gt: new Date(Date.now() - 60 * 60 * 1000) } },
     });
-    if (recent >= UPLOADS_PER_HOUR) fail("Trop d’imports en peu de temps. Réessaie dans une heure.", 429);
+    if (recent >= UPLOADS_PER_HOUR) fail("Trop d’imports en peu de temps. Réessayez dans une heure.", 429);
     const quota = planLimits(user.organization.plan).mediaBytes;
     if ((usage._sum.size ?? 0) + file.size > quota)
       fail(`Votre organisation a atteint sa limite de ${Math.round(quota / MB)} Mo de médias.`, 429);
@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     if (e instanceof HttpError) return Response.json({ error: e.message }, { status: e.status, headers });
     console.error(e);
     return Response.json(
-      { error: "L’import a échoué. Réessaie avec un fichier plus petit." },
+      { error: "L’import a échoué. Réessayez avec un fichier plus petit." },
       { status: 503, headers },
     );
   }

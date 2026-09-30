@@ -1,3 +1,4 @@
+import "server-only";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { appUrl } from "./mail";
 

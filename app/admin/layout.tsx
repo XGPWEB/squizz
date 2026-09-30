@@ -7,8 +7,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await pageUser({ superAdmin: true });
   return (
     <>
+      <a className="skip-link" href="#contenu">
+        Aller au contenu
+      </a>
       <AppHeader user={user} area="admin" />
-      <main>{children}</main>
+      <main id="contenu" tabIndex={-1}>
+        {children}
+      </main>
     </>
   );
 }

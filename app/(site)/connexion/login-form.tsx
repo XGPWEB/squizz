@@ -9,7 +9,7 @@ export function LoginForm({ suspended, email }: { suspended: boolean; email: str
   return (
     <AuthForm
       eyebrow="ESPACE ORGANISATEUR"
-      title="Content de te revoir."
+      title="Content de vous revoir."
       submit="Se connecter"
       onSubmit={async (data) => {
         await signInOrThrow(String(data.get("email")), String(data.get("password")));

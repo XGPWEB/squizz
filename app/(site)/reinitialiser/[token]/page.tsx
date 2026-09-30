@@ -10,7 +10,7 @@ export default function ResetPage() {
   return (
     <AuthForm
       eyebrow="NOUVEAU MOT DE PASSE"
-      title="Choisis un nouveau mot de passe."
+      title="Choisissez un nouveau mot de passe."
       submit="Enregistrer et me connecter"
       onSubmit={async (data) => {
         const password = String(data.get("password"));
@@ -26,7 +26,7 @@ export default function ResetPage() {
         <PasswordInput name="password" required minLength={10} autoComplete="new-password" />
       </label>
       <label>
-        Confirme le mot de passe
+        Confirmez le mot de passe
         <PasswordInput name="confirm" required minLength={10} autoComplete="new-password" />
       </label>
     </AuthForm>

@@ -10,7 +10,7 @@ export function SignupForm() {
   return (
     <AuthForm
       eyebrow="GRATUIT, SANS CARTE BANCAIRE"
-      title="Crée l’espace de ton équipe."
+      title="Créez l’espace de votre équipe."
       submit="Créer mon espace"
       onSubmit={async (data) => {
         const body = Object.fromEntries(data) as Record<string, string>;
@@ -37,7 +37,7 @@ export function SignupForm() {
         <input name="organization" required maxLength={80} placeholder="Ex. Lycée Jean Moulin, Acme…" />
       </label>
       <label>
-        Ton nom
+        Votre nom
         <input name="name" required maxLength={80} autoComplete="name" />
       </label>
       <label>
@@ -49,7 +49,7 @@ export function SignupForm() {
         <PasswordInput name="password" required minLength={10} autoComplete="new-password" />
       </label>
       <label>
-        Confirme le mot de passe
+        Confirmez le mot de passe
         <PasswordInput name="confirm" required minLength={10} autoComplete="new-password" />
       </label>
       <label className="check-line">

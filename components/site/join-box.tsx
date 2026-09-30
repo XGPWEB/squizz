@@ -19,7 +19,7 @@ export function JoinBox() {
         <Zap />
       </div>
       <h2>T’es dans la partie ?</h2>
-      <p>Entrez le code affiché par votre animateur.</p>
+      <p>Entre le code affiché par ton animateur.</p>
       <label htmlFor="code">Code de la partie</label>
       <input
         id="code"

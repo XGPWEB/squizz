@@ -9,9 +9,11 @@ export async function PublicHeader() {
     <header className="site-header">
       <Brand />
       <nav className="site-nav" aria-label="Navigation principale">
+        <Link href="/jouer" className="nav-join">
+          Rejoindre une partie
+        </Link>
         <Link href="/#fonctionnalites">Fonctionnalités</Link>
         <Link href="/tarifs">Tarifs</Link>
-        <Link href="/jouer">Rejoindre une partie</Link>
         <Link href="/#contact">Contact</Link>
       </nav>
       <div className="header-actions">

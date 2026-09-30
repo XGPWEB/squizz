@@ -1,3 +1,4 @@
+import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 
 /** A random URL-safe token and the hash we store; only the hash ever reaches the database. */

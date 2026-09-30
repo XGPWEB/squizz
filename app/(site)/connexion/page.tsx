@@ -3,7 +3,12 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/server/guard";
 import { LoginForm } from "./login-form";
 
-export const metadata: Metadata = { title: "Connexion" };
+export const metadata: Metadata = {
+  description:
+    "Connectez-vous à l’espace SQuizz de votre organisation pour créer vos quiz et lancer vos parties.",
+  alternates: { canonical: "/connexion" },
+  title: "Connexion",
+};
 
 export default async function LoginPage({
   searchParams,

@@ -28,7 +28,7 @@ export function AcceptForm(props: { token: string; email: string; organization: 
         <input value={props.email} readOnly disabled />
       </label>
       <label>
-        Ton nom
+        Votre nom
         <input name="name" required maxLength={80} autoComplete="name" />
       </label>
       <label>
@@ -36,7 +36,7 @@ export function AcceptForm(props: { token: string; email: string; organization: 
         <PasswordInput name="password" required minLength={10} autoComplete="new-password" />
       </label>
       <label>
-        Confirme le mot de passe
+        Confirmez le mot de passe
         <PasswordInput name="confirm" required minLength={10} autoComplete="new-password" />
       </label>
     </AuthForm>

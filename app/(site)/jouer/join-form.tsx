@@ -11,7 +11,7 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
     [busy, setBusy] = useState(false);
   return (
     <section className="panel narrow">
-      <p className="eyebrow">ENTREZ DANS LA PARTIE</p>
+      <p className="eyebrow">ENTRE DANS LA PARTIE</p>
       <h1 style={{ fontSize: 40 }}>À toi de jouer !</h1>
       {error && (
         <div className="error" role="alert">

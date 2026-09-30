@@ -108,7 +108,7 @@ export function AccountForms({
             <PasswordInput name="next" required minLength={10} autoComplete="new-password" />
           </label>
           <label>
-            Confirme le nouveau mot de passe
+            Confirmez le nouveau mot de passe
             <PasswordInput name="confirm" required minLength={10} autoComplete="new-password" />
           </label>
           <button className="button" disabled={busy}>

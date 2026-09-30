@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Check, Copy, Plus } from "lucide-react";
-import { getJson, postJson } from "@/lib/client/api";
+import { postJson } from "@/lib/client/api";
+import { useResource } from "@/lib/client/use-resource";
 
 type Org = {
   id: string;
@@ -17,20 +18,18 @@ type Org = {
 };
 
 export function Organizations() {
-  const [orgs, setOrgs] = useState<Org[] | null>(null),
-    [query, setQuery] = useState(""),
+  const {
+    data,
+    error: loadError,
+    reload: load,
+  } = useResource<{ organizations: Org[] }>("/api/admin/organizations");
+  const orgs = data?.organizations ?? null;
+  const [query, setQuery] = useState(""),
     [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
     [creating, setCreating] = useState(false),
     [link, setLink] = useState("");
-  const load = useCallback(
-    async () => setOrgs((await getJson<{ organizations: Org[] }>("/api/admin/organizations")).organizations),
-    [],
-  );
-  useEffect(() => {
-    load().catch((e) => setError(e.message));
-  }, [load]);
   const shown = useMemo(
     () => orgs?.filter((o) => o.name.toLowerCase().includes(query.trim().toLowerCase())) ?? [],
     [orgs, query],
@@ -69,9 +68,9 @@ export function Organizations() {
           </button>
         </div>
       </div>
-      {error && (
+      {(error || loadError) && (
         <div className="error" role="alert">
-          {error}
+          {error || loadError}
         </div>
       )}
       {message && (

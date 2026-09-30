@@ -1,7 +1,9 @@
 "use client";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+
+const noopSubscribe = () => () => {};
 import { Play, Users, Trophy, Copy, X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
@@ -55,11 +57,13 @@ export function GameView({ code }: { code: string }) {
     [busy, setBusy] = useState(false),
     [name, setName] = useState(""),
     [copied, setCopied] = useState(false),
-    [clock, setClock] = useState(() => Date.now()),
-    [origin, setOrigin] = useState("");
-  useEffect(() => {
-    setOrigin(invitationOrigin(location.origin, process.env.NEXT_PUBLIC_LAN_HOST ?? ""));
-  }, []);
+    [clock, setClock] = useState(() => Date.now());
+  // Read on the client only; the server render has no window (empty until hydration).
+  const origin = useSyncExternalStore(
+    noopSubscribe,
+    () => invitationOrigin(location.origin, process.env.NEXT_PUBLIC_LAN_HOST ?? ""),
+    () => "",
+  );
   useEffect(() => {
     let active = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -153,7 +157,7 @@ export function GameView({ code }: { code: string }) {
       {game && (
         <section className={`panel game-panel ${game.phase === "finished" ? "final-panel" : ""}`}>
           <div className="row spaced">
-            <span className="eyebrow">{game.host ? "ÉCRAN ANIMATEUR" : "VOUS ÊTES DANS LA PARTIE"}</span>
+            <span className="eyebrow">{game.host ? "ÉCRAN ANIMATEUR" : "TU ES DANS LA PARTIE"}</span>
             <span className="hint">{game.title}</span>
           </div>
           {game.phase === "lobby" ? (
@@ -223,7 +227,7 @@ export function GameView({ code }: { code: string }) {
                   game.players.map((p) => (
                     <span className="player" key={p.name}>
                       {p.name}
-                      {p.me ? " (vous)" : ""}
+                      {p.me ? " (toi)" : ""}
                       {game.host && !p.me && (
                         <button
                           className="kick"
@@ -286,7 +290,7 @@ export function GameView({ code }: { code: string }) {
                   )}
                 </>
               ) : (
-                <p className="center lead">Vous êtes prêt ! L’animateur va lancer le quiz.</p>
+                <p className="center lead">Tu es prêt ! L’animateur va lancer le quiz.</p>
               )}
             </>
           ) : game.phase === "finished" ? (
@@ -416,7 +420,7 @@ function Leaderboard({ players }: { players: Game["players"] }) {
         <li key={p.name} className={`score-row ${p.me ? "is-me" : ""}`}>
           <span>
             <strong className="rank">{p.rank}</strong> {p.name}
-            {p.me ? " (vous)" : ""}
+            {p.me ? " (toi)" : ""}
           </span>
           <span className="score-end">
             {p.movement !== null && (

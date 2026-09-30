@@ -1,3 +1,4 @@
+import "server-only";
 import { z } from "zod";
 import { assertJson, assertSameOrigin, HttpError } from "./http";
 
@@ -18,7 +19,7 @@ export function route<P = Record<string, never>>(fn: (req: Request, params: P) =
         return Response.json({ error: e.issues[0]?.message ?? "Données invalides." }, { status: 400 });
       console.error(e);
       return Response.json(
-        { error: "Une erreur empêche cette action. Réessaie dans un instant." },
+        { error: "Une erreur empêche cette action. Réessayez dans un instant." },
         { status: 500 },
       );
     }
@@ -41,5 +42,5 @@ export const emailSchema = z.string().trim().toLowerCase().email("Adresse email 
 export const nameSchema = z
   .string()
   .trim()
-  .min(1, "Indique un nom.")
+  .min(1, "Indiquez un nom.")
   .max(80, "Nom trop long (80 caractères maximum).");

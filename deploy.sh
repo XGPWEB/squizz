@@ -41,8 +41,9 @@ if [ "${1:-}" = "--https" ]; then
   exit 0
 fi
 
-echo "[0/5] Vérifications (bloquantes) : types, tests unitaires"
+echo "[0/5] Vérifications (bloquantes) : types, lint, tests unitaires"
 npx tsc --noEmit
+npx eslint . --max-warnings 0
 npm test
 
 echo "[1/5] Build standalone"

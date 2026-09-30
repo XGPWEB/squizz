@@ -8,8 +8,12 @@ export const metadata: Metadata = { title: "Invitation", robots: { index: false 
 
 export default async function InvitationPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  try {
-    const inv = await findInvitation(token);
+  // Resolve first, render after: an expired link becomes an HttpError value, anything else is rethrown.
+  const inv = await findInvitation(token).catch((e: unknown) => {
+    if (e instanceof HttpError) return e;
+    throw e;
+  });
+  if (!(inv instanceof HttpError))
     return (
       <AcceptForm
         token={token}
@@ -18,17 +22,14 @@ export default async function InvitationPage({ params }: { params: Promise<{ tok
         role={inv.role === "ORG_ADMIN" ? "administrateur" : "animateur"}
       />
     );
-  } catch (e) {
-    if (!(e instanceof HttpError)) throw e;
-    return (
-      <section className="panel narrow">
-        <p className="eyebrow">INVITATION</p>
-        <h1 className="auth-title">Lien expiré.</h1>
-        <p>{e.message}</p>
-        <Link className="button secondary" href="/connexion">
-          Aller à la connexion
-        </Link>
-      </section>
-    );
-  }
+  return (
+    <section className="panel narrow">
+      <p className="eyebrow">INVITATION</p>
+      <h1 className="auth-title">Lien expiré.</h1>
+      <p>{inv.message}</p>
+      <Link className="button secondary" href="/connexion">
+        Aller à la connexion
+      </Link>
+    </section>
+  );
 }

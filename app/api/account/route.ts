@@ -14,7 +14,7 @@ import { mediaPath } from "@/lib/server/media-store";
  */
 export const DELETE = route(async (req) => {
   const user = await getSessionUser();
-  if (!user) fail("Connecte-toi pour continuer.", 401);
+  if (!user) fail("Connectez-vous pour continuer.", 401);
   if (user.viewingAs || user.realRole === "SUPER_ADMIN")
     fail("Le compte super-admin ne peut pas être supprimé ici.", 403);
   const { password } = await json(

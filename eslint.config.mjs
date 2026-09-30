@@ -9,18 +9,26 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
+    "deploy/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
   ]),
   {
-    files: ["components/ui/**/*.{ts,tsx}", "hooks/use-mobile.ts"],
+    files: ["components/ui/**/*.{ts,tsx}"],
     rules: {
-      // These files are vendored verbatim from shadcn@4.17.0. Keep the
-      // registry source intact while applying the stricter rules to Site code.
+      // Vendored shadcn components: keep the registry source intact.
       "@typescript-eslint/no-unused-vars": "off",
       "react-hooks/purity": "off",
       "react-hooks/set-state-in-effect": "off",
+    },
+  },
+  {
+    files: ["components/squizz/media.tsx", "components/squizz/question-play.tsx"],
+    rules: {
+      // Quiz media are uploaded files or arbitrary https links added by authors: next/image cannot
+      // optimise unknown remote hosts, and these images are not the page's LCP.
+      "@next/next/no-img-element": "off",
     },
   },
 ]);

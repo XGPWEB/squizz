@@ -1,3 +1,4 @@
+import "server-only";
 import type { Prisma, Quiz as QuizRow } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { demos, type Quiz } from "@/lib/quizzes";
@@ -29,7 +30,7 @@ export function parseQuizInput(value: unknown) {
     v.questions.length < 1 ||
     v.questions.length > MAX_QUESTIONS
   )
-    fail(`Ajoute un titre et de 1 à ${MAX_QUESTIONS} questions.`);
+    fail(`Ajoutez un titre et de 1 à ${MAX_QUESTIONS} questions.`);
   const questions = validated(() => (v.questions as unknown[]).map(validateQuestion));
   return { title: v.title.trim(), questions };
 }

@@ -1,7 +1,8 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Check, Copy, Mail, Trash2, UserPlus, X } from "lucide-react";
-import { getJson, postJson } from "@/lib/client/api";
+import { postJson } from "@/lib/client/api";
+import { useResource } from "@/lib/client/use-resource";
 import type { PlanLimits } from "@/lib/plans";
 
 type Role = "ORG_ADMIN" | "HOST";
@@ -26,20 +27,13 @@ const mb = (b: number) => `${Math.round(b / 1024 / 1024)} Mo`;
 const date = (d: string | null) => (d ? new Date(d).toLocaleDateString("fr-FR") : "Jamais");
 
 export function TeamManager() {
-  const [data, setData] = useState<Overview | null>(null),
-    [error, setError] = useState(""),
+  const { data, error: loadError, reload: load } = useResource<Overview>("/api/org");
+  const [error, setError] = useState(""),
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
     [link, setLink] = useState(""),
-    [orgName, setOrgName] = useState("");
-  const load = useCallback(async () => {
-    const d = await getJson<Overview>("/api/org");
-    setData(d);
-    setOrgName(d.organization.name);
-  }, []);
-  useEffect(() => {
-    load().catch((e) => setError(e.message));
-  }, [load]);
+    [orgNameDraft, setOrgName] = useState<string | null>(null);
+  const orgName = orgNameDraft ?? data?.organization.name ?? "";
 
   async function run(task: () => Promise<void>, done?: string) {
     if (busy) return;
@@ -57,7 +51,7 @@ export function TeamManager() {
     }
   }
 
-  if (!data) return <div className="panel center">{error || "Chargement…"}</div>;
+  if (!data) return <div className="panel center">{loadError || "Chargement…"}</div>;
   const admin = data.me.role !== "HOST";
   const { limits } = data.organization;
 

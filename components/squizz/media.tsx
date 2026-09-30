@@ -132,8 +132,8 @@ export function MediaEditor({
       const form = new FormData();
       form.append("file", file);
       const r = await fetch("/api/media", { method: "POST", body: form });
-      const d: any = await r.json();
-      if (!r.ok) throw new Error(d.error);
+      const d = (await r.json().catch(() => ({}))) as { error?: string; media?: Media };
+      if (!r.ok || !d.media) throw new Error(d.error ?? "L’import a échoué.");
       onChange([...media, d.media]);
     } catch (e) {
       onError((e as Error).message);

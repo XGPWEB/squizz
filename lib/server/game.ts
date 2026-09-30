@@ -1,3 +1,4 @@
+import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { rankPlayers, type ScoreRow } from "@/lib/game-results";
@@ -351,4 +352,11 @@ export function gameState(g: GameContext) {
     aggregate:
       revealed && question.type !== "slide" ? aggregateAnswers(question, g.submitted.map(decode)) : null,
   };
+}
+
+/** Games created in the last 24 hours, overall or for one organisation. */
+export function recentRooms(organizationId?: string) {
+  return prisma.room.count({
+    where: { created: { gt: BigInt(Date.now() - ROOM_TTL) }, ...(organizationId ? { organizationId } : {}) },
+  });
 }
