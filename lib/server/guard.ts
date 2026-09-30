@@ -83,7 +83,7 @@ export async function pageUser(options: { admin?: boolean; superAdmin?: boolean 
   const user = await getSessionUser();
   if (!user) redirect("/connexion");
   if (options.superAdmin && user.realRole !== "SUPER_ADMIN") redirect("/app");
-  if (!options.superAdmin && user.role === "SUPER_ADMIN" && !user.organizationId) redirect("/admin");
+  if (!options.superAdmin && user.role === "SUPER_ADMIN" && !user.organizationId) redirect("/super-admin");
   if (blocked(user)) redirect("/connexion?suspendu=1");
   if (options.admin && user.role === "HOST") redirect("/app");
   return user;

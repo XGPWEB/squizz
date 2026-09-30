@@ -20,7 +20,7 @@ export async function PublicHeader() {
         {user ? (
           <Link
             className="button small"
-            href={user.role === "SUPER_ADMIN" && !user.organizationId ? "/admin" : "/app"}
+            href={user.role === "SUPER_ADMIN" && !user.organizationId ? "/super-admin" : "/app"}
           >
             Mon espace
           </Link>

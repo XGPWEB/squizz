@@ -75,7 +75,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
                   </td>
                   <td>
                     {u.organization ? (
-                      <Link href={`/admin/organisations/${u.organization.id}`}>{u.organization.name}</Link>
+                      <Link href={`/super-admin/organisations/${u.organization.id}`}>{u.organization.name}</Link>
                     ) : (
                       "—"
                     )}

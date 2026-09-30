@@ -15,7 +15,7 @@ request(anon, 'POST', '/api/contact', {**ok, 'message': f'Robot {tag} spam spam'
 request(anon, 'POST', '/api/contact', ok)
 
 root = login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
-page = request(root, 'GET', '/admin/messages', expect=200)
+page = request(root, 'GET', '/super-admin/messages', expect=200)
 member, _, _ = signup()
 request(member, 'PATCH', '/api/admin/messages/x', {'handled': True}, expect=403)
 request(anon, 'DELETE', '/api/admin/messages/x', expect=401)

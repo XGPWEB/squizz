@@ -53,7 +53,7 @@ export function OrganizationDetail({ id }: { id: string }) {
   if (!org) return <div className="panel center">{loadError || "Chargement…"}</div>;
   return (
     <>
-      <Link href="/admin" className="nav-link">
+      <Link href="/super-admin" className="nav-link">
         <ArrowLeft size={16} /> Toutes les organisations
       </Link>
       <div className="dash-heading">
@@ -226,7 +226,7 @@ export function OrganizationDetail({ id }: { id: string }) {
             if (confirmName === null) return;
             setBusy(true);
             postJson(`/api/admin/organizations/${org.id}`, { confirm: confirmName }, "DELETE")
-              .then(() => router.push("/admin"))
+              .then(() => router.push("/super-admin"))
               .catch((e) => {
                 setError((e as Error).message);
                 setBusy(false);

@@ -31,14 +31,14 @@ request(root, 'PATCH', '/api/account/password', {'name': 'Super-admin SQuizz'})
 
 # --- Global user search ---
 from helpers import BASE
-html = root.open(f'{BASE}/admin/utilisateurs?q={tag}', timeout=60).read().decode()
+html = root.open(f'{BASE}/super-admin/utilisateurs?q={tag}', timeout=60).read().decode()
 assert host_email in html and admin_email in html, 'recherche : comptes introuvables'
-assert 'Aucun utilisateur' in root.open(f'{BASE}/admin/utilisateurs?q=zz-introuvable-{tag}', timeout=60).read().decode()
+assert 'Aucun utilisateur' in root.open(f'{BASE}/super-admin/utilisateurs?q=zz-introuvable-{tag}', timeout=60).read().decode()
 try:
-    admin.open(f'{BASE}/admin/utilisateurs', timeout=60)
+    admin.open(f'{BASE}/super-admin/utilisateurs', timeout=60)
     status = 200
 except Exception as e:
     status = getattr(e, 'code', 0)
-final = admin.open(f'{BASE}/admin/utilisateurs', timeout=60).geturl()
-assert '/admin/utilisateurs' not in final, 'un administrateur d’organisation voit la recherche globale' 
+final = admin.open(f'{BASE}/super-admin/utilisateurs', timeout=60).geturl()
+assert '/super-admin/utilisateurs' not in final, 'un administrateur d’organisation voit la recherche globale' 
 print('PASS: view-as (start, org-admin rights, audit, own account protected, exit), own account, user search.')

@@ -31,7 +31,7 @@ Next.js 16 (App Router, sortie `standalone`), PostgreSQL + Prisma 5, NextAuth 4 
 ```
 app/(site)/        site public : accueil, tarifs, jouer, partie, connexion, inscription, légal
 app/app/           espace organisation : bibliothèque, éditeur, équipe, compte
-app/admin/         super-admin : organisations, détail, journal
+app/super-admin/         super-admin : organisations, détail, journal
 app/api/           game (jeu + quiz), media, account, invitations, org, admin, auth, health
 lib/server/        guard (droits), game, quiz-store, accounts, rate-limit, audit, mail
 lib/question.ts    14 types de questions, 6 diapos, validation et correction

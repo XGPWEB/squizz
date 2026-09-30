@@ -27,7 +27,7 @@ export function ViewAsBanner({
         onClick={async () => {
           setBusy(true);
           await postJson("/api/admin/view", undefined, "DELETE").catch(() => {});
-          router.push(`/admin/organisations/${organizationId}`);
+          router.push(`/super-admin/organisations/${organizationId}`);
           router.refresh();
         }}
       >

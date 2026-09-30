@@ -146,7 +146,7 @@ export function contactEmail(o: { name: string; email: string; subject: string; 
                <tr><td style="padding:0 14px 0 0;color:${C.muted}">Email</td><td><a href="mailto:${esc(o.email)}" style="color:#3445ff">${esc(o.email)}</a></td></tr>
              </table>
              <div style="padding:16px;background:${C.cream};border:2px solid ${C.ink};border-radius:12px;white-space:pre-wrap">${esc(o.message)}</div>`,
-      cta: { label: "Voir dans le super-admin", url: `${site}/admin/messages` },
+      cta: { label: "Voir dans le super-admin", url: `${site}/super-admin/messages` },
       note: "Répondez directement à cet email : la réponse part vers l’expéditeur.",
     }),
   };

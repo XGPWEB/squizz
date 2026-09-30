@@ -75,21 +75,21 @@ export function AppBar(p: Props) {
       ? [
           { href: "/app", label: "Mes quiz", icon: LayoutGrid, exact: true },
           { href: "/app/equipe", label: p.canTeam ? "Équipe" : "Organisation", icon: Users },
-          ...(p.isSuperAdmin && !p.viewingAs ? [{ href: "/admin", label: "Super-admin", icon: Shield }] : []),
+          ...(p.isSuperAdmin && !p.viewingAs ? [{ href: "/super-admin", label: "Super-admin", icon: Shield }] : []),
         ]
       : [
-          { href: "/admin", label: "Organisations", icon: Building2, exact: true },
-          { href: "/admin/utilisateurs", label: "Utilisateurs", icon: Users },
-          { href: "/admin/messages", label: "Messages", icon: Mail },
-          { href: "/admin/journal", label: "Journal", icon: History },
+          { href: "/super-admin", label: "Organisations", icon: Building2, exact: true },
+          { href: "/super-admin/utilisateurs", label: "Utilisateurs", icon: Users },
+          { href: "/super-admin/messages", label: "Messages", icon: Mail },
+          { href: "/super-admin/journal", label: "Journal", icon: History },
         ];
   const active = (i: Item) =>
     i.exact
       ? pathname === i.href ||
         (i.href === "/app" && pathname.startsWith("/app/quiz")) ||
-        (i.href === "/admin" && pathname.startsWith("/admin/organisations"))
+        (i.href === "/super-admin" && pathname.startsWith("/super-admin/organisations"))
       : pathname.startsWith(i.href);
-  const accountHref = p.area === "admin" || p.viewingAs ? "/admin/compte" : "/app/compte";
+  const accountHref = p.area === "admin" || p.viewingAs ? "/super-admin/compte" : "/app/compte";
 
   return (
     <div className="app-bar">
@@ -144,7 +144,7 @@ export function AppBar(p: Props) {
                 <UserRound size={18} /> Mon compte
               </Link>
               {p.isSuperAdmin && p.area === "app" && !p.viewingAs && (
-                <Link href="/admin" className="menu-item" onClick={() => setOpen(false)}>
+                <Link href="/super-admin" className="menu-item" onClick={() => setOpen(false)}>
                   <Shield size={18} /> Super-admin
                 </Link>
               )}

@@ -152,7 +152,7 @@ export function Organizations() {
               {shown.map((o) => (
                 <tr key={o.id} className={o.status === "SUSPENDED" ? "muted" : ""}>
                   <td>
-                    <Link href={`/admin/organisations/${o.id}`}>
+                    <Link href={`/super-admin/organisations/${o.id}`}>
                       <strong>{o.name}</strong>
                     </Link>
                   </td>

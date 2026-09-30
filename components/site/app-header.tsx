@@ -15,7 +15,7 @@ export function AppHeader({ user, area }: { user: SessionUser; area: "app" | "ad
         <ViewAsBanner organization={user.organization.name} organizationId={user.organization.id} />
       )}
       <header className="app-header">
-        <Brand href={area === "admin" ? "/admin" : "/app"} />
+        <Brand href={area === "admin" ? "/super-admin" : "/app"} />
         <AppBar
           area={area}
           name={user.name}
