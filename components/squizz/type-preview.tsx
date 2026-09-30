@@ -1,18 +1,34 @@
 import { Check, ImageIcon, MapPin, Star } from "lucide-react";
 import type { QuestionType, SlideLayout } from "@/lib/question";
 
-/** Miniature mock-ups shown on the step picker cards, one per question type or slide layout. */
-const Img = ({ tall = false }: { tall?: boolean }) => (
+/**
+ * Miniature mock-ups shown on the step picker cards and the homepage, one per question type or
+ * slide layout. Same visual language as the game itself: ink outlines and shadows, the four
+ * answer colours of SQuizz with their A–D letters, sticker-like images.
+ */
+const LETTERS = ["A", "B", "C", "D"];
+
+const Img = ({ tall = false, label = "IMAGE" }: { tall?: boolean; label?: string }) => (
   <span className={`pv-img ${tall ? "tall" : ""}`}>
-    <ImageIcon size={18} />
+    <ImageIcon size={16} />
+    <b>{label}</b>
   </span>
 );
-const Tiles = ({ labels, correct }: { labels: string[]; correct?: number }) => (
-  <span className={`pv-tiles n${labels.length}`}>
+const Tiles = ({
+  labels,
+  correct,
+  column = false,
+}: {
+  labels: string[];
+  correct?: number;
+  column?: boolean;
+}) => (
+  <span className={`pv-tiles n${labels.length} ${column ? "column" : ""}`}>
     {labels.map((l, i) => (
-      <span key={l} className={`pv-tile c${i}`}>
-        {l}
-        {i === correct && <Check size={12} strokeWidth={4} />}
+      <span key={l} className={`pv-tile t${i} ${i === correct ? "good" : ""}`}>
+        <i>{LETTERS[i]}</i>
+        <span>{l}</span>
+        {i === correct && <Check size={12} strokeWidth={4} className="pv-check" />}
       </span>
     ))}
   </span>
@@ -20,19 +36,23 @@ const Tiles = ({ labels, correct }: { labels: string[]; correct?: number }) => (
 const Dots = ({ count, active }: { count: number; active: number }) => (
   <span className="pv-dots">
     {Array.from({ length: count }, (_, i) => (
-      <i key={i} className={i === active ? "on" : ""} />
+      <i key={i} className={i === active ? "on" : ""}>
+        {count <= 5 ? i + 1 : ""}
+      </i>
     ))}
   </span>
 );
 const Pins = ({ correct = false }: { correct?: boolean }) => (
   <span className="pv-map">
-    <ImageIcon size={18} />
+    <span className="pv-land a" />
+    <span className="pv-land b" />
+    {correct && <span className="pv-zone" />}
     {[
-      [18, 22],
-      [42, 12],
-      [70, 28],
-      [30, 60],
-      [78, 62],
+      [20, 30],
+      [47, 22],
+      [72, 38],
+      [34, 64],
+      [80, 70],
     ].map(([x, y], i) => (
       <MapPin
         key={i}
@@ -41,99 +61,94 @@ const Pins = ({ correct = false }: { correct?: boolean }) => (
         style={{ left: `${x}%`, top: `${y}%` }}
       />
     ))}
-    {correct && <span className="pv-zone" />}
   </span>
 );
 const Lines = ({ n = 3 }: { n?: number }) => (
   <span className="pv-lines">
     {Array.from({ length: n }, (_, i) => (
-      <i key={i} style={{ width: `${90 - i * 18}%` }} />
+      <i key={i} style={{ width: `${92 - i * 17}%` }} />
     ))}
   </span>
 );
 
 const typePreviews: Record<QuestionType, [string, React.ReactNode]> = {
   quiz: [
-    "Où a ouvert notre 1re filiale ?",
-    <Tiles key="t" labels={["New York", "Londres", "Sydney", "Pékin"]} correct={1} />,
+    "Capitale de l’Australie ?",
+    <Tiles key="t" labels={["Sydney", "Canberra", "Melbourne", "Perth"]} correct={1} />,
   ],
-  truefalse: ["Nos bureaux sont dans 5 pays", <Tiles key="t" labels={["Vrai", "Faux"]} correct={0} />],
+  truefalse: ["Le Soleil est une étoile.", <Tiles key="t" labels={["Vrai", "Faux"]} correct={0} />],
   text: [
-    "Quel service embauche ?",
+    "Symbole chimique de l’or ?",
     <span key="t" className="pv-input">
-      RH
+      Au
       <i />
     </span>,
   ],
   slider: [
-    "Notre chiffre d’affaires ?",
+    "Hauteur de la tour Eiffel ?",
     <span key="t" className="pv-slider">
-      <b>2 380 000 $</b>
-      <span>
-        {Array.from({ length: 15 }, (_, i) => (
-          <i key={i} className={i === 9 ? "on" : ""} />
-        ))}
+      <b>330 m</b>
+      <span className="pv-track">
+        <span className="pv-fill" />
+        <span className="pv-thumb" />
       </span>
     </span>,
   ],
-  pin: ["Où est le siège ?", <Pins key="t" correct />],
+  pin: ["Où se trouve le trésor ?", <Pins key="t" correct />],
   puzzle: [
-    "Du plus petit au plus grand",
-    <span key="t" className="pv-puzzle">
-      <Img tall />
-      <Tiles labels={["États-Unis", "Europe", "Asie", "AMLAT"]} />
-    </span>,
+    "Du plus ancien au plus récent",
+    <Tiles key="t" column labels={["Pyramides", "Colisée", "Tour Eiffel", "Burj Khalifa"]} />,
   ],
-  poll: ["D’où aimes-tu travailler ?", <Tiles key="t" labels={["Maison", "Bureau", "Coworking", "Autre"]} />],
+  poll: ["Ta pizza préférée ?", <Tiles key="t" labels={["Margherita", "Reine", "4 fromages", "Chorizo"]} />],
   scale: [
-    "Je suis motivé(e) au travail",
+    "Ce quiz était-il fun ?",
     <span key="t" className="pv-scale">
       <span>
-        <small>Pas d’accord</small>
-        <small>D’accord</small>
+        <small>Bof</small>
+        <small>Génial</small>
       </span>
       <Dots count={5} active={3} />
     </span>,
   ],
   nps: [
-    "Recommanderais-tu SQuizz ?",
+    "Recommanderais-tu l’atelier ?",
     <span key="t" className="pv-scale">
       <span>
-        <small>Peu probable</small>
-        <small>Très probable</small>
+        <small>0 · Non</small>
+        <small>10 · Oui</small>
       </span>
-      <Dots count={11} active={8} />
+      <Dots count={11} active={9} />
     </span>,
   ],
   pinpoll: ["D’où viens-tu ?", <Pins key="t" />],
   wordcloud: [
-    "Dans quel service es-tu ?",
+    "Un mot pour cette soirée ?",
     <span key="t" className="pv-cloud">
-      <b className="c2">Marketing</b>
-      <b className="c1 big">Ingénierie</b>
-      <b className="c0 big">Technologie</b>
-      <b className="c3">Ventes</b>
-      <b className="c1">Support</b>
+      <b className="t1">Fun</b>
+      <b className="t0 big">Rythmé</b>
+      <b className="t2 big">Collectif</b>
+      <b className="t3">Top</b>
+      <b className="t1">Instructif</b>
     </span>,
   ],
   open: [
-    "Comment aimes-tu te former ?",
+    "Une idée pour la prochaine fois ?",
     <span key="t" className="pv-cards">
-      {["Physique", "Mélangé", "Virtuel", "Vidéo"].map((l, i) => (
-        <span key={l}>
+      {["Karaoké", "Blind test", "Escape game", "Quiz photo"].map((l, i) => (
+        <span key={l} className={`t${i}`}>
+          <b>{l}</b>
           <Lines n={2} />
-          <b className={`c${i}`}>{l}</b>
         </span>
       ))}
     </span>,
   ],
   brainstorm: [
-    "Quel sujet pour le projet ?",
+    "Un nom pour l’équipe ?",
     <span key="t" className="pv-ideas">
-      {["Réunions virtuelles", "Bien-être", "Formation", "Bureau hybride"].map((l, i) => (
-        <span key={l} className={`c${i}`}>
+      {["Les Cerveaux", "Quiz Team", "Les Futés", "Mode Turbo"].map((l, i) => (
+        <span key={l} className={`t${i}`}>
           {l}
-          <Star size={12} fill="currentColor" />
+          <Star size={11} fill="currentColor" />
         </span>
       ))}
     </span>,
@@ -158,7 +173,7 @@ export function LayoutPreview({ layout }: { layout: SlideLayout }) {
     <span className={`pv pv-slide-${layout}`} aria-hidden>
       {layout === "classic" && (
         <>
-          <b className="pv-title">Félicitations à l’équipe !</b>
+          <b className="pv-title">Bienvenue à tous !</b>
           <Img />
           <Lines n={3} />
         </>
@@ -166,8 +181,8 @@ export function LayoutPreview({ layout }: { layout: SlideLayout }) {
       {layout === "title" && (
         <span className="pv-split">
           <span>
-            <b className="pv-big">Formation de ventes</b>
-            <b className="pv-sub">Nouveau produit</b>
+            <b className="pv-sticker">MANCHE 1</b>
+            <b className="pv-big">Culture générale</b>
           </span>
           <Img tall />
         </span>
@@ -175,7 +190,7 @@ export function LayoutPreview({ layout }: { layout: SlideLayout }) {
       {layout === "titletext" && (
         <span className="pv-split">
           <span>
-            <b className="pv-title left">Voir les choses en grand</b>
+            <b className="pv-title left">Les règles du jeu</b>
             <Lines n={4} />
           </span>
           <Img tall />
@@ -184,12 +199,12 @@ export function LayoutPreview({ layout }: { layout: SlideLayout }) {
       {layout === "bullets" && (
         <span className="pv-split">
           <span>
-            <b className="pv-title left">Nos 5 valeurs :</b>
-            <ul className="pv-bullets">
-              {["Honnêteté", "Passion", "Inclusion", "Diversité"].map((l) => (
-                <li key={l}>{l}</li>
+            <b className="pv-title left">Au programme</b>
+            <span className="pv-bullets">
+              {["Quiz", "Pause", "Blind test", "Podium"].map((l) => (
+                <span key={l}>{l}</span>
               ))}
-            </ul>
+            </span>
           </span>
           <Img tall />
         </span>
@@ -199,16 +214,14 @@ export function LayoutPreview({ layout }: { layout: SlideLayout }) {
           <span className="pv-avatar">
             <ImageIcon size={16} />
           </span>
-          <b className="pv-title">« Heureux de vous accueillir. »</b>
-          <small className="pv-author">— PDG</small>
+          <b className="pv-quote">« Le savoir, ça se partage. »</b>
+          <small className="pv-author">— L’animateur</small>
         </>
       )}
       {layout === "bigimage" && (
         <>
-          <span className="pv-img hero">
-            <ImageIcon size={26} />
-          </span>
-          <small className="pv-author">Rencontre l’équipe</small>
+          <Img label="PHOTO" />
+          <small className="pv-caption">La photo de groupe</small>
         </>
       )}
     </span>
