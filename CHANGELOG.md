@@ -2,6 +2,21 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.2.0] — 2026-09-30
+
+### Abonnements
+- Paiement en ligne Stripe : souscription par carte, changement d'offre au prorata, arrêt et reprise, factures et carte dans le portail Stripe, synchronisation automatique par webhook.
+- Nouvelle page « Abonnement » dans l'espace client ; « Choisir … » sur Tarifs y mène, après connexion ou inscription.
+- Statut partenaire (Premium offert), activable depuis le super-admin.
+- Couleurs distinctes par offre : blanc, orange, bleu électrique, vert acide.
+- Nouvelles limites : Gratuit 1 quiz / 5 joueurs / 1 animateur / 10 Mo ; Essentiel 5 / 15 / 2 / 250 Mo ; Pro 20 / 50 / 5 / 500 Mo ; Premium 50 / 200 / 10 / 1 Go.
+
+### Sécurité
+- Limites vérifiées sous verrou par organisation (plus de dépassement par requêtes simultanées) ; une invitation ne peut plus dépasser le nombre de membres après un passage à une offre inférieure.
+
+### Légal
+- CGU (paiement Stripe, prorata, partenaires) et confidentialité (Stripe sous-traitant) mises à jour.
+
 ## [1.1.0] — 2026-09-30
 
 ### Offres
@@ -38,5 +53,6 @@ Première version publique, en ligne sur www.squizz.fun.
 - Purge automatique des données, export et suppression de compte.
 - Déploiement avec sauvegarde de la base et retour automatique en cas d'échec ; sauvegardes quotidiennes vérifiées, contrôle de santé, alertes.
 
+[1.2.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.2.0
 [1.1.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.1.0
 [1.0.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.0.0

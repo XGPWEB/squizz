@@ -34,6 +34,7 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 - **GitHub** : dépôt privé [XGPWEB/squizz](https://github.com/XGPWEB/squizz), README détaillé, versions numérotées (CHANGELOG, étiquettes `v1.0.0`, `v1.1.0`).
 - **Pied de page** réorganisé (logo et slogan, trois colonnes de liens, barre de crédit).
 - **Quatre offres sans engagement** : Gratuit, Essentiel 15 €/mois, Pro 30 €/mois, Premium annuel 310 €/an ; page Tarifs refaite, CGU mises à jour, bouton « Arrêter mon abonnement » dans l’espace client. Souscription par message, activation et facture à la main depuis le super-admin.
+- **Paiement Stripe** (page « Abonnement », webhook), **statut partenaire** (Premium offert) depuis le super-admin, couleurs par offre, limites verrouillées contre les requêtes simultanées.
 
 ## Reste à faire
 
@@ -41,5 +42,5 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 - **Compte client personnel** à créer avec une autre adresse que contact@pressweb.fr.
 - **NAS** : ajouter la récupération du module rsync `squizz-backups`.
 - **Mentions légales** : adresse postale complète de Pressweb.
-- **Abonnements** : paiement en ligne (Stripe) à brancher ; d’ici là, activer les offres et repasser en Gratuit à la main, et prévenir les abonnés Premium 1 à 3 mois avant la reconduction (promis dans les CGU).
+- **Stripe** : ajouter la clé secrète et le secret du webhook sur le serveur, configurer le webhook, le portail client et le pied de facture (TVA non applicable), puis redéployer. Prévenir les abonnés Premium 1 à 3 mois avant la reconduction (promis dans les CGU).
 - Facultatif : changer la clé secrète Turnstile ; revoir les chiffres du comparatif concurrents de temps en temps.

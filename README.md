@@ -57,9 +57,13 @@ Définies dans `lib/plans.ts` (limites, prix, textes), qui alimente la page Tari
 | Médias | 10 Mo | 250 Mo | 500 Mo | 1 Go |
 | Support | — | e-mail | prioritaire | prioritaire |
 
-**Souscription** (pas encore de paiement en ligne) : « Choisir … » sur `/tarifs` ouvre le formulaire de contact pré-rempli ; Pressweb active l'offre depuis le super-admin et envoie la facture.
+**Couleurs** : Gratuit blanc, Essentiel orange, Pro bleu électrique, Premium vert acide (cartes, badges).
 
-**Arrêt** : un administrateur clique sur « Arrêter mon abonnement » (page Équipe). Pressweb et l'administrateur reçoivent un e-mail, l'organisation est marquée « Arrêt demandé » dans le super-admin. À la fin de la période payée (fin du mois, ou de l'année pour Premium), repasser l'organisation sur Gratuit : la demande est alors soldée. Les quiz sont conservés.
+**Limites** : vérifiées côté serveur, sous un verrou par organisation (`lib/server/org-lock.ts`) pour que deux requêtes simultanées ne dépassent pas ensemble : quiz, membres (invitations, acceptation, réactivation), médias ; joueurs fixés au lancement de la partie. Après un passage à une offre inférieure, les contenus existants sont conservés, seule la création est bloquée.
+
+**Paiement (Stripe)** : `lib/server/billing.ts`. Page « Abonnement » de l'espace (`/app/abonnement`, administrateurs) : souscription par Stripe Checkout, changement d'offre au prorata, arrêt/reprise (fin de période), portail Stripe pour factures et carte. Le webhook `/api/billing/webhook` synchronise l'offre ; à la fin d'un abonnement l'organisation repasse seule sur Gratuit. Produits Stripe dans `lib/plans.ts` (`prod_…` : leur prix par défaut est facturé). Actif seulement si `STRIPE_SECRET_KEY` et `STRIPE_WEBHOOK_SECRET` sont dans `/opt/squizz-secrets.env` ; sinon, souscription par le formulaire de contact et activation à la main dans le super-admin.
+
+**Partenaires** : le super-admin active le statut partenaire d'une organisation (liste ou fiche) ; elle bénéficie gratuitement de Premium, quelle que soit l'offre facturée, et n'est pas comptée dans le revenu.
 
 ## Stack
 
