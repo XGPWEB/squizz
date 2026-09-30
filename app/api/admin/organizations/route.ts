@@ -40,13 +40,23 @@ export const GET = route(async () => {
   };
 });
 
-const createSchema = z.object({ name: nameSchema, adminEmail: emailSchema, plan: z.enum(PLAN_KEYS) });
+/** « PARTNER »: a partner organisation, Premium offered for free (billed plan stays FREE). */
+const createSchema = z.object({
+  name: nameSchema,
+  adminEmail: emailSchema,
+  plan: z.enum([...PLAN_KEYS, "PARTNER"]),
+});
 
 /** Creates an organisation and invites its first administrator. */
 export const POST = route(async (req) => {
   const admin = await requireSuperAdmin();
   const input = await json(req, createSchema);
-  const org = await prisma.organization.create({ data: { name: input.name, plan: input.plan } });
+  const partner = input.plan === "PARTNER";
+  const org = await prisma.organization.create({
+    data: partner
+      ? { name: input.name, plan: "FREE", partner: true, partnerSince: new Date() }
+      : { name: input.name, plan: input.plan as Exclude<typeof input.plan, "PARTNER"> },
+  });
   const { link, sent } = await createInvitation(
     org.id,
     input.adminEmail,

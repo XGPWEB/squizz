@@ -1,4 +1,5 @@
 """Roles, rights and plans: python3 tests/accounts.py (needs the seeded super-admin in .env)."""
+import secrets
 from helpers import client, call, request, signup, invite, login, env, admin_login, set_plan
 
 q = lambda title: {'title': title, 'questions': [{'text': 'Q ?', 'options': ['a', 'b'], 'correct': 0}]}
@@ -113,6 +114,19 @@ call(admin, 'list')
 actions = {e['action'] for e in request(root, 'GET', '/api/admin/audit')['entries']}
 assert {'organization.update', 'member.update', 'user.reset_link', 'invitation.create', 'subscription.cancel',
         'subscription.resume'} <= actions
+
+# Created directly as a partner from the super-admin: Premium for free once the admin accepts the invitation.
+made = request(root, 'POST', '/api/admin/organizations', {'name': 'Org partenaire', 'adminEmail': f'partenaire-{secrets.token_hex(4)}@example.test', 'plan': 'PARTNER'})
+partner_org = next(o for o in request(root, 'GET', '/api/admin/organizations')['organizations'] if o['id'] == made['id'])
+assert partner_org['partner'] is True and partner_org['plan'] == 'FREE', partner_org
+p_admin, p_pw = client(), 'Motdepasse-' + secrets.token_hex(4)
+request(p_admin, 'POST', f"/api/invitations/{made['link'].rsplit('/', 1)[1]}", {'name': 'Paul', 'password': p_pw})
+p_email = request(root, 'GET', f"/api/admin/organizations/{made['id']}")['users'][0]['email']
+login(p_admin, p_email, p_pw)
+assert request(p_admin, 'GET', '/api/org')['organization']['limits']['maxPlayersPerGame'] == 80
+# Choosing a regular plan ends the partnership.
+request(root, 'PATCH', f"/api/admin/organizations/{made['id']}", {'partner': False, 'plan': 'STARTER'})
+assert request(p_admin, 'GET', '/api/org')['organization']['limits']['maxPlayersPerGame'] == 15
 
 request(root, 'DELETE', f'/api/admin/organizations/{org_id}', {'confirm': 'mauvais nom'}, expect=400)
 request(root, 'DELETE', f'/api/admin/organizations/{org_id}', {'confirm': 'Org droits'})

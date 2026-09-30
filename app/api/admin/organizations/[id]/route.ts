@@ -71,7 +71,8 @@ export const PATCH = route<{ id: string }>(async (req, { id }) => {
     });
   await audit(admin, "organization.update", id, input);
   // The organisation's administrators hear about a new plan, a suspension or a reactivation.
-  const plan = input.plan && input.plan !== org.plan ? input.plan : undefined;
+  // A partnership that starts or ends has its own email (it names the plan that applies next).
+  const plan = !partnerChange && input.plan && input.plan !== org.plan ? input.plan : undefined;
   const status = input.status && input.status !== org.status ? input.status : undefined;
   if (partnerChange) {
     const admins = await prisma.user.findMany({
@@ -84,7 +85,7 @@ export const PATCH = route<{ id: string }>(async (req, { id }) => {
           name: a.name,
           organization: input.name ?? org.name,
           partner: input.partner!,
-          plan: org.plan,
+          plan: input.plan ?? org.plan,
         }),
       );
   }

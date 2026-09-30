@@ -9,6 +9,9 @@ Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog]
 - Conflits d'édition détectés côté serveur (version du quiz, contrôle atomique) : rien n'est écrasé, la personne choisit la version à garder.
 - Dupliquer une étape, annuler sa suppression ; dupliquer un quiz, copier un SQuizz Original.
 
+### Super-admin
+- Offre « Partenaire (Premium offert) » au choix dès la création d’une organisation, et dans le menu d’offre de la liste (choisir une offre classique met fin au partenariat).
+
 ### Bibliothèque
 - Recherche, tri par dernière modification, filtre « Mes quiz », durée estimée d'après les réglages des étapes.
 

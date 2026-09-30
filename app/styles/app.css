@@ -578,8 +578,9 @@ main:focus {
   font: 700 11px monospace;
   white-space: nowrap;
 }
-.partner-toggle.on {
+.partner-select {
   background: var(--pink);
+  font-weight: 800;
 }
 .stripe-flag {
   display: inline-block;

@@ -116,6 +116,7 @@ export function Organizations() {
                   {PLANS[k].label}
                 </option>
               ))}
+              <option value="PARTNER">Partenaire (Premium offert)</option>
             </select>
           </label>
           <button className="button" disabled={busy}>
@@ -149,7 +150,6 @@ export function Organizations() {
                 <th>Organisation</th>
                 <th>Offre</th>
                 <th>Statut</th>
-                <th>Partenaire</th>
                 <th>Membres</th>
                 <th>Quiz</th>
                 <th>Parties 24 h</th>
@@ -168,17 +168,41 @@ export function Organizations() {
                   <td>
                     <select
                       aria-label={`Offre de ${o.name}`}
-                      value={o.plan}
+                      className={o.partner ? "partner-select" : undefined}
+                      value={o.partner ? "PARTNER" : o.plan}
                       disabled={busy}
-                      onChange={(e) =>
-                        patch(o.id, { plan: e.target.value }, `Offre de ${o.name} mise à jour.`)
-                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "PARTNER") {
+                          if (
+                            !confirm(
+                              `Rendre ${o.name} partenaire ? L’offre ${PLANS.PREMIUM.label} lui sera offerte.`,
+                            )
+                          )
+                            return;
+                          patch(o.id, { partner: true }, `${o.name} est partenaire : Premium offert.`);
+                        } else if (o.partner) {
+                          const label = PLANS[value as Plan].label;
+                          if (
+                            !confirm(
+                              `Retirer le statut partenaire de ${o.name} et passer à l’offre ${label} ?`,
+                            )
+                          )
+                            return;
+                          patch(
+                            o.id,
+                            { partner: false, plan: value },
+                            `${o.name} n’est plus partenaire : offre ${label}.`,
+                          );
+                        } else patch(o.id, { plan: value }, `Offre de ${o.name} mise à jour.`);
+                      }}
                     >
                       {PLAN_KEYS.map((k) => (
                         <option key={k} value={k}>
                           {PLANS[k].label}
                         </option>
                       ))}
+                      <option value="PARTNER">Partenaire (Premium offert)</option>
                     </select>
                     {o.subscriptionStatus && (
                       <span className="stripe-flag" title={`Abonnement Stripe : ${o.subscriptionStatus}`}>
@@ -213,36 +237,6 @@ export function Organizations() {
                       }}
                     >
                       {o.status === "ACTIVE" ? "Active" : "Suspendue"}
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      className={`status partner-toggle ${o.partner ? "on" : "off"}`}
-                      disabled={busy}
-                      title={
-                        o.partner
-                          ? "Cliquer pour retirer le statut partenaire"
-                          : "Premium offert : cliquer pour activer"
-                      }
-                      onClick={() => {
-                        if (
-                          !confirm(
-                            o.partner
-                              ? `Retirer le statut partenaire de ${o.name} ? L’organisation reviendra sur son offre ${PLANS[o.plan].label}.`
-                              : `Rendre ${o.name} partenaire ? L’offre ${PLANS.PREMIUM.label} lui sera offerte.`,
-                          )
-                        )
-                          return;
-                        patch(
-                          o.id,
-                          { partner: !o.partner },
-                          o.partner
-                            ? `${o.name} n’est plus partenaire.`
-                            : `${o.name} est partenaire : Premium offert.`,
-                        );
-                      }}
-                    >
-                      {o.partner ? "Partenaire" : "Non"}
                     </button>
                   </td>
                   <td>{o.members}</td>
