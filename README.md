@@ -2,6 +2,8 @@
 
 Plateforme de quiz collectif en français, sur **www.squizz.fun** : site vitrine, espace des organisations (quiz, animateurs, droits), super-admin, et jeu en direct rejoint par les joueurs avec un code ou un QR code. Service conçu par [Pressweb](https://www.pressweb.fr/), sur le même principe que Barber Q PRO.
 
+Version en ligne : voir [CHANGELOG.md](CHANGELOG.md). Historique en clair : [JOURNAL.md](JOURNAL.md). Audit : [AUDIT-2026-09-30.md](AUDIT-2026-09-30.md).
+
 ## Rôles
 
 | Rôle | Peut |
@@ -33,7 +35,7 @@ Next.js 16 (App Router, sortie `standalone`), PostgreSQL + Prisma 5, NextAuth 4 
 ```
 app/(site)/        site public : accueil, tarifs, jouer, partie, connexion, inscription, légal
 app/app/           espace organisation : bibliothèque, éditeur, équipe, compte
-app/super-admin/         super-admin : organisations, détail, journal
+app/super-admin/   super-admin : organisations, détail, journal
 app/api/           game (jeu + quiz), media, account, invitations, org, admin, auth, health
 lib/server/        guard (droits), game, quiz-store, accounts, rate-limit, audit, mail
 lib/question.ts    14 types de questions, 6 diapos, validation et correction
@@ -61,6 +63,21 @@ npm run test:e2e            # intégration contre le serveur de dev sur :5173
 ```
 
 Intégration : `game-flow`, `rich-game-flow`, `game-live` (plafond de joueurs en concurrence, retrait d'un joueur, compte à rebours), `quiz-management`, `accounts` (rôles, offres, super-admin), `rights` (export, suppression de compte), `security` (requêtes d'autres sites, pas de verrouillage, puzzle), `contact`, `super-admin`, `timeout`. Les limites de débit sont multipliées par 100 hors production pour que les tests puissent créer de nombreux comptes.
+
+## Versions
+
+Numérotation `MAJEUR.MINEUR.CORRECTIF` ([SemVer](https://semver.org/lang/fr/)) : correctif pour une correction, mineur pour une nouveauté, majeur pour un changement qui casse l'existant (données, adresses, comptes). La branche `main` correspond à ce qui est en ligne ; chaque mise en ligne notable reçoit une étiquette `vX.Y.Z` et une entrée dans [CHANGELOG.md](CHANGELOG.md).
+
+Publier une version (sur le Mac, dans le dossier du projet) :
+
+```sh
+npm version minor --no-git-tag-version   # ou patch / major : met à jour package.json
+# compléter CHANGELOG.md, puis :
+git commit -am "Version X.Y.Z"
+git tag -a vX.Y.Z -m "Version X.Y.Z"
+git push origin main --tags
+gh release create vX.Y.Z --notes-from-tag
+```
 
 ## Déploiement (VPS Hostinger)
 
