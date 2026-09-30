@@ -47,10 +47,15 @@ export function Leaderboard({ players }: { players: Game["players"] }) {
           <span className="score-end">
             {p.movement !== null && (
               <span
-                className={`movement ${p.movement > 0 ? "up" : ""}`}
-                aria-label={`${p.movement > 0 ? "Gain" : "Perte"} de ${Math.abs(p.movement)} places`}
+                className={`movement ${p.movement > 0 ? "up" : p.movement < 0 ? "down" : "same"}`}
+                aria-label={
+                  p.movement === 0
+                    ? "Même place"
+                    : `${p.movement > 0 ? "Gagne" : "Perd"} ${Math.abs(p.movement)} place${Math.abs(p.movement) > 1 ? "s" : ""}`
+                }
+                title={p.movement === 0 ? "Même place" : undefined}
               >
-                {p.movement > 0 ? `↑ ${p.movement}` : p.movement < 0 ? `↓ ${-p.movement}` : "—"}
+                {p.movement > 0 ? `▲ ${p.movement}` : p.movement < 0 ? `▼ ${-p.movement}` : "="}
               </span>
             )}
             <strong>{p.score.toLocaleString("fr-FR")} pts</strong>

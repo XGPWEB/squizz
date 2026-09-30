@@ -604,10 +604,25 @@ footer {
   white-space: nowrap;
 }
 .movement {
-  font-size: 13px;
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  padding: 2px 7px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: white;
+  font-size: 12px;
 }
 .movement.up {
-  color: #225e1c;
+  background: #b8f5a8;
+  color: #1c4d16;
+}
+.movement.down {
+  background: #ffd0e6;
+  color: #7a1747;
+}
+.movement.same {
+  color: #6b665e;
 }
 .sticker {
   display: inline-block;
