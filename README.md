@@ -54,18 +54,37 @@ npm run dev -- --port 5173
 ## Tests
 
 ```sh
-npm test                    # unitaires (Vitest) — bloquants au déploiement
+npm test                    # unitaires (Vitest) — bloquants au déploiement avec tsc et le lint
 npm run test:e2e            # intégration contre le serveur de dev sur :5173
 ```
 
-`tests/accounts.py` couvre les droits : inscription, invitations, rôles, isolation entre organisations, limites des offres, dernier administrateur, désactivation, super-admin (offres, suspension, réinitialisation, journal, suppression), changement et réinitialisation du mot de passe. Les limites de débit (connexion, inscription) sont multipliées par 100 hors production pour que les tests puissent créer de nombreux comptes.
+Intégration : `game-flow`, `rich-game-flow`, `game-live` (plafond de joueurs en concurrence, retrait d'un joueur, compte à rebours), `quiz-management`, `accounts` (rôles, offres, super-admin), `rights` (export, suppression de compte), `security` (requêtes d'autres sites, pas de verrouillage, puzzle), `contact`, `super-admin`, `timeout`. Les limites de débit sont multipliées par 100 hors production pour que les tests puissent créer de nombreux comptes.
 
 ## Déploiement (VPS Hostinger)
 
-Même méthode que les autres applications du VPS : app Next.js standalone lancée par PM2 (Node 24, port 3010, `/opt/squizz`), base PostgreSQL dédiée `squizz`, Nginx + Let’s Encrypt, sauvegarde quotidienne (base + médias, 7 jours) et contrôle de santé toutes les 5 minutes avec alerte email.
+SQuizz tourne sous l'utilisateur système `squizz` avec son propre PM2 (Node 24, port 3010, `/opt/squizz`), base PostgreSQL dédiée `squizz`, Nginx + Let's Encrypt.
 
-1. `bash deploy.sh --setup` — une seule fois : base, utilisateur, secrets (`/opt/squizz-secrets.env`, générés sur le serveur), dossiers, sauvegarde, santé, cron.
-2. Dans hPanel Hostinger → DNS de squizz.fun : enregistrements **A** `@` et `www` vers l’IP du VPS.
-3. `bash deploy.sh --https` — une fois le DNS propagé : site Nginx + certificat.
-4. `bash deploy.sh` — à chaque mise en production : tests, build, migrations, bascule (version précédente gardée dans `/opt/squizz/app-prev`), redémarrage, contrôle de santé.
-5. Super-admin : sur le VPS, `cd /opt/squizz/app && set -a && . /opt/squizz-secrets.env && set +a && /opt/node24/bin/node create-super-admin.mjs contact@pressweb.fr` affiche un lien valable 1 heure pour choisir le mot de passe.
+| Commande | Rôle |
+|---|---|
+| `bash deploy.sh` | Types, lint, tests, build, **dump de la base**, migrations, bascule, contrôle de santé, **retour automatique** à la version précédente en cas d'échec |
+| `bash deploy.sh --rollback` | Remet la version précédente (`/opt/squizz/app-prev`) ; la base n'est pas modifiée |
+| `bash deploy.sh --nginx` | Met à jour le site Nginx ; l'ancienne config est remise si `nginx -t` échoue |
+| `bash deploy.sh --setup` | Préparation idempotente : utilisateur, base, secrets, sauvegardes, purge, santé, cron, module rsync, logrotate |
+| `bash deploy.sh --https` | Première mise en place du certificat |
+
+**Tâches planifiées** : sauvegarde 2 h 15 (base + médias, contenu vérifié, 7 jours + dimanches sur 5 semaines, alerte si plus de 26 h), purge 3 h 30 (`deploy/purge.mjs` : parties 24 h, journal 12 mois, contact 3 ans, médias inutilisés), santé toutes les 5 min. Alertes vers `ALERT_EMAIL` (contact@pressweb.fr).
+
+**Copie hors serveur** : le module rsync `squizz-backups` (même compte et mêmes restrictions que Pôle Jeunesse) doit être récupéré par le NAS.
+
+**Restaurer une sauvegarde** (sur le VPS, en root) :
+
+```sh
+set -a; . /opt/squizz-secrets.env; set +a; U="${DATABASE_URL%%\?*}"
+bash /opt/squizz/remote-release.sh rollback            # si le code est en cause
+gunzip -c /opt/backups/squizz-db/pre-deploy-AAAAMMJJ-HHMMSS.sql.gz | psql "$U"   # base vide requise
+tar -xzf /opt/backups/squizz-db/squizz-media-AAAAMMJJ-HHMM.tar.gz -C /opt && chown -R squizz:squizz /opt/squizz-media
+```
+
+Tester d'abord la restauration dans une base temporaire (`createdb squizz_restore`) avant d'écraser la production.
+
+**Super-admin** : `cd /opt/squizz/app && set -a && . /opt/squizz-secrets.env && set +a && /opt/node24/bin/node create-super-admin.mjs contact@pressweb.fr` affiche un lien valable 1 heure pour choisir le mot de passe.
