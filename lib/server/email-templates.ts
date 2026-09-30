@@ -190,7 +190,7 @@ export function welcomeEmail(o: { name: string; organization: string }): Email {
                "<strong>Faites jouer la salle</strong> : chacun répond depuis son téléphone, sans application.",
              ])}`,
       cta: { label: "Créer mon premier quiz", url: `${site}/app`, intro: "À vous de jouer !" },
-      note: `Vous êtes sur l’offre <strong>Gratuit</strong> : 5 quiz, 20 joueurs par partie et 3 membres. Une question ? Répondez simplement à cet email.`,
+      note: `Vous êtes sur l’offre <strong>Gratuit</strong> : ${limitsSummary(PLANS.FREE)}. Pour aller plus loin, voyez nos offres sans engagement sur ${appUrl()}/tarifs. Une question ? Répondez simplement à cet email.`,
     }),
   };
 }

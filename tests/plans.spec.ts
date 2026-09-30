@@ -21,5 +21,5 @@ test("les prix affichés sont ceux de la grille tarifaire", () => {
     "310 € / an",
   ]);
   expect(PLANS.FREE.maxPlayersPerGame).toBeLessThanOrEqual(100);
-  expect(limitsSummary(PLANS.FREE)).toBe("3 quiz, 20 joueurs par partie, 1 membre, 50 Mo de médias");
+  expect(limitsSummary(PLANS.FREE)).toBe("1 quiz, 5 joueurs par partie, 1 membre, 10 Mo de médias");
 });

@@ -1,13 +1,16 @@
 """Application security guards: python3 tests/security.py."""
 import json, urllib.request, urllib.error
-from helpers import BASE, client, call, request, signup, login
+import secrets
+from helpers import BASE, client, call, request, signup, login, set_plan
 
 def raw(c, path, body, headers, method='POST'):
     req = urllib.request.Request(BASE + path, data=body, headers=headers, method=method)
     try: return c.open(req, timeout=30).status
     except urllib.error.HTTPError as e: return e.code
 
-admin, email, pw = signup()
+org = f'Org securite {secrets.token_hex(3)}'
+admin, email, pw = signup(org)
+set_plan(org, 'STARTER')  # plusieurs quiz
 body = json.dumps({'quiz': {'title': 'x', 'questions': [{'text': 'Q', 'options': ['a', 'b'], 'correct': 0}]}, 'action': 'save'}).encode()
 # A page on another site cannot drive the API, even with the victim's cookies.
 assert raw(admin, '/api/game', body, {'Content-Type': 'application/json', 'Origin': 'https://evil.example'}) == 403

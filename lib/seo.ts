@@ -30,8 +30,8 @@ export const ADVANTAGES = [
     text: "Serveur à Francfort (Allemagne), conformité RGPD, parties et réponses des joueurs supprimées automatiquement après 24 heures.",
   },
   {
-    title: `${free.maxPlayersPerGame} joueurs gratuits par partie`,
-    text: `L’offre gratuite accueille jusqu’à ${free.maxPlayersPerGame} joueurs par partie, sans limite de parties et sans carte bancaire. Jusqu’à ${top.maxPlayersPerGame} joueurs avec les offres payantes.`,
+    title: "Essai gratuit, puis sans engagement",
+    text: `L’offre gratuite permet d’essayer SQuizz sans carte bancaire (${free.maxQuizzes} quiz, ${free.maxPlayersPerGame} joueurs par partie). Les offres payantes, sans engagement et résiliables à tout moment, vont jusqu’à ${top.maxPlayersPerGame} joueurs par partie.`,
   },
   {
     title: "Rien à installer, aucun compte joueur",
@@ -69,8 +69,8 @@ export const FAQ: { q: string; a: string }[] = [
     q: "SQuizz est-il une bonne alternative à Kahoot! ?",
     a:
       "Oui, si vous cherchez un outil en français avec des données hébergées en Europe : SQuizz reprend le principe du quiz projeté " +
-      `et joué sur téléphone, propose ${QUESTION_TYPES.length} types de questions et accueille ${free.maxPlayersPerGame} joueurs par partie ` +
-      "dès l’offre gratuite, sans publicité.",
+      `et joué sur téléphone, propose ${QUESTION_TYPES.length} types de questions et accueille jusqu’à ${top.maxPlayersPerGame} joueurs par partie, ` +
+      "sans publicité et sans engagement.",
   },
   {
     q: "Les joueurs doivent-ils installer une application ou créer un compte ?",
@@ -79,7 +79,7 @@ export const FAQ: { q: string; a: string }[] = [
   {
     q: "SQuizz est-il gratuit ?",
     a:
-      `Oui, l’offre gratuite comprend ${free.maxQuizzes} quiz, ${free.maxPlayersPerGame} joueurs par partie et ${free.maxMembers} membres d’équipe, ` +
+      `Oui, pour essayer : l’offre gratuite comprend ${free.maxQuizzes} quiz, ${free.maxPlayersPerGame} joueurs par partie et ${free.maxMembers} animateur, ` +
       `sans carte bancaire. Pour aller plus loin : ${PAID_PLANS_TEXT}, sans engagement et résiliables à tout moment.`,
   },
   {

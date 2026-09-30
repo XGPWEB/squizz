@@ -24,7 +24,7 @@ function features(p: PlanLimits) {
         : `${p.maxMembers} animateurs dans l’équipe`,
     `${sizeLabel(p.mediaBytes)} de médias`,
     "Tous les types de questions et de diapos",
-    p.prioritySupport ? "Support prioritaire" : "Support par e-mail",
+    ...(p.support ? [p.support === "priority" ? "Support prioritaire" : "Support par e-mail"] : []),
   ];
 }
 

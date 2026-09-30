@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/alternative-kahoot" },
   title: "Alternative française à Kahoot! — comparatif",
   description:
-    "SQuizz, l’alternative française à Kahoot!, Mentimeter et Wooclap : quiz en direct sur téléphone, 20 joueurs gratuits par partie, données hébergées en Europe, sans publicité.",
+    "SQuizz, l’alternative française à Kahoot!, Mentimeter et Wooclap : quiz en direct sur téléphone, essai gratuit, offres sans engagement, données hébergées en Europe, sans publicité.",
 };
 
 const free = PLANS.FREE;
@@ -93,8 +93,8 @@ export default function AlternativePage() {
         <p className="eyebrow">COMPARATIF</p>
         <h1>L’alternative française à Kahoot!</h1>
         <p className="lead">
-          Même plaisir du quiz en direct, avec une interface en français, des données hébergées en Europe et{" "}
-          {free.maxPlayersPerGame} joueurs gratuits par partie.
+          Même plaisir du quiz en direct, avec une interface en français, des données hébergées en Europe et
+          des offres sans engagement.
         </p>
       </div>
 
@@ -158,7 +158,7 @@ export default function AlternativePage() {
               <li>vos données doivent rester en Europe (RGPD) ;</li>
               <li>vos parties comptent jusqu’à {PLANS.PREMIUM.maxPlayersPerGame} joueurs ;</li>
               <li>plusieurs animateurs partagent les mêmes quiz ;</li>
-              <li>vous voulez commencer gratuitement avec un vrai groupe, pas seulement un test.</li>
+              <li>vous voulez essayer gratuitement, puis vous abonner sans engagement.</li>
             </ul>
           </article>
           <article>
@@ -185,7 +185,7 @@ export default function AlternativePage() {
         <div>
           <h2>Essayez avec votre prochain groupe.</h2>
           <p>
-            Créez votre espace en une minute, sans carte bancaire, et lancez une partie jusqu’à{" "}
+            Créez votre espace en une minute, sans carte bancaire, et lancez une première partie jusqu’à{" "}
             {free.maxPlayersPerGame} joueurs.
           </p>
         </div>

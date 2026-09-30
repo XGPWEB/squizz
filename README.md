@@ -51,11 +51,11 @@ Définies dans `lib/plans.ts` (limites, prix, textes), qui alimente la page Tari
 | | Gratuit | Essentiel | Pro | Premium annuel |
 |---|---|---|---|---|
 | Prix | 0 € | 15 € / mois | 30 € / mois | 310 € / an |
-| Quiz | 3 | 20 | illimités | illimités |
-| Joueurs par partie | 20 | 50 | 100 | 200 |
-| Membres (animateurs) | 1 | 3 | 10 | illimités |
-| Médias | 50 Mo | 1 Go | 5 Go | 20 Go |
-| Support | e-mail | e-mail | prioritaire | prioritaire |
+| Quiz | 1 | 5 | 20 | 50 |
+| Joueurs par partie | 5 | 15 | 50 | 200 |
+| Membres (animateurs) | 1 | 2 | 5 | 10 |
+| Médias | 10 Mo | 250 Mo | 500 Mo | 1 Go |
+| Support | — | e-mail | prioritaire | prioritaire |
 
 **Souscription** (pas encore de paiement en ligne) : « Choisir … » sur `/tarifs` ouvre le formulaire de contact pré-rempli ; Pressweb active l'offre depuis le super-admin et envoie la facture.
 

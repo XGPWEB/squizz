@@ -13,12 +13,12 @@ request(client(), 'POST', '/api/account/signup',
         {'organization': 'X', 'name': 'Y', 'email': 'court@example.test', 'password': 'court'}, expect=400)
 login(client(), admin_email, 'mauvais-mot-de-passe', ok=False)
 
-# --- Gratuit: 3 quiz, 1 membre (l'administrateur), 20 joueurs ------------------------------
+# --- Gratuit: 1 quiz, 1 membre (l'administrateur), 5 joueurs --------------------------------
 request(admin, 'POST', '/api/org/invitations', {'email': 'seul@example.test', 'role': 'HOST'}, expect=403)
 free, _, _ = signup()
-for i in range(3):
-    call(free, 'save', quiz=q(f'Gratuit {i}'))
-call(free, 'save', expect=403, quiz=q('Quatrième'))
+call(free, 'save', quiz=q('Gratuit'))
+call(free, 'save', expect=403, quiz=q('Deuxième'))
+assert call(free, 'state', code=call(free, 'create', quizId='geo')['code'])['maxPlayers'] == 5
 # Nothing to stop on the free plan.
 request(free, 'POST', '/api/org/subscription', {'action': 'cancel'}, expect=400)
 set_plan('Org droits', 'STARTER')
@@ -49,18 +49,17 @@ call(outsider, 'create', expect=404, quizId=host_quiz)
 member_ids = [m['id'] for m in org['members']]
 request(outsider, 'PATCH', f'/api/org/members/{member_ids[0]}', {'role': 'HOST'}, expect=404)
 
-# --- Plan limits (Essentiel: 20 quiz, 3 membres, 50 joueurs) ------------------------------
-for i in range(18):
+# --- Plan limits (Essentiel: 5 quiz, 2 membres, 15 joueurs) --------------------------------
+for i in range(3):
     call(admin, 'save', quiz=q(f'Remplissage {i}'))
-call(admin, 'save', expect=403, quiz=q('Vingt et unième'))
-invite(admin, 'HOST', 'Troisième')
-request(admin, 'POST', '/api/org/invitations', {'email': 'quatrieme@example.test', 'role': 'HOST'}, expect=403)
+call(admin, 'save', expect=403, quiz=q('Sixième'))
+request(admin, 'POST', '/api/org/invitations', {'email': 'troisieme@example.test', 'role': 'HOST'}, expect=403)
 code = call(admin, 'create', quizId='general')['code']
-assert call(admin, 'state', code=code)['maxPlayers'] == 50
-players = [client() for _ in range(51)]
-for i, p in enumerate(players[:50]):
+assert call(admin, 'state', code=code)['maxPlayers'] == 15
+players = [client() for _ in range(16)]
+for i, p in enumerate(players[:15]):
     call(p, 'join', code=code, name=f'Joueur {i}')
-call(players[50], 'join', expect=400, code=code, name='En trop')
+call(players[15], 'join', expect=400, code=code, name='En trop')
 
 # --- The organisation always keeps an admin -----------------------------------------------
 admin_id = next(m['id'] for m in request(admin, 'GET', '/api/org')['members'] if m['role'] == 'ORG_ADMIN')
@@ -86,9 +85,9 @@ assert request(admin, 'GET', '/api/org')['organization']['cancelRequestedAt'] is
 request(admin, 'POST', '/api/org/subscription', {'action': 'cancel'})
 request(root, 'PATCH', f'/api/admin/organizations/{org_id}', {'plan': 'PRO'})
 assert request(admin, 'GET', '/api/org')['organization']['cancelRequestedAt'] is None
-call(admin, 'save', quiz=q('Vingt et unième, en Pro'))
+call(admin, 'save', quiz=q('Sixième, en Pro'))
 request(admin, 'PATCH', f'/api/org/members/{host_id}', {'active': True})
-assert call(admin, 'state', code=call(admin, 'create', quizId='geo')['code'])['maxPlayers'] == 100
+assert call(admin, 'state', code=call(admin, 'create', quizId='geo')['code'])['maxPlayers'] == 50
 
 link = request(root, 'POST', f'/api/admin/users/{host_id}/reset')['link']
 request(client(), 'POST', '/api/account/reset', {'token': link.rsplit('/', 1)[1], 'password': 'Nouveau-mdp-42'})

@@ -1,21 +1,24 @@
 """Live-game guarantees: python3 tests/game-live.py (dev server on :5173)."""
 import threading, time
-from helpers import client, call, request, signup
+import secrets
+from helpers import client, call, request, signup, set_plan
 
-host, _, _ = signup()
+org = f'Org direct {secrets.token_hex(3)}'
+host, _, _ = signup(org)
+set_plan(org, 'PRO')
 quiz = {'title': 'Direct', 'questions': [{'text': 'Q1 ?', 'options': ['a', 'b'], 'correct': 0},
                                          {'text': 'Q2 ?', 'options': ['a', 'b'], 'correct': 1}]}
 qid = call(host, 'save', quiz=quiz)['quiz']['id']
 code = call(host, 'create', quizId=qid)['code']
 
-# --- Simultaneous arrivals never exceed the plan's cap (Gratuit: 20) ---
-players = [client() for _ in range(30)]
+# --- Simultaneous arrivals never exceed the plan's cap (Pro: 50) ---
+players = [client() for _ in range(60)]
 def join(i):
     request(players[i], 'POST', '/api/game', {'action': 'join', 'code': code, 'name': f'J{i}'}, expect=None)
-threads = [threading.Thread(target=join, args=(i,)) for i in range(30)]
+threads = [threading.Thread(target=join, args=(i,)) for i in range(60)]
 [t.start() for t in threads]; [t.join() for t in threads]
 lobby = call(host, 'state', code=code)
-assert len(lobby['players']) == 20, len(lobby['players'])
+assert len(lobby['players']) == 50, len(lobby['players'])
 
 # --- The host removes a player; they cannot come back or play ---
 inside = [p for p in players if request(p, 'POST', '/api/game', {'action': 'state', 'code': code}, expect=None).get('code')]
@@ -25,7 +28,7 @@ call(keeper, 'kick', expect=403, code=code, name=victim_name)             # only
 call(host, 'kick', code=code, name=victim_name)
 call(victim, 'state', expect=403, code=code)
 call(victim, 'join', expect=403, code=code, name='Revenant')
-assert len(call(host, 'state', code=code)['players']) == 19
+assert len(call(host, 'state', code=code)['players']) == 49
 
 # --- "Ready?" countdown: question hidden and answers refused until it opens ---
 out = request(host, 'POST', '/api/game', {'action': 'start', 'code': code})

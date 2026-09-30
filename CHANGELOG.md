@@ -5,7 +5,7 @@ Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog]
 ## [1.1.0] — 2026-09-30
 
 ### Offres
-- Quatre offres sans engagement : Gratuit (3 quiz, 20 joueurs, 1 membre, 50 Mo), Essentiel à 15 € / mois (20 quiz, 50 joueurs, 3 membres, 1 Go), Pro à 30 € / mois (quiz illimités, 100 joueurs, 10 membres, 5 Go, support prioritaire) et Premium annuel à 310 € / an (200 joueurs, membres illimités, 20 Go, support prioritaire).
+- Quatre offres sans engagement : Gratuit (1 quiz, 5 joueurs, 1 animateur, 10 Mo), Essentiel à 15 € / mois (5 quiz, 15 joueurs, 2 animateurs, 250 Mo, support par e-mail), Pro à 30 € / mois (20 quiz, 50 joueurs, 5 animateurs, 500 Mo, support prioritaire) et Premium annuel à 310 € / an (50 quiz, 200 joueurs, 10 animateurs, 1 Go, support prioritaire).
 - Nouvelle page Tarifs sur 4 colonnes, avec les questions fréquentes sur l'abonnement ; « Choisir … » pré-remplit le formulaire de contact.
 - Bouton « Arrêter mon abonnement » (et « Reprendre ») sur la page Équipe, e-mails de confirmation à l'administrateur et à Pressweb, repère « Arrêt demandé » dans le super-admin.
 - Super-admin : choix entre les 4 offres, revenu mensuel estimé des abonnements actifs.
