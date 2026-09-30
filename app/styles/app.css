@@ -607,3 +607,93 @@ main:focus {
 .plan-choice .price small {
   font-size: 18px;
 }
+/* Library search, sort and filter */
+.library-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin: 10px 0 24px;
+}
+.library-search {
+  flex: 1 1 260px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+}
+.library-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  padding: 12px 0;
+  background: transparent;
+  font: inherit;
+  outline: none;
+}
+.library-search:focus-within {
+  box-shadow: 3px 3px 0 var(--electric);
+}
+.library-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 12px monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.library-sort select {
+  text-transform: none;
+  letter-spacing: 0;
+}
+.library-mine {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+.library-mine input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--ink);
+}
+.library-mine {
+  white-space: nowrap;
+}
+.library-mine:has(input:checked) {
+  background: var(--acid);
+}
+.library-empty {
+  margin-bottom: 30px;
+}
+.card-updated {
+  margin: -4px 0 10px;
+  font: 12px monospace;
+  color: #55514b;
+}
+.card-bottom > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+@media (max-width: 560px) {
+  .card-bottom > span:first-child {
+    flex: 1 1 100%;
+  }
+  .library-sort {
+    flex: 1 1 100%;
+  }
+  .library-sort select {
+    flex: 1;
+  }
+}

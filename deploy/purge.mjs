@@ -17,7 +17,9 @@ async function run() {
   // Sensitive-action log: 12 months.
   report.journal = (await prisma.auditLog.deleteMany({ where: { createdAt: { lt: ago(365) } } })).count;
   // Contact form messages: 3 years after receipt.
-  report.contact = (await prisma.contactMessage.deleteMany({ where: { createdAt: { lt: ago(3 * 365) } } })).count;
+  report.contact = (
+    await prisma.contactMessage.deleteMany({ where: { createdAt: { lt: ago(3 * 365) } } })
+  ).count;
   // Throttling counters, finished or expired invitations and password links.
   report.compteurs = (await prisma.rateLimit.deleteMany({ where: { windowEnd: { lt: ago(1) } } })).count;
   report.invitations = (
@@ -25,13 +27,35 @@ async function run() {
       where: { OR: [{ expiresAt: { lt: ago(1) } }, { acceptedAt: { lt: ago(30) } }] },
     })
   ).count;
+  report.verifications = (
+    await prisma.emailVerificationToken.deleteMany({
+      where: { OR: [{ expiresAt: { lt: ago(1) } }, { usedAt: { lt: ago(1) } }] },
+    })
+  ).count;
+  // Signups never confirmed after 7 days: the organisation (created empty with its only administrator) goes.
+  const abandoned = await prisma.organization.findMany({
+    where: {
+      createdAt: { lt: ago(7) },
+      users: { every: { emailVerifiedAt: null } },
+      NOT: { users: { none: {} } },
+    },
+    select: { id: true },
+  });
+  report.inscriptions = (
+    await prisma.organization.deleteMany({ where: { id: { in: abandoned.map((o) => o.id) } } })
+  ).count;
   report.liens = (
-    await prisma.passwordResetToken.deleteMany({ where: { OR: [{ expiresAt: { lt: ago(1) } }, { usedAt: { not: null } }] } })
+    await prisma.passwordResetToken.deleteMany({
+      where: { OR: [{ expiresAt: { lt: ago(1) } }, { usedAt: { not: null } }] },
+    })
   ).count;
 
-  // Media no longer used by any quiz or live game of its organisation (after a 1-day grace period,
-  // so a file uploaded into an unsaved draft is not removed).
-  const candidates = await prisma.media.findMany({ where: { createdAt: { lt: ago(1) } }, select: { id: true, organizationId: true } });
+  // Media no longer used by any quiz or live game of its organisation, after a 7-day grace period: editor
+  // drafts are kept 7 days in the browser (DRAFT_DAYS in lib/client/drafts.ts) and must keep their files.
+  const candidates = await prisma.media.findMany({
+    where: { createdAt: { lt: ago(7) } },
+    select: { id: true, organizationId: true },
+  });
   const byOrg = new Map();
   for (const m of candidates) byOrg.set(m.organizationId, [...(byOrg.get(m.organizationId) ?? []), m.id]);
   let unused = 0;

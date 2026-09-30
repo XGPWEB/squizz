@@ -14,5 +14,10 @@ export default async function EditQuizPage({ params }: { params: Promise<{ id: s
   const quiz = (await findQuiz(user as Parameters<typeof findQuiz>[0], id)) as OrgQuiz | null;
   if (!quiz) notFound();
   if (!quiz.canEdit) redirect("/app");
-  return <EditorPage quiz={{ id: quiz.id, title: quiz.title, questions: quiz.questions }} />;
+  return (
+    <EditorPage
+      userId={user.id}
+      quiz={{ id: quiz.id, title: quiz.title, questions: quiz.questions, version: quiz.version }}
+    />
+  );
 }

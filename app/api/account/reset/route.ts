@@ -17,6 +17,11 @@ export const POST = route(async (req) => {
   });
   if (!claimed.count) fail("Ce lien a déjà été utilisé.", 409);
   await setPassword(row.userId, input.password);
+  // The reset link reached this mailbox: an unconfirmed address is now confirmed.
+  await prisma.user.updateMany({
+    where: { id: row.userId, emailVerifiedAt: null },
+    data: { emailVerifiedAt: new Date() },
+  });
   const user = await prisma.user.findUniqueOrThrow({ where: { id: row.userId } });
   return { email: user.email, superAdmin: user.role === "SUPER_ADMIN" };
 });

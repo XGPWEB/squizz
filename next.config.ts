@@ -25,6 +25,8 @@ const nextConfig: NextConfig = {
   turbopack: { root: import.meta.dirname },
   // Self-contained server for the VPS (see deploy.sh).
   output: "standalone",
+  // The isolated test server (scripts/e2e.sh) builds elsewhere, so it can run beside `npm run dev`.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
   async headers() {
     return [

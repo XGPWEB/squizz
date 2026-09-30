@@ -15,8 +15,14 @@ const unusable = await bcrypt.hash(randomBytes(32).toString("hex"), 12);
 const user = await prisma.user.upsert({
   where: { email },
   // A super-admin belongs to no organisation, so no organisation admin can ever manage it.
-  update: { role: "SUPER_ADMIN", active: true, organizationId: null },
-  create: { email, name: "Super-admin SQuizz", passwordHash: unusable, role: "SUPER_ADMIN" },
+  update: { role: "SUPER_ADMIN", active: true, organizationId: null, emailVerifiedAt: new Date() },
+  create: {
+    email,
+    name: "Super-admin SQuizz",
+    passwordHash: unusable,
+    role: "SUPER_ADMIN",
+    emailVerifiedAt: new Date(),
+  },
 });
 const token = randomBytes(32).toString("base64url");
 await prisma.passwordResetToken.deleteMany({ where: { userId: user.id, usedAt: null } });
@@ -28,5 +34,7 @@ await prisma.passwordResetToken.create({
   },
 });
 const base = (process.env.APP_URL || "https://www.squizz.fun").replace(/\/$/, "");
-console.log(`Super-admin : ${email}\nChoisissez le mot de passe ici (valable 1 heure) :\n${base}/reinitialiser/${token}`);
+console.log(
+  `Super-admin : ${email}\nChoisissez le mot de passe ici (valable 1 heure) :\n${base}/reinitialiser/${token}`,
+);
 await prisma.$disconnect();

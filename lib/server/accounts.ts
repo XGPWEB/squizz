@@ -7,7 +7,7 @@ import { withOrgLock } from "./org-lock";
 import { fail } from "./http";
 import { hashToken, newToken } from "./tokens";
 import { appUrl, sendMail } from "./mail";
-import { invitationEmail, passwordChangedEmail, resetEmail } from "./email-templates";
+import { invitationEmail, passwordChangedEmail, resetEmail, verifyEmail } from "./email-templates";
 
 export const hashPassword = (password: string) => bcrypt.hash(password, 12);
 
@@ -131,4 +131,27 @@ export async function setPassword(userId: string, password: string) {
     },
   });
   void sendMail(user.email, passwordChangedEmail({ name: user.name }));
+}
+
+export const VERIFY_HOURS = 24;
+
+/**
+ * Sends a new email-confirmation link (24 hours, single use; earlier unused links stop working). `next` is
+ * the page to open after signing in (e.g. the chosen plan). Returns the link only when no email could be
+ * sent in development, so local tests can follow it; never in production.
+ */
+export async function sendEmailVerification(
+  user: { id: string; name: string; email: string },
+  next?: string,
+) {
+  const { token, tokenHash } = newToken();
+  await prisma.$transaction([
+    prisma.emailVerificationToken.deleteMany({ where: { userId: user.id, usedAt: null } }),
+    prisma.emailVerificationToken.create({
+      data: { tokenHash, userId: user.id, expiresAt: new Date(Date.now() + VERIFY_HOURS * 3600_000) },
+    }),
+  ]);
+  const link = `${appUrl()}/verifier-email/${token}${next ? `?suite=${encodeURIComponent(next)}` : ""}`;
+  const sent = await sendMail(user.email, verifyEmail({ name: user.name, link, hours: VERIFY_HOURS }));
+  return { devLink: !sent && process.env.NODE_ENV !== "production" ? link : undefined };
 }

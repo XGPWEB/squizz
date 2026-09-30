@@ -1047,3 +1047,17 @@ a.card-action {
   list-style: disc;
   line-height: 1.6;
 }
+.verify-pending {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.verify-pending h2,
+.verify-pending p {
+  margin: 0;
+}
+.verify-pending .info-box {
+  margin-top: 6px;
+  font-size: 14px;
+}

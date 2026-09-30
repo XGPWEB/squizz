@@ -39,7 +39,8 @@ for index,original in enumerate(questions):
     if kind=='puzzle':answer={'order':[question['options'].index(x) for x in ['Premier','Deuxième','Troisième']]}
     call(a,'answer',code=code,question=index,answer=answer)
     interim=call(a,'state',code=code);assert interim['personal'] is None and interim['aggregate'] is None
-    call(a,'answer',expect=400,code=code,question=index,answer=answer)
+    call(a,'answer',code=code,question=index,answer=answer)  # sent twice: counted once
+    assert call(a,'state',code=code)['answered']==1
     call(b,'answer',code=code,question=index,answer=answer)
     s=call(a,'state',code=code)
     assert s['revealed'] and s['aggregate']['responses']==2

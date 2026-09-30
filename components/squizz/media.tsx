@@ -148,7 +148,14 @@ export function MediaEditor({
         );
       const form = new FormData();
       form.append("file", sent);
-      const r = await fetch("/api/media", { method: "POST", body: form });
+      // Big videos on a slow connection: 2 minutes, then a clear message instead of a spinner forever.
+      const r = await fetch("/api/media", {
+        method: "POST",
+        body: form,
+        signal: AbortSignal.timeout(120_000),
+      }).catch(() => {
+        throw new Error("L’import n’a pas abouti : connexion lente ou coupée. Réessayez.");
+      });
       const d = (await r.json().catch(() => ({}))) as { error?: string; media?: Media };
       if (!r.ok || !d.media) throw new Error(d.error ?? "L’import a échoué.");
       onChange([...media, d.media]);

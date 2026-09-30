@@ -47,3 +47,4 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 !.env.example
 /.media/
+/.next-e2e/

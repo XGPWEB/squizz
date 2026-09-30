@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Check, Pencil, Play, Plus, Sparkles, Trash2, Users, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Check, Copy, Pencil, Play, Plus, Search, Sparkles, Timer, Trash2, Users, X } from "lucide-react";
 import type { Quiz } from "@/lib/quizzes";
 import type { OrgQuiz } from "@/lib/server/quiz-store";
-import { gameApi } from "@/lib/client/api";
+import { gameApi, newClientKey, UncertainError, withRetry } from "@/lib/client/api";
+import { estimateLabel } from "@/lib/quiz-duration";
 
 type Props = {
   quizzes: OrgQuiz[];
@@ -14,6 +15,10 @@ type Props = {
   quota: { used: number; max: number | null; players: number };
   notice: "" | "created" | "updated";
 };
+type Sort = "recent" | "title" | "oldest";
+
+/** Lowercase without accents, so « équipe » matches « equipe ». */
+const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
   const router = useRouter();
@@ -25,8 +30,26 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
         : notice === "updated"
           ? "Vos modifications sont enregistrées."
           : "",
-    );
+    ),
+    [query, setQuery] = useState(""),
+    [sort, setSort] = useState<Sort>("recent"),
+    [mineOnly, setMineOnly] = useState(false);
   const full = quota.max !== null && quota.used >= quota.max;
+
+  const matches = (q: Quiz) => !query.trim() || fold(q.title).includes(fold(query.trim()));
+  const shown = useMemo(() => {
+    const list = quizzes.filter((q) => (!mineOnly || q.mine) && matches(q));
+    return list.sort((a, b) =>
+      sort === "title"
+        ? a.title.localeCompare(b.title, "fr")
+        : sort === "oldest"
+          ? a.updatedAt.localeCompare(b.updatedAt)
+          : b.updatedAt.localeCompare(a.updatedAt),
+    );
+    // `matches` only depends on `query`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizzes, mineOnly, query, sort]);
+  const shownDemos = demos.filter(matches);
 
   async function run(task: () => Promise<void>) {
     if (busy) return;
@@ -35,15 +58,29 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
     try {
       await task();
     } catch (e) {
-      setError((e as Error).message);
+      setError(
+        e instanceof UncertainError
+          ? "La connexion est lente ou coupée : l’action n’a pas pu être confirmée. Réessayez dans un instant."
+          : (e as Error).message,
+      );
     } finally {
       setBusy(false);
     }
   }
+  // One key per click: a retry after a lost response opens the same game, never a second one.
   const launch = (id: string) =>
     run(async () => {
-      const { code } = await gameApi<{ code: string }>("create", { quizId: id });
+      const clientKey = newClientKey();
+      const { code } = await withRetry(() => gameApi<{ code: string }>("create", { quizId: id, clientKey }));
       router.push(`/partie/${code}`);
+    });
+  const duplicate = (q: Quiz) =>
+    run(async () => {
+      const clientKey = newClientKey();
+      const { quiz } = await withRetry(() =>
+        gameApi<{ quiz: OrgQuiz }>("duplicate", { quizId: q.id, clientKey }),
+      );
+      router.push(`/app/quiz/${quiz.id}`);
     });
   const remove = (q: Quiz) => {
     if (!confirm(`Supprimer « ${q.title} » ? Cette action est définitive.`)) return;
@@ -66,32 +103,53 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
         </p>
         <h3>{q.title}</h3>
         <p>{q.desc}</p>
+        {"updatedAt" in q && (
+          <p className="card-updated">
+            Modifié le {new Date(q.updatedAt).toLocaleDateString("fr-FR")}
+            {q.updatedBy && q.updatedBy !== q.createdBy ? ` par ${q.updatedBy}` : ""}
+          </p>
+        )}
         <div className="card-bottom">
-          <span>
-            <Users size={15} /> {q.questions.length} question{q.questions.length > 1 ? "s" : ""} · ~
-            {Math.ceil(q.questions.length * 0.5)} min
+          <span title="Durée indicative : réponses, résultats et « Prêt ? » compris ; l’animateur donne le rythme.">
+            <Users size={15} /> {q.questions.length} étape{q.questions.length > 1 ? "s" : ""} ·{" "}
+            <Timer size={15} /> {estimateLabel(q.questions)}
           </span>
           <span className="card-actions">
             {"canEdit" in q && q.canEdit && (
-              <>
-                <Link
-                  aria-label={`Modifier ${q.title}`}
-                  title="Modifier"
-                  href={`/app/quiz/${q.id}`}
-                  className="card-action"
-                >
-                  <Pencil size={16} />
-                </Link>
-                <button
-                  disabled={busy}
-                  aria-label={`Supprimer ${q.title}`}
-                  title="Supprimer"
-                  onClick={() => remove(q)}
-                  className="card-action danger"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </>
+              <Link
+                aria-label={`Modifier ${q.title}`}
+                title="Modifier"
+                href={`/app/quiz/${q.id}`}
+                className="card-action"
+              >
+                <Pencil size={16} />
+              </Link>
+            )}
+            <button
+              disabled={busy || full}
+              aria-label={own ? `Dupliquer ${q.title}` : `Copier ${q.title} pour le modifier`}
+              title={
+                full
+                  ? "Limite de quiz atteinte"
+                  : own
+                    ? "Dupliquer (la copie vous appartient)"
+                    : "Créer une copie modifiable"
+              }
+              onClick={() => duplicate(q)}
+              className="card-action"
+            >
+              <Copy size={16} />
+            </button>
+            {"canEdit" in q && q.canEdit && (
+              <button
+                disabled={busy}
+                aria-label={`Supprimer ${q.title}`}
+                title="Supprimer"
+                onClick={() => remove(q)}
+                className="card-action danger"
+              >
+                <Trash2 size={16} />
+              </button>
             )}
             <button
               disabled={busy}
@@ -143,17 +201,54 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
           </Link>
         )}
       </div>
+      <div className="library-tools" role="search">
+        <label className="library-search">
+          <Search size={18} aria-hidden />
+          <input
+            type="search"
+            placeholder="Rechercher un quiz…"
+            aria-label="Rechercher un quiz par son titre"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
+        <label className="library-sort">
+          <span>Trier</span>
+          <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+            <option value="recent">Dernière modification</option>
+            <option value="title">Titre (A → Z)</option>
+            <option value="oldest">Les plus anciens</option>
+          </select>
+        </label>
+        <label className="library-mine">
+          <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} />
+          Mes quiz
+        </label>
+      </div>
       <div className="section-heading">
         <h2>Les quiz de l’équipe</h2>
       </div>
-      {quizzes.length ? (
-        <div className="quiz-grid">{quizzes.map((q) => card(q, true))}</div>
+      {shown.length ? (
+        <div className="quiz-grid">{shown.map((q) => card(q, true))}</div>
+      ) : quizzes.length ? (
+        <p className="hint library-empty">
+          Aucun quiz ne correspond{mineOnly ? " parmi les vôtres" : ""}.{" "}
+          <button
+            className="text-button"
+            onClick={() => {
+              setQuery("");
+              setMineOnly(false);
+            }}
+          >
+            Tout afficher
+          </button>
+        </p>
       ) : (
         <div className="creator">
           <Sparkles />
           <div>
             <h3>Vos questions. Votre terrain de jeu.</h3>
-            <p>Aucun quiz pour l’instant. Préparez le premier, ou lancez un SQuizz Original ci-dessous.</p>
+            <p>Aucun quiz pour l’instant. Préparez le premier, ou copiez un SQuizz Original ci-dessous.</p>
           </div>
           {!full && (
             <Link className="button dark" href="/app/quiz/nouveau">
@@ -162,13 +257,17 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
           )}
         </div>
       )}
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">PRÊTS À LANCER</p>
-          <h2>SQuizz Originals</h2>
-        </div>
-      </div>
-      <div className="quiz-grid">{demos.map((q) => card(q, false))}</div>
+      {!mineOnly && shownDemos.length > 0 && (
+        <>
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">PRÊTS À LANCER</p>
+              <h2>SQuizz Originals</h2>
+            </div>
+          </div>
+          <div className="quiz-grid">{shownDemos.map((q) => card(q, false))}</div>
+        </>
+      )}
     </>
   );
 }

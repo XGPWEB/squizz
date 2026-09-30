@@ -72,11 +72,16 @@ model User {
   failedLoginCount Int           @default(0)
   lockedUntil      DateTime?
   lastLoginAt      DateTime?
+  /// Set when the address is proven: verification link after signup, or accepting an invitation.
+  /// Accounts created before verification existed were marked verified by their migration.
+  emailVerifiedAt  DateTime?
   createdAt        DateTime      @default(now())
 
-  quizzes        Quiz[]
-  invitationsBy  Invitation[]
-  passwordResets PasswordResetToken[]
+  quizzes            Quiz[]
+  quizzesUpdated     Quiz[]                   @relation("QuizUpdatedBy")
+  invitationsBy      Invitation[]
+  passwordResets     PasswordResetToken[]
+  emailVerifications EmailVerificationToken[]
 
   @@index([organizationId])
 }
@@ -98,6 +103,19 @@ model Invitation {
   @@index([organizationId])
 }
 
+/// Signup email check: single use, expires after 24 hours; only the hash is stored.
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
 model PasswordResetToken {
   id        String    @id @default(cuid())
   tokenHash String    @unique
@@ -114,12 +132,19 @@ model Quiz {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdById    String?
   createdBy      User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById    String?
+  updatedBy      User?        @relation("QuizUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  /// Bumped by every save: an editor sends the version it opened, so two members never overwrite each other.
+  version        Int          @default(0)
+  /// Idempotency key sent by the editor: a save retried after a lost response never creates two quizzes.
+  clientKey      String?
   title          String
   /// Validated questions (see lib/question.ts).
   questions      Json
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
+  @@unique([organizationId, clientKey])
   @@index([organizationId])
 }
 
@@ -136,9 +161,12 @@ model Room {
   started        BigInt
   created        BigInt
   maxPlayers     Int
+  /// Idempotency key sent when launching: a retried launch returns the same game instead of a second one.
+  clientKey      String?
 
   players Player[]
 
+  @@unique([organizationId, clientKey])
   @@index([created])
 }
 

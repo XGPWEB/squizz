@@ -11,12 +11,26 @@ async function main() {
   const email = process.env.SEED_SUPER_ADMIN_EMAIL?.toLowerCase();
   const password = process.env.SEED_SUPER_ADMIN_PASSWORD;
   if (!email || !password || password.length < 10)
-    throw new Error("Définissez SEED_SUPER_ADMIN_EMAIL et SEED_SUPER_ADMIN_PASSWORD (10 caractères minimum).");
+    throw new Error(
+      "Définissez SEED_SUPER_ADMIN_EMAIL et SEED_SUPER_ADMIN_PASSWORD (10 caractères minimum).",
+    );
   const passwordHash = await bcrypt.hash(password, 12);
   await prisma.user.upsert({
     where: { email },
-    update: { passwordHash, role: "SUPER_ADMIN", active: true, sessionVersion: { increment: 1 } },
-    create: { email, name: "Super-admin SQuizz", passwordHash, role: "SUPER_ADMIN" },
+    update: {
+      passwordHash,
+      role: "SUPER_ADMIN",
+      active: true,
+      sessionVersion: { increment: 1 },
+      emailVerifiedAt: new Date(),
+    },
+    create: {
+      email,
+      name: "Super-admin SQuizz",
+      passwordHash,
+      role: "SUPER_ADMIN",
+      emailVerifiedAt: new Date(),
+    },
   });
   console.log(`Super-admin prêt : ${email}`);
 
@@ -30,8 +44,20 @@ async function main() {
           name: "Organisation de démo",
           users: {
             create: [
-              { email: "admin@demo.squizz.fun", name: "Alice Admin", passwordHash: hash, role: "ORG_ADMIN" },
-              { email: "animateur@demo.squizz.fun", name: "Hugo Animateur", passwordHash: hash, role: "HOST" },
+              {
+                email: "admin@demo.squizz.fun",
+                name: "Alice Admin",
+                passwordHash: hash,
+                role: "ORG_ADMIN",
+                emailVerifiedAt: new Date(),
+              },
+              {
+                email: "animateur@demo.squizz.fun",
+                name: "Hugo Animateur",
+                passwordHash: hash,
+                role: "HOST",
+                emailVerifiedAt: new Date(),
+              },
             ],
           },
         },

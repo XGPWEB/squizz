@@ -144,7 +144,11 @@ export default function PolitiqueConfidentialitePage() {
             </td>
           </tr>
           <tr>
-            <td>Compteurs anti-abus, invitations et liens de mot de passe expirés</td>
+            <td>Inscriptions dont l’adresse e-mail n’a jamais été confirmée</td>
+            <td>7 jours après l’inscription (organisation et compte supprimés)</td>
+          </tr>
+          <tr>
+            <td>Compteurs anti-abus, invitations, liens de mot de passe et de confirmation expirés</td>
             <td>Supprimés chaque nuit après expiration</td>
           </tr>
           <tr>
@@ -272,6 +276,14 @@ export default function PolitiqueConfidentialitePage() {
       <p>
         Vous pouvez à tout moment supprimer ces cookies via les paramètres de votre navigateur ; la
         conséquence est la perte de votre session de connexion ou de votre place dans une partie en cours.
+      </p>
+      <p>
+        <strong>Brouillons de l’éditeur</strong> : pendant que vous créez ou modifiez un quiz, votre travail
+        est gardé dans le stockage local de votre navigateur (jamais envoyé ailleurs avant l’enregistrement),
+        rangé par compte et par quiz, pour le retrouver après un rechargement ou une coupure. Il est effacé
+        dès l’enregistrement du quiz, et au plus tard après 7 jours. Sur un ordinateur partagé, un autre
+        compte ne voit pas vos brouillons ; vous pouvez les supprimer en vidant les données du site dans votre
+        navigateur.
       </p>
 
       <h2>9. Sécurité</h2>

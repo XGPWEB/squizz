@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Dialog } from "radix-ui";
-import { Plus, X, ArrowUp, ArrowDown, Eye } from "lucide-react";
+import { Plus, X, ArrowUp, ArrowDown, Eye, Copy, Undo2 } from "lucide-react";
 import {
   newQuestion,
   questionTypes,
@@ -23,6 +23,8 @@ export function QuizEditor({
   onError,
   onSave,
   editing = false,
+  status,
+  dirty = false,
 }: {
   title: string;
   questions: Question[];
@@ -33,8 +35,13 @@ export function QuizEditor({
   onError: (s: string) => void;
   onSave: () => void;
   editing?: boolean;
+  /** Where the work stands (draft kept on this device, saved…), shown next to the save button. */
+  status?: string;
+  dirty?: boolean;
 }) {
   const [active, setActive] = useState(0);
+  // The last deleted step, until it is restored or another step is deleted.
+  const [removed, setRemoved] = useState<{ step: Question; index: number } | null>(null);
   const [picker, setPicker] = useState(false),
     [preview, setPreview] = useState(false);
   const index = Math.min(active, questions.length - 1);
@@ -43,6 +50,23 @@ export function QuizEditor({
     setQuestions(questions.map((x, i) => (i === index ? { ...x, ...value } : x)));
   const setType = (type: QuestionType) =>
     patch({ ...newQuestion(type), text: q.text, media: q.media, duration: q.duration });
+  const duplicate = () => {
+    const copy = structuredClone(q);
+    setQuestions([...questions.slice(0, index + 1), copy, ...questions.slice(index + 1)]);
+    setActive(index + 1);
+  };
+  const remove = () => {
+    setRemoved({ step: q, index });
+    setQuestions(questions.filter((_, i) => i !== index));
+    setActive(Math.max(0, index - 1));
+  };
+  const undoRemove = () => {
+    if (!removed || questions.length >= 30) return;
+    const at = Math.min(removed.index, questions.length);
+    setQuestions([...questions.slice(0, at), removed.step, ...questions.slice(at)]);
+    setActive(at);
+    setRemoved(null);
+  };
   const add = (step: Question) => {
     setQuestions([...questions, step]);
     setActive(questions.length);
@@ -122,20 +146,36 @@ export function QuizEditor({
                   <button type="button" className="button small secondary" onClick={() => setPreview(true)}>
                     <Eye size={16} /> Aperçu
                   </button>
+                  <button
+                    type="button"
+                    className="button small secondary"
+                    disabled={questions.length >= 30}
+                    onClick={duplicate}
+                    title="Ajoute une copie de cette étape juste après"
+                  >
+                    <Copy size={16} /> Dupliquer
+                  </button>
                   {questions.length > 1 && (
-                    <button
-                      type="button"
-                      className="text-button"
-                      onClick={() => {
-                        setQuestions(questions.filter((_, i) => i !== index));
-                        setActive(Math.max(0, index - 1));
-                      }}
-                    >
+                    <button type="button" className="text-button" onClick={remove}>
                       <X size={18} /> Supprimer
                     </button>
                   )}
                 </div>
               </div>
+              {removed && (
+                <p className="info-box undo-box" role="status">
+                  Étape {removed.index + 1} supprimée
+                  {removed.step.text ? ` (« ${removed.step.text.slice(0, 40)} »)` : ""}.{" "}
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={undoRemove}
+                    disabled={questions.length >= 30}
+                  >
+                    <Undo2 size={16} /> Annuler la suppression
+                  </button>
+                </p>
+              )}
               <QuestionFields
                 q={q}
                 patch={patch}
@@ -202,8 +242,10 @@ export function QuizEditor({
             </Dialog.Portal>
           </Dialog.Root>
           <div className="editor-save">
-            <span>
-              {busy ? "Import ou enregistrement en cours…" : "Tout est prêt ? Enregistrez votre quiz."}
+            <span className={`save-status ${dirty ? "dirty" : ""}`} role="status" aria-live="polite">
+              {busy
+                ? "Import ou enregistrement en cours…"
+                : (status ?? "Tout est prêt ? Enregistrez votre quiz.")}
             </span>
             <button type="submit" className="button" disabled={busy}>
               {busy ? "Un instant…" : editing ? "Enregistrer les modifications" : "Enregistrer le quiz"}

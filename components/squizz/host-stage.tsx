@@ -17,6 +17,8 @@ type Props = {
   game: Game;
   busy: boolean;
   run: (task: () => Promise<void>) => void;
+  /** Runs an action; when its outcome is uncertain, re-reads the game and succeeds if `done` holds. */
+  settle: (action: () => Promise<unknown>, done: (g: Game) => boolean, message: string) => Promise<void>;
   joinUrl: string;
   origin: string;
   remaining: number;
@@ -82,7 +84,7 @@ function Timer({ seconds, total, done }: { seconds: number; total: number; done:
   );
 }
 
-function Lobby({ game, busy, run, joinUrl, origin, onError }: Props) {
+function Lobby({ game, busy, run, settle, joinUrl, origin, onError }: Props) {
   const [copied, setCopied] = useState(false),
     [name, setName] = useState("");
   const address = origin.replace(/^https?:\/\//, "");
@@ -204,9 +206,13 @@ function Lobby({ game, busy, run, joinUrl, origin, onError }: Props) {
           className="button host-primary"
           disabled={busy || game.players.length === 0}
           onClick={() =>
-            run(async () => {
-              await api("start", { code: game.code });
-            })
+            run(() =>
+              settle(
+                () => api("start", { code: game.code }),
+                (g) => g.phase !== "lobby",
+                "Lancement non confirmé : vérifiez la connexion, puis cliquez à nouveau.",
+              ),
+            )
           }
         >
           <Play size={20} /> Lancer le quiz
@@ -216,7 +222,7 @@ function Lobby({ game, busy, run, joinUrl, origin, onError }: Props) {
   );
 }
 
-function Question({ game, busy, run, remaining }: Props) {
+function Question({ game, busy, run, settle, remaining }: Props) {
   const q = game.question!;
   const slide = q.type === "slide";
   const hostPlays = game.players.some((p) => p.me);
@@ -227,9 +233,13 @@ function Question({ game, busy, run, remaining }: Props) {
   const tab = view.index === game.index ? view.tab : "results";
   const last = game.index + 1 === game.total;
   const next = () =>
-    run(async () => {
-      await api("next", { code: game.code, question: game.index });
-    });
+    run(() =>
+      settle(
+        () => api("next", { code: game.code, question: game.index }),
+        (g) => g.phase === "finished" || g.index > game.index,
+        "Passage à la suite non confirmé : vérifiez la connexion, puis cliquez à nouveau.",
+      ),
+    );
   const nextLabel = last ? "Voir le podium" : slide ? "Continuer" : "Question suivante";
   return (
     <>
@@ -244,7 +254,11 @@ function Question({ game, busy, run, remaining }: Props) {
               submitted={game.myAnswer?.answer ?? null}
               onSubmit={(answer) =>
                 run(async () => {
-                  await api("answer", { code: game.code, question: game.index, answer });
+                  await settle(
+                    () => api("answer", { code: game.code, question: game.index, answer }),
+                    (g) => g.index === game.index && !!g.myAnswer,
+                    "Réponse non confirmée : vérifiez la connexion, puis renvoyez-la.",
+                  );
                 })
               }
             />

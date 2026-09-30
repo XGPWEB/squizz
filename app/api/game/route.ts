@@ -4,7 +4,14 @@ import { orgLimits } from "@/lib/plans";
 import { assertSameOrigin, fail, HttpError, readBody, type Body } from "@/lib/server/http";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { requireMember } from "@/lib/server/guard";
-import { createQuiz, deleteQuiz, findQuiz, listQuizzes, updateQuiz } from "@/lib/server/quiz-store";
+import {
+  createQuiz,
+  deleteQuiz,
+  duplicateQuiz,
+  findQuiz,
+  listQuizzes,
+  updateQuiz,
+} from "@/lib/server/quiz-store";
 import {
   createRoom,
   gameState,
@@ -29,8 +36,13 @@ const actions: Record<string, Handler> = {
     const user = await requireMember();
     return { quizzes: [...demos, ...(await listQuizzes(user))] };
   },
-  save: async (_, body) => ({ quiz: await createQuiz(await requireMember(), body.quiz) }),
-  update: async (_, body) => ({ quiz: await updateQuiz(await requireMember(), body.quizId, body.quiz) }),
+  save: async (_, body) => ({ quiz: await createQuiz(await requireMember(), body.quiz, body.clientKey) }),
+  update: async (_, body) => ({
+    quiz: await updateQuiz(await requireMember(), body.quizId, body.quiz, body.version, body.force === true),
+  }),
+  duplicate: async (_, body) => ({
+    quiz: await duplicateQuiz(await requireMember(), body.quizId, body.clientKey),
+  }),
   delete: async (_, body) => {
     await deleteQuiz(await requireMember(), body.quizId);
     return { ok: true };
@@ -40,7 +52,7 @@ const actions: Record<string, Handler> = {
     const quiz = await findQuiz(user, body.quizId);
     if (!quiz) fail("Quiz introuvable.", 404);
     const max = orgLimits(user.organization).maxPlayersPerGame;
-    return { code: await createRoom(user.id, user.organizationId, quiz, max) };
+    return { code: await createRoom(user.id, user.organizationId, quiz, max, body.clientKey) };
   },
   // Playing: anyone with the code, signed in or not.
   join: async (who, body, req) => {
@@ -85,7 +97,7 @@ async function handle(req: Request) {
     if (req.method !== "POST" && !readOnly.has(action)) fail("Méthode non autorisée.", 405);
     return reply(await handler(who.id, body, req));
   } catch (error) {
-    if (error instanceof HttpError) return reply({ error: error.message }, error.status);
+    if (error instanceof HttpError) return reply({ ...error.details, error: error.message }, error.status);
     console.error(error);
     return reply({ error: "Une erreur empêche cette action. Réessaie dans un instant." }, 500);
   }

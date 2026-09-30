@@ -1,12 +1,24 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { AuthForm, signInOrThrow } from "@/components/auth/auth-form";
+import { AuthForm } from "@/components/auth/auth-form";
 import { postJson } from "@/lib/client/api";
 import { PasswordInput } from "@/components/site/password-input";
+import { VerifyPending } from "@/components/auth/verify-pending";
+import { useState } from "react";
 
 export function SignupForm({ next }: { next: string }) {
-  const router = useRouter();
+  const [pending, setPending] = useState<{ email: string; devLink?: string } | null>(null);
+  if (pending)
+    return (
+      <section className="panel narrow">
+        <p className="eyebrow">DERNIÈRE ÉTAPE</p>
+        <VerifyPending
+          email={pending.email}
+          next={next === "/app" ? undefined : next}
+          devLink={pending.devLink}
+        />
+      </section>
+    );
   return (
     <AuthForm
       eyebrow="GRATUIT, SANS CARTE BANCAIRE"
@@ -16,15 +28,14 @@ export function SignupForm({ next }: { next: string }) {
         const body = Object.fromEntries(data) as Record<string, string>;
         if (body.password !== body.confirm) throw new Error("Les deux mots de passe ne correspondent pas.");
         if (!data.get("terms")) throw new Error("Acceptez les conditions d’utilisation pour continuer.");
-        await postJson("/api/account/signup", {
+        const out = await postJson<{ devLink?: string }>("/api/account/signup", {
           organization: body.organization,
           name: body.name,
           email: body.email,
           password: body.password,
+          suite: next === "/app" ? undefined : next,
         });
-        await signInOrThrow(body.email, body.password);
-        router.push(next);
-        router.refresh();
+        setPending({ email: body.email.trim().toLowerCase(), devLink: out.devLink });
       }}
       footer={
         <span>

@@ -42,6 +42,8 @@ export const POST = route<{ token: string }>(async (req, { token }) => {
         passwordHash,
         role: inv.role,
         organizationId: inv.organizationId,
+        // The invitation link was sent to this address.
+        emailVerifiedAt: new Date(),
       },
     });
   });

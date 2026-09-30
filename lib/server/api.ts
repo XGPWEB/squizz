@@ -14,7 +14,8 @@ export function route<P = Record<string, never>>(fn: (req: Request, params: P) =
         ? result
         : Response.json(result ?? { ok: true }, { headers: { "Cache-Control": "no-store" } });
     } catch (e) {
-      if (e instanceof HttpError) return Response.json({ error: e.message }, { status: e.status });
+      if (e instanceof HttpError)
+        return Response.json({ ...e.details, error: e.message }, { status: e.status });
       if (e instanceof z.ZodError)
         return Response.json({ error: e.issues[0]?.message ?? "Données invalides." }, { status: 400 });
       console.error(e);

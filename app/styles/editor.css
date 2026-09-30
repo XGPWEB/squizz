@@ -882,3 +882,58 @@ fieldset {
   max-height: 55vh;
   object-fit: cover;
 }
+
+/* Drafts, undo and save status */
+.draft-found {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+}
+.draft-found p {
+  margin: 0;
+}
+.undo-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+}
+.undo-box .text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+}
+.save-status.dirty::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--orange);
+  vertical-align: middle;
+}
+.conflict-modal {
+  max-width: 620px;
+}
+.conflict-summary {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0;
+  padding-left: 18px;
+}
+.conflict-actions {
+  display: grid;
+  gap: 10px;
+}
+.conflict-actions .text-button {
+  justify-self: center;
+  margin-top: 4px;
+}

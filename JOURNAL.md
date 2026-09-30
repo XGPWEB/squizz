@@ -36,7 +36,18 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 - **Quatre offres sans engagement** : Gratuit, Essentiel 15 €/mois, Pro 30 €/mois, Premium annuel 310 €/an ; page Tarifs refaite, CGU mises à jour, bouton « Arrêter mon abonnement » dans l’espace client. Souscription par message, activation et facture à la main depuis le super-admin.
 - **Paiement Stripe** (page « Abonnement », webhook), **statut partenaire** (Premium offert) depuis le super-admin, couleurs par offre, limites verrouillées contre les requêtes simultanées.
 
+## 1er octobre 2026 — Confort d’édition et fiabilité (non publié)
+
+- **Éditeur** : brouillons gardés automatiquement sur l’appareil (par compte et par quiz) et proposés après un rechargement ; état « Brouillon gardé… / Tout est enregistré » ; alerte avant de quitter ; dupliquer une étape et annuler une suppression.
+- **Travail à plusieurs** : si un collègue enregistre le même quiz entre-temps, rien n’est écrasé ; une fenêtre propose d’enregistrer sa version comme nouveau quiz, de remplacer, ou de reprendre l’autre version.
+- **Bibliothèque** : recherche, tri, filtre « Mes quiz », durée estimée réaliste ; dupliquer un quiz, copier un SQuizz Original pour le modifier.
+- **Connexion instable** : plus de bouton bloqué ni de double création ; une réponse, un lancement ou un « question suivante » perdus en route sont vérifiés auprès du serveur.
+- **Sécurité** : confirmation de l’adresse e-mail à l’inscription (les comptes existants ne sont pas concernés) ; un tiers ne peut plus bloquer un compte à coups de mauvais mots de passe.
+- **Qualité** : base de test jetable, intégration continue GitHub, nouveaux tests.
+
 ## Reste à faire
+
+- **Publier la version « Non publié »** (brouillons, conflits, vérification e-mail…) : migration de base incluse, les comptes existants restent connectables.
 
 - **Search Console** : vérifier vers le 3 octobre que Google a lu `sitemap.xml` (il ne l’avait encore jamais demandé) ; importer le site dans **Bing Webmaster Tools**.
 - **Compte client personnel** à créer avec une autre adresse que contact@pressweb.fr.

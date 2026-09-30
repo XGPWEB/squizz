@@ -23,8 +23,10 @@ for index,correct in enumerate([1,0]):
     assert state['personal'] is None
     call(host,'next',expect=400,code=code,question=index)
     call(a,'answer',code=code,question=index,choice=correct)
-    call(a,'answer',expect=400,code=code,question=index,choice=correct)
+    # Sent again (retry after a lost response, or a different choice): accepted, but the first answer stays.
+    call(a,'answer',code=code,question=index,choice=(correct+1)%4)
     hidden=call(a,'state',code=code)
+    assert hidden['myAnswer']['choice']==correct and hidden['answered']==1
     assert hidden['personal'] is None
     if index==0: assert all(p['score']==0 for p in hidden['players'])
     call(b,'answer',code=code,question=index,choice=3)

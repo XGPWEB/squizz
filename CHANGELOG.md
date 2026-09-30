@@ -2,6 +2,27 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [Non publié]
+
+### Éditeur
+- Brouillons gardés automatiquement dans le navigateur (par compte et par quiz), proposés après un rechargement, effacés après l'enregistrement ; état de sauvegarde affiché et alerte avant de quitter.
+- Conflits d'édition détectés côté serveur (version du quiz, contrôle atomique) : rien n'est écrasé, la personne choisit la version à garder.
+- Dupliquer une étape, annuler sa suppression ; dupliquer un quiz, copier un SQuizz Original.
+
+### Bibliothèque
+- Recherche, tri par dernière modification, filtre « Mes quiz », durée estimée d'après les réglages des étapes.
+
+### Réseau
+- Délai maximal sur les actions, messages clairs, boutons toujours libérés ; clés anti-doublon pour enregistrer, dupliquer et lancer ; réponse, lancement et « suivant » vérifiés auprès du serveur quand le résultat est incertain, et sans effet s'ils sont reçus deux fois.
+
+### Sécurité
+- Vérification de l'adresse e-mail à l'inscription (lien unique de 24 h, renvoi limité) ; comptes existants et super-admin non concernés.
+- Un tiers ne peut plus bloquer un compte en multipliant les mauvais mots de passe : le seuil par compte ne s'applique pas depuis les adresses où son propriétaire s'est déjà connecté.
+
+### Qualité
+- Base de test isolée (`scripts/e2e.sh`), intégration continue GitHub Actions, nouveaux tests (brouillons, conflits, duplication, actions répétées, vérification e-mail, limitation de connexion).
+- Médias inutilisés et brouillons : 7 jours de grâce ; inscriptions non confirmées supprimées après 7 jours.
+
 ## [1.3.0] — 2026-09-30
 
 ### Paiement

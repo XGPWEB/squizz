@@ -3,16 +3,34 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AuthForm, signInOrThrow } from "@/components/auth/auth-form";
 import { PasswordInput } from "@/components/site/password-input";
+import { VerifyPending } from "@/components/auth/verify-pending";
+import { EMAIL_NOT_VERIFIED } from "@/lib/auth-messages";
+import { useState } from "react";
 
 export function LoginForm({ suspended, email, next }: { suspended: boolean; email: string; next: string }) {
   const router = useRouter();
+  // Right password but address not confirmed yet: offer a new link instead of a dead end.
+  const [unverified, setUnverified] = useState<string | null>(null);
+  if (unverified)
+    return (
+      <section className="panel narrow">
+        <p className="eyebrow">ADRESSE À CONFIRMER</p>
+        <VerifyPending email={unverified} next={next === "/app" ? undefined : next} />
+      </section>
+    );
   return (
     <AuthForm
       eyebrow="ESPACE ORGANISATEUR"
       title="Content de vous revoir."
       submit="Se connecter"
       onSubmit={async (data) => {
-        await signInOrThrow(String(data.get("email")), String(data.get("password")));
+        const address = String(data.get("email")).trim().toLowerCase();
+        try {
+          await signInOrThrow(address, String(data.get("password")));
+        } catch (e) {
+          if ((e as Error).message === EMAIL_NOT_VERIFIED) setUnverified(address);
+          throw e;
+        }
         router.push(next);
         router.refresh();
       }}

@@ -426,3 +426,20 @@ export function partnerEmail(o: { name: string; organization: string; partner: b
     }),
   };
 }
+
+/** Sent right after signup: the account opens once the address is confirmed. */
+export function verifyEmail(o: { name: string; link: string; hours: number }): Email {
+  return {
+    subject: "Confirmez votre adresse e-mail — SQuizz",
+    text: `Bonjour ${o.name},\n\nPour activer votre espace SQuizz, confirmez votre adresse e-mail en ouvrant ce lien (valable ${o.hours} heures) :\n${o.link}\n\nSi vous n’avez pas créé de compte SQuizz, ignorez cet email.`,
+    html: layout({
+      preheader: "Un clic pour activer votre espace SQuizz.",
+      eyebrow: "Inscription",
+      title: "Confirmez votre adresse.",
+      highlight: "adresse.",
+      body: `<p style="margin:0 0 12px">Bonjour ${esc(o.name)},</p><p style="margin:0">Merci pour votre inscription ! Pour activer votre espace SQuizz, confirmez que cette adresse e-mail est bien la vôtre.</p>`,
+      cta: { label: "Confirmer mon adresse", url: o.link, intro: "Un clic et c’est parti." },
+      note: `Ce lien est valable ${o.hours} heures et ne sert qu’une fois. Si vous n’avez pas créé de compte SQuizz, ignorez cet email : aucun compte ne sera activé.`,
+    }),
+  };
+}

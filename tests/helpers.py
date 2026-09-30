@@ -53,10 +53,17 @@ def signup(org=None):
     email = f'test-{secrets.token_hex(6)}@example.test'
     password = 'Motdepasse-' + secrets.token_hex(4)
     c = client()
-    request(c, 'POST', '/api/account/signup',
-            {'organization': org or 'Org ' + email[:11], 'name': 'Admin Test', 'email': email, 'password': password})
+    out = request(c, 'POST', '/api/account/signup',
+                  {'organization': org or 'Org ' + email[:11], 'name': 'Admin Test', 'email': email, 'password': password})
+    verify(out['devLink'])
     login(c, email, password)
     return c, email, password
+
+
+def verify(link):
+    """Confirms an address with the link the dev server returns when no email can be sent."""
+    token = link.split('/verifier-email/', 1)[1].split('?', 1)[0]
+    return request(client(), 'POST', '/api/account/verify', {'token': token})
 
 
 def invite(admin, role='HOST', name='Membre Test'):
@@ -81,7 +88,9 @@ def set_plan(org_name, plan):
 
 
 def env(name):
-    """Reads a value from the project's .env (used for the seeded super-admin)."""
+    """A setting from the environment (CI, isolated run), else from the project's .env (seeded super-admin)."""
+    if os.environ.get(name):
+        return os.environ[name]
     path = os.path.join(os.path.dirname(__file__), '..', '.env')
     for line in open(path):
         if line.startswith(name + '='):

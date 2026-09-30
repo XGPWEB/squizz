@@ -3,13 +3,15 @@ export class HttpError extends Error {
   constructor(
     message: string,
     readonly status = 400,
+    /** Extra fields sent with the error (e.g. the other version of a quiz on an edit conflict). */
+    readonly details?: Record<string, unknown>,
   ) {
     super(message);
   }
 }
 
-export function fail(message: string, status = 400): never {
-  throw new HttpError(message, status);
+export function fail(message: string, status = 400, details?: Record<string, unknown>): never {
+  throw new HttpError(message, status, details);
 }
 
 /** Runs a validator and turns its error into a 400 with the same message. */

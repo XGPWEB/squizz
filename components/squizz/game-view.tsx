@@ -9,7 +9,7 @@ import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play
 import { type Game, Leaderboard, PersonalResult, Podium } from "./game-parts";
 import { HostStage } from "./host-stage";
 import { invitationOrigin } from "@/lib/invitation";
-import { gameApi as api } from "@/lib/client/api";
+import { gameApi as api, getJson, UncertainError } from "@/lib/client/api";
 import { Brand } from "@/components/site/brand";
 
 const LOST = "Connexion perdue, reconnexion…";
@@ -79,6 +79,27 @@ export function GameView({ code }: { code: string }) {
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [code]);
+  /** Reads the game once (after an uncertain action), and shows it. */
+  async function loadState() {
+    const d = await getJson<Omit<Game, "receivedAt">>(`/api/game?action=state&code=${code}`, 5000);
+    const fresh = { ...d, receivedAt: Date.now() } as Game;
+    setGame(fresh);
+    return fresh;
+  }
+  /**
+   * Runs a game action. If the connection drops before the answer, the game is re-read: when it shows the
+   * action happened, all is well; otherwise a clear message invites to try again (the server ignores a
+   * second answer, start or « next » for the same step, so trying again is always safe).
+   */
+  async function settle(action: () => Promise<unknown>, done: (g: Game) => boolean, message: string) {
+    try {
+      await action();
+    } catch (e) {
+      if (!(e instanceof UncertainError)) throw e;
+      const fresh = await loadState().catch(() => null);
+      if (!fresh || !done(fresh)) throw new Error(message);
+    }
+  }
   async function run(task: () => Promise<void>) {
     if (busy) return;
     setError("");
@@ -124,6 +145,7 @@ export function GameView({ code }: { code: string }) {
           game={game}
           busy={busy}
           run={run}
+          settle={settle}
           joinUrl={joinUrl}
           origin={origin}
           remaining={remaining}
@@ -209,7 +231,11 @@ export function GameView({ code }: { code: string }) {
                       submitted={game.myAnswer?.answer ?? null}
                       onSubmit={(answer) =>
                         run(async () => {
-                          await api("answer", { code, question: game.index, answer });
+                          await settle(
+                            () => api("answer", { code, question: game.index, answer }),
+                            (g) => g.index === game.index && !!g.myAnswer,
+                            "Réponse non confirmée : vérifie ta connexion, puis renvoie-la.",
+                          );
                           setGame((g) =>
                             g ? { ...g, myAnswer: { choice: answer.choices?.[0] ?? -1, answer } } : g,
                           );

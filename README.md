@@ -92,14 +92,38 @@ npm run db:seed             # super-admin (+ organisation de démo si SEED_DEMO=
 npm run dev -- --port 5173
 ```
 
+## Éditeur et bibliothèque
+
+- **Brouillons** (`lib/client/drafts.ts`) : le travail en cours est gardé dans le navigateur une seconde après chaque changement, par compte et par quiz (`new` pour un quiz pas encore enregistré), proposé à la restauration après un rechargement, effacé après un enregistrement réussi et au plus tard après 7 jours (même durée que la grâce des médias inutilisés dans `deploy/purge.mjs`). Un autre compte du même navigateur ne le voit jamais. L'état (« Brouillon gardé sur cet appareil… », « Tout est enregistré ») s'affiche près du bouton, et le navigateur prévient avant de quitter avec des modifications non enregistrées.
+- **Conflits d'édition** : chaque quiz a une `version`. L'éditeur envoie celle qu'il a ouverte ; le serveur n'écrit que si elle n'a pas changé (un seul `UPDATE … WHERE version = …`). Sinon, réponse 409 avec l'autre version : la personne choisit (enregistrer la sienne comme nouveau quiz, remplacer, reprendre l'autre, continuer). Rien n'est écrasé sans ce choix.
+- **Étapes** : dupliquer, annuler la dernière suppression. **Quiz** : dupliquer un quiz de l'équipe ou copier un SQuizz Original (la copie appartient à celui qui copie, compte dans le quota, réutilise les mêmes médias).
+- **Bibliothèque** : recherche par titre (sans tenir compte des accents), tri (dernière modification, titre, ancienneté), filtre « Mes quiz », durée estimée à partir des réglages réels (`lib/quiz-duration.ts`, indicative).
+
+## Réseau lent ou coupé
+
+Toutes les actions ont un délai maximal (15 s ; 2 min pour l'import d'un média) et libèrent leur bouton avec un message clair. Quand la réponse se perd, le résultat est **incertain** (`UncertainError` dans `lib/client/api.ts`) :
+
+- enregistrer, créer, dupliquer, lancer une partie portent une **clé anti-doublon** (`clientKey`) ou une version : ils sont renvoyés une fois automatiquement, sans risque de doublon ;
+- répondre, lancer le quiz, passer à la suite : le jeu est relu ; si l'action a eu lieu, tout va bien, sinon un message invite à réessayer. Le serveur ignore une seconde réponse, un second lancement ou un second « suivant » pour la même étape.
+
+## Comptes et sécurité
+
+- **Vérification de l'adresse e-mail** à l'inscription : lien à usage unique valable 24 h (seul son empreinte est stockée), renvoi limité (3 par adresse et 10 par connexion et par heure, même réponse que le compte existe ou non). Tant que l'adresse n'est pas confirmée, la connexion est refusée avec un bouton « Renvoyer le lien ». Le message de bienvenue part après la confirmation. Une invitation acceptée ou une réinitialisation de mot de passe confirment aussi l'adresse. **Comptes existants** : marqués confirmés par la migration. **Super-admin** : jamais bloqué. Inscriptions jamais confirmées : supprimées après 7 jours par la purge.
+- **Tentatives de connexion** (`lib/login-throttle.ts`) : 8 échecs par adresse IP et par compte, 30 tentatives par adresse IP, 60 échecs par compte sur 15 minutes. Ce dernier seuil ne s'applique pas depuis une adresse où le propriétaire s'est déjà connecté (90 jours) : un tiers ne peut pas le bloquer sur ses appareils habituels, et « Mot de passe oublié » reste toujours possible.
+
 ## Tests
 
 ```sh
 npm test                    # unitaires (Vitest) — bloquants au déploiement avec tsc et le lint
-npm run test:e2e            # intégration contre le serveur de dev sur :5173
+npm run test:e2e:isolated   # intégration sur une base jetable squizz_e2e et un serveur :5174 (recommandé)
+npm run test:e2e            # intégration contre le serveur de dev sur :5173 (base de développement)
 ```
 
-Intégration : `game-flow`, `rich-game-flow`, `game-live` (plafond de joueurs en concurrence, retrait d'un joueur, compte à rebours), `quiz-management`, `accounts` (rôles, offres, super-admin), `rights` (export, suppression de compte), `security` (requêtes d'autres sites, pas de verrouillage, puzzle), `contact`, `super-admin`, `timeout`. Les limites de débit sont multipliées par 100 hors production pour que les tests puissent créer de nombreux comptes.
+`scripts/e2e.sh` recrée la base locale `squizz_e2e` (refuse toute base non locale ou dont le nom ne finit pas par `_e2e`/`_test`), la migre, crée le super-admin de test, démarre un serveur de dev avec son propre dossier de build (`.next-e2e`), sans SMTP, Stripe ni Turnstile, puis lance les scénarios. `bash scripts/e2e.sh editing` n'en lance qu'un.
+
+Intégration : `game-flow`, `rich-game-flow`, `game-live` (plafond de joueurs en concurrence, retrait d'un joueur, compte à rebours), `quiz-management`, `accounts` (rôles, offres, partenaires, super-admin), `rights` (export, suppression de compte), `security` (requêtes d'autres sites, pas de verrouillage, puzzle), `editing` (conflits, anti-doublons, duplication, actions de jeu répétées), `email-verification`, `contact`, `super-admin`, `timeout`. Les limites de débit sont multipliées par 100 hors production pour que les tests puissent créer de nombreux comptes.
+
+**Intégration continue** (`.github/workflows/ci.yml`) : à chaque envoi sur `main`/`plateforme` et pour chaque pull request, types, lint, formatage et tests unitaires, puis les scénarios d'intégration sur un PostgreSQL jetable.
 
 ## Versions
 
@@ -128,7 +152,7 @@ SQuizz tourne sous l'utilisateur système `squizz` avec son propre PM2 (Node 24,
 | `bash deploy.sh --setup` | Préparation idempotente : utilisateur, base, secrets, sauvegardes, purge, santé, cron, module rsync, logrotate |
 | `bash deploy.sh --https` | Première mise en place du certificat |
 
-**Tâches planifiées** : sauvegarde 2 h 15 (base + médias, contenu vérifié, 7 jours + dimanches sur 5 semaines, alerte si plus de 26 h), purge 3 h 30 (`deploy/purge.mjs` : parties 24 h, journal 12 mois, contact 3 ans, médias inutilisés), santé toutes les 5 min. Alertes vers `ALERT_EMAIL` (contact@pressweb.fr).
+**Tâches planifiées** : sauvegarde 2 h 15 (base + médias, contenu vérifié, 7 jours + dimanches sur 5 semaines, alerte si plus de 26 h), purge 3 h 30 (`deploy/purge.mjs` : parties 24 h, journal 12 mois, contact 3 ans, inscriptions non confirmées 7 jours, médias inutilisés depuis 7 jours), santé toutes les 5 min. Alertes vers `ALERT_EMAIL` (contact@pressweb.fr).
 
 **Copie hors serveur** : le module rsync `squizz-backups` (même compte et mêmes restrictions que Pôle Jeunesse) doit être récupéré par le NAS.
 

@@ -6,3 +6,4 @@ node_modules
 vendor
 drizzle
 package-lock.json
+.next-e2e

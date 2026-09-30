@@ -77,8 +77,17 @@ export async function createRoom(
   organizationId: string,
   quiz: Quiz,
   maxPlayers: number,
+  key?: unknown,
 ): Promise<string> {
   await purgeExpiredRooms();
+  // A launch retried after a lost response returns the game created the first time.
+  const clientKey = typeof key === "string" && /^[\w-]{8,64}$/.test(key) ? key : null;
+  const existing = async () =>
+    clientKey
+      ? prisma.room.findFirst({ where: { organizationId, clientKey, host }, select: { code: true } })
+      : null;
+  const done = await existing();
+  if (done) return done.code;
   const snapshot = shufflePuzzles(normalizeQuiz(quiz)) as unknown as Prisma.InputJsonValue;
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = String(100000 + (randomInt() % 900000));
@@ -94,12 +103,16 @@ export async function createRoom(
           started: BigInt(0),
           created: BigInt(Date.now()),
           maxPlayers,
+          clientKey,
         },
       });
       return code;
     } catch (e) {
       // A code collision is retried; anything else is a real error.
       if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")) throw e;
+      // Two copies of the same launch raced: the other one won.
+      const raced = await existing();
+      if (raced) return raced.code;
     }
   }
   fail("Impossible de créer la partie. Réessaie.", 503);
@@ -250,6 +263,8 @@ export async function loadGame(who: string, code: string, fresh = false): Promis
 export async function submitAnswer(g: GameContext, body: Body) {
   const { room, question, duration } = g;
   if (!g.me) fail("Rejoins la partie pour répondre.", 403);
+  // The same answer sent twice (retry after a lost response) is not an error: the first one counts.
+  if (body.question === room.question && g.submitted.some((a) => a.player === g.who)) return;
   if (question.type === "slide") fail("Cette diapo ne demande pas de réponse.");
   if (room.phase !== "question" || g.revealed) fail("Le temps est écoulé.");
   if (Date.now() < room.started) fail("La question n’a pas encore commencé.");
@@ -279,7 +294,10 @@ function requireHost(g: GameContext) {
 
 export async function startGame(g: GameContext) {
   requireHost(g);
-  if (g.room.phase !== "lobby" || !g.people.length) fail("Attends au moins un joueur.");
+  // A start sent twice (retry after a lost response): the game is already running, nothing to do.
+  if (g.room.phase === "question" && g.room.question === 0) return Math.max(0, g.room.started - Date.now());
+  if (g.room.phase !== "lobby") fail("La partie a déjà commencé.");
+  if (!g.people.length) fail("Attends au moins un joueur.");
   await prisma.room.updateMany({
     where: { code: g.room.code, phase: "lobby" },
     data: { phase: "question", started: BigInt(Date.now() + READY_MS) },
@@ -291,6 +309,11 @@ export async function startGame(g: GameContext) {
 export async function nextQuestion(g: GameContext, body: Body) {
   requireHost(g);
   const { room } = g;
+  // « Next » sent twice for the same question (retry after a lost response): it already moved on.
+  const alreadyMoved =
+    (room.phase === "question" && body.question === room.question - 1) ||
+    (room.phase === "finished" && body.question === room.question);
+  if (alreadyMoved) return Math.max(0, room.started - Date.now());
   if (room.phase !== "question" || !g.revealed || body.question !== room.question)
     fail("Attends la fin de cette question.");
   const last = room.question + 1 >= g.quiz.questions.length;
