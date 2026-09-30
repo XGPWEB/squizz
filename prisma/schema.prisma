@@ -130,9 +130,11 @@ model Room {
 }
 
 model Player {
-  code String
-  id   String
-  name String
+  code   String
+  id     String
+  name   String
+  /// Removed by the host: excluded from the game and cannot join again.
+  kicked Boolean @default(false)
   room Room   @relation(fields: [code], references: [code], onDelete: Cascade)
 
   answers Answer[]
@@ -152,6 +154,7 @@ model Answer {
   owner       Player @relation(fields: [code, player], references: [code, id], onDelete: Cascade)
 
   @@id([code, player, question])
+  @@index([code, question])
 }
 
 model Media {

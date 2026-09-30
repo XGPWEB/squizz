@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Play, Users, Trophy, Copy, X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
@@ -37,9 +37,18 @@ type Game = {
     | null;
   answered: number;
   myAnswer: { choice: number; answer: AnswerPayload; points?: number } | null;
+  /** Milliseconds before the current question opens (the "Ready?" countdown). */
+  startsIn: number;
+  /** Local time at which this state was received, to run the timers between polls. */
+  receivedAt: number;
 };
 
-/** The live game for hosts and players; polls the server state every 900 ms. */
+const LOST = "Connexion perdue, reconnexion…";
+
+/**
+ * The live game for hosts and players. Polls the server state: every 0.9 s during a question,
+ * every 1.5 s in the lobby, not at all once the game is over or while the tab is hidden.
+ */
 export function GameView({ code }: { code: string }) {
   const [game, setGame] = useState<Game | null>(null),
     [error, setError] = useState(""),
@@ -48,34 +57,57 @@ export function GameView({ code }: { code: string }) {
     [copied, setCopied] = useState(false),
     [clock, setClock] = useState(() => Date.now()),
     [origin, setOrigin] = useState("");
-  const received = useRef(0);
   useEffect(() => {
     setOrigin(invitationOrigin(location.origin, process.env.NEXT_PUBLIC_LAN_HOST ?? ""));
   }, []);
   useEffect(() => {
     let active = true;
-    let timer: ReturnType<typeof setTimeout>;
-    const poll = async () => {
-      try {
-        const r = await fetch(`/api/game?action=state&code=${code}`, { cache: "no-store" });
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error);
-        if (active) {
-          received.current = Date.now();
-          setGame(d);
-          setError("");
-        }
-      } catch (e) {
-        if (active) setError((e as Error).message);
-      }
-      if (active) timer = setTimeout(poll, 900);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = (ms: number) => {
+      if (active) timer = setTimeout(poll, ms);
     };
+    async function poll() {
+      if (!active || document.hidden) return; // resumed by the visibility listener
+      let next = 900;
+      try {
+        // A phone switching networks can hang a request: give up after 5 s and try again.
+        const r = await fetch(`/api/game?action=state&code=${code}`, {
+          cache: "no-store",
+          signal: AbortSignal.timeout(5000),
+        });
+        const d = await r.json().catch(() => null);
+        if (!r.ok || !d) {
+          if (r.status === 403 || r.status === 404) {
+            if (active) setError(d?.error ?? "Cette partie est introuvable.");
+            return; // nothing more to wait for
+          }
+          throw new Error(d?.error ?? LOST);
+        }
+        if (!active) return;
+        setGame({ ...d, receivedAt: Date.now() });
+        setError("");
+        if (d.phase === "finished") return;
+        next = d.phase === "lobby" ? 1500 : d.startsIn > 0 ? Math.min(900, d.startsIn + 60) : 900;
+      } catch (e) {
+        if (active)
+          setError(e instanceof TypeError || e instanceof DOMException ? LOST : (e as Error).message);
+        next = 2000;
+      }
+      schedule(next);
+    }
+    const onVisibility = () => {
+      if (document.hidden) return;
+      clearTimeout(timer);
+      poll();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
     poll();
     const tick = setInterval(() => setClock(Date.now()), 200);
     return () => {
       active = false;
       clearTimeout(timer);
       clearInterval(tick);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [code]);
   async function run(task: () => Promise<void>) {
@@ -90,7 +122,11 @@ export function GameView({ code }: { code: string }) {
       setBusy(false);
     }
   }
-  const remaining = game ? Math.max(0, Math.ceil((game.remaining - (clock - received.current)) / 1000)) : 0;
+  const elapsed = game ? Math.max(0, clock - game.receivedAt) : 0;
+  const startsLeft = game ? Math.max(0, game.startsIn - elapsed) : 0;
+  const remaining = game
+    ? Math.max(0, Math.ceil((game.remaining - Math.max(0, elapsed - game.startsIn)) / 1000))
+    : 0;
   const joinUrl = `${origin}/jouer?code=${code}`;
   return (
     <>
@@ -188,6 +224,22 @@ export function GameView({ code }: { code: string }) {
                     <span className="player" key={p.name}>
                       {p.name}
                       {p.me ? " (vous)" : ""}
+                      {game.host && !p.me && (
+                        <button
+                          className="kick"
+                          disabled={busy}
+                          aria-label={`Retirer ${p.name} de la partie`}
+                          title="Retirer ce joueur"
+                          onClick={() => {
+                            if (confirm(`Retirer ${p.name} de la partie ? Ce joueur ne pourra pas revenir.`))
+                              run(async () => {
+                                await api("kick", { code, name: p.name });
+                              });
+                          }}
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
                     </span>
                   ))
                 ) : (
@@ -263,6 +315,17 @@ export function GameView({ code }: { code: string }) {
                 </Link>
               </div>
             </>
+          ) : !game.question ? (
+            // "Ready?" countdown: the question opens at the same moment on every screen.
+            <div className="ready-countdown" role="status" aria-live="assertive">
+              <span className="eyebrow">
+                ÉTAPE {game.index + 1} / {game.total}
+              </span>
+              <strong>Prêt ?</strong>
+              <span className="ready-number" key={Math.ceil(startsLeft / 1000)}>
+                {Math.max(1, Math.ceil(startsLeft / 1000))}
+              </span>
+            </div>
           ) : (
             <>
               <div className="row spaced" style={{ marginTop: 22 }}>
@@ -278,7 +341,11 @@ export function GameView({ code }: { code: string }) {
                 className="question-progress"
                 aria-label="Temps restant"
               />
-              {game.question?.type !== "slide" && <h2 className="question-title">{game.question?.text}</h2>}
+              {game.question?.type !== "slide" && (
+                <h2 className="question-title" aria-live="polite">
+                  {game.question?.text}
+                </h2>
+              )}
               {game.question && (
                 <QuestionPlay
                   key={`${code}-${game.index}`}

@@ -1,5 +1,5 @@
 """Shared helpers for the integration tests (run against `npm run dev` on port 5173)."""
-import http.cookiejar, json, os, secrets, urllib.error, urllib.parse, urllib.request
+import http.cookiejar, json, os, secrets, time, urllib.error, urllib.parse, urllib.request
 
 BASE = os.environ.get('SQUIZZ_URL', 'http://127.0.0.1:5173')
 
@@ -26,7 +26,11 @@ def request(c, method, path, body=None, expect=200, form=False):
 
 
 def call(c, action, expect=200, **data):
-    return request(c, 'POST', '/api/game', dict(action=action, **data), expect)
+    out = request(c, 'POST', '/api/game', dict(action=action, **data), expect)
+    # After start/next the question only opens once the "Ready?" countdown is over.
+    if action in ('start', 'next') and isinstance(out, dict) and out.get('startsIn'):
+        time.sleep(out['startsIn'] / 1000 + 0.1)
+    return out
 
 
 def login(c, email, password, ok=True):

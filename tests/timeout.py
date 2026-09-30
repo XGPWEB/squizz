@@ -9,7 +9,7 @@ def call(action,**data):
 code=call('create',quizId='general')['code']
 call('join',code=code,name='Chrono')
 call('start',code=code)
-time.sleep(21)
+time.sleep(23)
 s=call('state',code=code)
 assert s['revealed'] and s['remaining']==0
 assert s['personal']['outcome']=='timeout' and s['personal']['points']==0 and s['personal']['rank']==1
