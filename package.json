@@ -1,6 +1,6 @@
 {
   "name": "squizz",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "private": true,
   "engines": {
     "node": ">=20.9.0"
@@ -16,7 +16,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "test:e2e": "python3 tests/game-flow.py && python3 tests/rich-game-flow.py && python3 tests/timeout.py && python3 tests/quiz-management.py && python3 tests/accounts.py && python3 tests/contact.py && python3 tests/super-admin.py && python3 tests/game-live.py && python3 tests/rights.py && python3 tests/security.py && python3 tests/editing.py && python3 tests/email-verification.py && python3 tests/transfer.py",
+    "test:e2e": "python3 tests/game-flow.py && python3 tests/rich-game-flow.py && python3 tests/timeout.py && python3 tests/quiz-management.py && python3 tests/accounts.py && python3 tests/contact.py && python3 tests/super-admin.py && python3 tests/game-live.py && python3 tests/rights.py && python3 tests/security.py && python3 tests/editing.py && python3 tests/email-verification.py && python3 tests/transfer.py && python3 tests/admins.py",
     "test:e2e:isolated": "bash scripts/e2e.sh",
     "typecheck": "tsc --noEmit"
   },

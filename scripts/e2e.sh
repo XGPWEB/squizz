@@ -35,8 +35,14 @@ export AUTH_SECRET=${E2E_AUTH_SECRET:-e2e-secret-not-for-production-0123456789}
 export NEXTAUTH_URL="http://localhost:$PORT" APP_URL="http://localhost:$PORT"
 export MEDIA_DIR=$(mktemp -d)
 export NEXT_DIST_DIR=.next-e2e
-# No real email, payment or anti-bot service during tests.
-unset SMTP_HOST STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET TURNSTILE_SECRET_KEY TURNSTILE_SITE_KEY
+# No real email or anti-bot service during tests, and no real Stripe: billing talks to a local mock
+# (tests/stripe_mock.py) with fake keys. STRIPE_API_BASE is ignored by the app in production.
+unset SMTP_HOST TURNSTILE_SECRET_KEY TURNSTILE_SITE_KEY STRIPE_PRICE_STARTER STRIPE_PRICE_PRO STRIPE_PRICE_PREMIUM
+STRIPE_MOCK_PORT=${E2E_STRIPE_PORT:-5175}
+export STRIPE_SECRET_KEY=sk_test_mock_never_real STRIPE_WEBHOOK_SECRET=whsec_mock_never_real
+export STRIPE_API_BASE="http://127.0.0.1:$STRIPE_MOCK_PORT" STRIPE_MOCK_URL="http://127.0.0.1:$STRIPE_MOCK_PORT"
+python3 tests/stripe_mock.py "$STRIPE_MOCK_PORT" &
+STRIPE_MOCK=$!
 
 npx prisma migrate deploy >/dev/null
 npm run -s db:seed >/dev/null
@@ -44,7 +50,7 @@ npm run -s db:seed >/dev/null
 LOG=$(mktemp)
 npx next dev --port "$PORT" >"$LOG" 2>&1 &
 SERVER=$!
-trap 'kill $SERVER 2>/dev/null; rm -rf "$MEDIA_DIR"' EXIT
+trap 'kill $SERVER $STRIPE_MOCK 2>/dev/null; rm -rf "$MEDIA_DIR"' EXIT
 for _ in $(seq 1 90); do
   curl -sf "http://127.0.0.1:$PORT/api/health" >/dev/null 2>&1 && break
   sleep 1
@@ -52,7 +58,7 @@ done
 curl -sf "http://127.0.0.1:$PORT/api/health" >/dev/null || { echo "Le serveur de test n’a pas démarré :" >&2; tail -30 "$LOG" >&2; exit 1; }
 
 export SQUIZZ_URL="http://127.0.0.1:$PORT"
-SCENARIOS=${*:-game-flow rich-game-flow timeout quiz-management accounts contact super-admin game-live rights security editing email-verification transfer}
+SCENARIOS=${*:-game-flow rich-game-flow timeout quiz-management accounts contact super-admin game-live rights security editing email-verification transfer admins billing}
 FAILED=0
 for t in $SCENARIOS; do
   if python3 "tests/$t.py" >"$LOG.$t" 2>&1; then echo "ok    $t"; else echo "ÉCHEC $t"; tail -8 "$LOG.$t"; FAILED=1; fi

@@ -443,3 +443,17 @@ export function verifyEmail(o: { name: string; link: string; hours: number }): E
     }),
   };
 }
+
+/** Tells Pressweb that SQuizz cancelled a subscription by itself, to check whether a refund is due. */
+export function billingAlertEmail(o: { subscriptionId: string; reason: string }): Email {
+  return {
+    subject: `[SQuizz] Abonnement Stripe annulé automatiquement`,
+    text: `SQuizz a annulé l’abonnement Stripe ${o.subscriptionId} : ${o.reason}.\n\nÀ vérifier dans Stripe : un paiement a peut-être été encaissé pour cet abonnement et doit être remboursé.`,
+    html: layout({
+      preheader: `Abonnement ${o.subscriptionId} annulé : ${o.reason}.`,
+      eyebrow: "Facturation",
+      title: "Abonnement annulé.",
+      body: `<p style="margin:0 0 12px">SQuizz a annulé l’abonnement Stripe <strong>${esc(o.subscriptionId)}</strong> : ${esc(o.reason)}.</p><p style="margin:0">À vérifier dans Stripe : un paiement a peut-être été encaissé pour cet abonnement et doit être remboursé.</p>`,
+    }),
+  };
+}

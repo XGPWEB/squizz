@@ -9,6 +9,7 @@ import { mediaPath } from "@/lib/server/media-store";
 import { sendMail } from "@/lib/server/mail";
 import { organizationUpdateEmail, partnerEmail } from "@/lib/server/email-templates";
 import { PLAN_KEYS } from "@/lib/plans";
+import { stopBillingForDeletion } from "@/lib/server/billing";
 
 export const GET = route<{ id: string }>(async (_, { id }) => {
   await requireSuperAdmin();
@@ -113,8 +114,10 @@ export const DELETE = route<{ id: string }>(async (req, { id }) => {
   const org = await prisma.organization.findUnique({ where: { id } });
   if (!org) fail("Organisation introuvable.", 404);
   if (confirm.trim() !== org.name) fail("Saisissez le nom exact de l’organisation pour confirmer.");
+  // Stripe first: if the subscription cannot be cancelled, nothing is deleted and the deletion can be retried.
+  const { cancelled } = await stopBillingForDeletion(org);
   const media = await prisma.media.findMany({ where: { organizationId: id }, select: { id: true } });
-  await audit(admin, "organization.delete", null, { id, name: org.name });
+  await audit(admin, "organization.delete", null, { id, name: org.name, cancelled });
   await prisma.organization.delete({ where: { id } });
   // Rows go by cascade; the files on disk must go too (the privacy policy promises it).
   await Promise.all(media.map((m) => rm(mediaPath(m.id), { force: true })));

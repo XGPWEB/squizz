@@ -2,6 +2,14 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.8.1] — 2026-10-01
+
+### Corrections d’audit
+- Facturation : une organisation supprimée n’est plus facturée (abonnement Stripe annulé et pages de paiement fermées avant la suppression ; en cas d’échec côté Stripe rien n’est supprimé et l’opération peut être relancée ; un abonnement arrivé après la suppression est annulé).
+- Facturation : une organisation ne peut plus avoir plusieurs abonnements (réservation persistante, une seule page de paiement ouverte, abonnement existant chez Stripe adopté, doublon annulé par le webhook).
+- Droits : le dernier administrateur actif ne peut plus disparaître sous des requêtes simultanées (vérification et modification dans la même transaction verrouillée, sur la page Équipe, à la suppression de son compte et dans le super-admin).
+- Tests : faux Stripe local, scénarios `admins` et `billing`.
+
 ## [1.8.0] — 2026-10-01
 
 ### Nuage de mots
@@ -123,6 +131,7 @@ Première version publique, en ligne sur www.squizz.fun.
 - Purge automatique des données, export et suppression de compte.
 - Déploiement avec sauvegarde de la base et retour automatique en cas d'échec ; sauvegardes quotidiennes vérifiées, contrôle de santé, alertes.
 
+[1.8.1]: https://github.com/XGPWEB/squizz/releases/tag/v1.8.1
 [1.8.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.8.0
 [1.7.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.7.0
 [1.6.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.6.0

@@ -36,6 +36,9 @@ async function run() {
   const abandoned = await prisma.organization.findMany({
     where: {
       createdAt: { lt: ago(7) },
+      // Never an organisation known to Stripe: those are deleted from the app, which cancels billing first.
+      stripeCustomerId: null,
+      stripeSubscriptionId: null,
       users: { every: { emailVerifiedAt: null } },
       NOT: { users: { none: {} } },
     },

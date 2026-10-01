@@ -46,6 +46,12 @@ model Organization {
   stripeSubscriptionId String?            @unique
   subscriptionStatus   String?
   currentPeriodEnd     DateTime?
+  /// Checkout page currently open for this organisation and the plan it sells: reused or expired before
+  /// another one is created, so two payment pages can never lead to two subscriptions.
+  checkoutSessionId    String?
+  checkoutPlan         Plan?
+  /// Short-lived claim taken (atomically, across processes) while a checkout is being prepared with Stripe.
+  checkoutLockedUntil  DateTime?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 

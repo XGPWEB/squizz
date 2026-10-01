@@ -47,7 +47,15 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 - **Contenus** : SQuizz Original « Manager dans la fonction publique territoriale » ; export et import de quiz (fichier `.squizz` avec ses images) ; quiz « Connais-tu Nogent-sur-Marne ? » livré à Pôle jeunesse par import.
 - **Cookies** : bandeau d’information et panneau de choix, vidéos YouTube soumises à accord, anti-robot chargé seulement à l’utilisation du formulaire de contact.
 
+## 1er octobre 2026 — Corrections après audit (version 1.8.1)
+
+- **Abonnements** : supprimer une organisation annule d’abord son abonnement Stripe ; une organisation ne peut plus se retrouver avec deux abonnements (double clic, deux onglets, webhook en retard).
+- **Droits** : une organisation garde toujours un administrateur actif, même si deux administrateurs se rétrogradent au même instant.
+- **Tests** : un faux Stripe local permet de tester la facturation sans aucun paiement réel.
+
 ## Reste à faire
+
+- Stripe : ajouter l’événement `checkout.session.expired` au webhook (facultatif).
 
 
 - **Search Console** : vérifier vers le 3 octobre que Google a lu `sitemap.xml` (il ne l’avait encore jamais demandé) ; importer le site dans **Bing Webmaster Tools**.

@@ -96,3 +96,30 @@ def env(name):
         if line.startswith(name + '='):
             return line.split('=', 1)[1].strip().strip('"')
     raise KeyError(name)
+
+
+# --- Stripe mock (tests/stripe_mock.py, started by scripts/e2e.sh): never the real Stripe ------------------
+STRIPE_MOCK = os.environ.get('STRIPE_MOCK_URL', 'http://127.0.0.1:5175')
+
+
+def mock(path, body=None):
+    """Controls or inspects the Stripe mock (/_mock/…)."""
+    data = None if body is None else json.dumps(body).encode()
+    req = urllib.request.Request(STRIPE_MOCK + '/_mock/' + path, data=data, method='GET' if body is None else 'POST')
+    return json.loads(urllib.request.urlopen(req, timeout=30).read())
+
+
+def stripe_event(kind, obj, expect=200):
+    """Sends the app a webhook event signed like Stripe does (same HMAC scheme, with the mock's secret)."""
+    import hashlib, hmac
+    payload = json.dumps({'id': 'evt_' + secrets.token_hex(8), 'object': 'event', 'type': kind, 'data': {'object': obj}})
+    stamp = str(int(time.time()))
+    secret = os.environ.get('STRIPE_WEBHOOK_SECRET', 'whsec_mock_never_real')
+    sig = hmac.new(secret.encode(), f'{stamp}.{payload}'.encode(), hashlib.sha256).hexdigest()
+    req = urllib.request.Request(BASE + '/api/billing/webhook', data=payload.encode(), method='POST',
+                                 headers={'Content-Type': 'application/json', 'Stripe-Signature': f't={stamp},v1={sig}'})
+    try:
+        status = urllib.request.urlopen(req, timeout=60).status
+    except urllib.error.HTTPError as e:
+        status = e.code
+    assert status == expect, ('webhook', kind, status)
