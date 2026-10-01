@@ -337,7 +337,7 @@ function Question({ game, busy, run, settle, remaining }: Props) {
             </Dialog.Title>
             <div className="host-modal-body" key={tab}>
               {tab === "results" ? (
-                <QuestionResults question={q} aggregate={game.aggregate} players={game.players.length} />
+                <QuestionResults question={q} aggregate={game.aggregate} players={game.players.length} host />
               ) : (
                 <Leaderboard players={game.players.slice(0, 5)} />
               )}

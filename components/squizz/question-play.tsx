@@ -12,6 +12,7 @@ import {
   choiceStats,
 } from "@/lib/question";
 import { MediaView, PinImage } from "./media";
+import { WordCloud } from "./word-cloud";
 export function QuestionPlay({
   question: q,
   disabled,
@@ -354,11 +355,14 @@ export function QuestionResults({
   question: q,
   aggregate: a,
   players,
+  host = false,
 }: {
   question: PublicQuestion;
   aggregate: Aggregate | null;
   /** Number of players in the game, to show the participation rate. */
   players?: number;
+  /** The host can download the word cloud as an image. */
+  host?: boolean;
 }) {
   if (q.type === "slide") return null;
   const stats = a ? choiceStats(a.counts, a.responses, players) : null;
@@ -494,14 +498,7 @@ export function QuestionResults({
             </>
           )}
           {q.type === "wordcloud" && (
-            <div className="word-cloud">
-              {a.texts.map((t, i) => (
-                <span key={i} style={{ fontSize: `${Math.min(3, 1 + t.count * 0.3)}rem` }}>
-                  {t.label}
-                  <small> ×{t.count}</small>
-                </span>
-              ))}
-            </div>
+            <WordCloud words={a.texts} title={q.text} responses={a.responses} canDownload={host} />
           )}
           {["open", "brainstorm", "text"].includes(q.type) && (
             <div className="idea-board">

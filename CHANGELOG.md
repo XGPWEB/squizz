@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.8.0] — 2026-10-01
+
+### Nuage de mots
+- Vrai nuage de mots : la taille de chaque mot est proportionnelle au nombre de fois où il a été cité, les mots sont placés sans chevauchement, aux couleurs de SQuizz ; rappel des mots les plus cités avec leur nombre.
+- L’animateur peut télécharger le nuage en image (PNG de 2000 px, avec la question et le nombre de réponses).
+
 ## [1.7.0] — 2026-10-01
 
 ### Résultats
@@ -117,6 +123,7 @@ Première version publique, en ligne sur www.squizz.fun.
 - Purge automatique des données, export et suppression de compte.
 - Déploiement avec sauvegarde de la base et retour automatique en cas d'échec ; sauvegardes quotidiennes vérifiées, contrôle de santé, alertes.
 
+[1.8.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.8.0
 [1.7.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.7.0
 [1.6.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.6.0
 [1.5.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.5.0

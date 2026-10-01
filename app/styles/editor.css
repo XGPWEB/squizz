@@ -965,3 +965,22 @@ fieldset {
 .distribution .leading > .row span {
   font-weight: 800;
 }
+
+/* Word cloud: sizes proportional to the number of mentions */
+.word-cloud-block {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+.word-cloud-svg {
+  width: 100%;
+  height: auto;
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 15px;
+}
+.word-cloud-top {
+  margin: 0;
+  font-size: 15px;
+  text-align: center;
+}
