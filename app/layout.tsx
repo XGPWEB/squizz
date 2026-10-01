@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@fontsource/anton/latin-400.css";
 import "@fontsource/permanent-marker/latin-400.css";
 import "./globals.css";
+import { CookieConsent } from "@/components/site/cookie-consent";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "https://www.squizz.fun"),
@@ -31,7 +32,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           }}
         />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }

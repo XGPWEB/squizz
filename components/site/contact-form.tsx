@@ -56,6 +56,9 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
     (offer
       ? `Bonjour, je souhaite souscrire à l’offre ${offer.label} (${priceLabel(offer)}, sans engagement). Nom de mon organisation sur SQuizz : `
       : "");
+  // The anti-bot check (Cloudflare) loads only once the visitor starts using the form, not for every
+  // visitor of the page.
+  const [engaged, setEngaged] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const widget = useRef<string | null>(null);
 
@@ -70,7 +73,7 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
     });
   }
   useEffect(() => {
-    if (!siteKey) return;
+    if (!siteKey || !engaged) return;
     // An ad blocker can silently stop the script: tell the visitor instead of a dead button.
     const timeout = window.setTimeout(() => {
       if (!widget.current) setWidgetFailed(true);
@@ -79,7 +82,7 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
       window.clearTimeout(timeout);
       if (widget.current && window.turnstile) window.turnstile.remove(widget.current);
     };
-  }, [siteKey]);
+  }, [siteKey, engaged]);
 
   // What is still missing, shown in words when the visitor tries to send (never a silently greyed-out button).
   const missing = [
@@ -104,6 +107,8 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
   return (
     <form
       className="contact-form"
+      onFocusCapture={() => setEngaged(true)}
+      onPointerDownCapture={() => setEngaged(true)}
       onSubmit={async (e) => {
         e.preventDefault();
         setTried(true);
@@ -195,7 +200,7 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
           onChange={(e) => setWebsite(e.target.value)}
         />
       </div>
-      {siteKey && (
+      {siteKey && engaged && (
         <>
           <Script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js"

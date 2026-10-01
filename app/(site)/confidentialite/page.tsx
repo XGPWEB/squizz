@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Legal, Mail } from "@/components/site/legal";
+import { CookieSettingsLink } from "@/components/site/cookie-consent";
 import { COMPANY_INFO } from "@/lib/company-info";
 
 export const metadata: Metadata = {
@@ -185,10 +186,10 @@ export default function PolitiqueConfidentialitePage() {
         clauses contractuelles types de la Commission européenne. Aucune donnée n’est vendue à des tiers.
       </p>
       <p>
-        <strong>Vidéos YouTube</strong> : lorsqu’un quiz contient une vidéo YouTube, elle est chargée en mode
-        « confidentialité renforcée » (youtube-nocookie.com) seulement à l’affichage de la question. Google
-        reçoit alors votre adresse IP et peut utiliser le stockage local de votre navigateur, selon sa propre
-        politique de confidentialité.
+        <strong>Vidéos YouTube</strong> : lorsqu’un quiz contient une vidéo YouTube, elle n’est chargée
+        qu’avec votre accord (voir « Cookies » ci-dessous), en mode « confidentialité renforcée »
+        (youtube-nocookie.com). Google reçoit alors votre adresse IP et peut utiliser les cookies et le
+        stockage local de votre navigateur, selon sa propre politique de confidentialité.
       </p>
 
       <h2>7. Vos droits</h2>
@@ -230,9 +231,21 @@ export default function PolitiqueConfidentialitePage() {
 
       <h2 id="cookies">8. Cookies</h2>
       <p>
-        Le Service utilise uniquement des cookies <strong>strictement nécessaires</strong> à son
-        fonctionnement ; aucun consentement préalable n’est requis pour ceux-ci (article 82 loi Informatique
-        et Libertés, exemptions CNIL). Aucun cookie publicitaire ni outil de mesure d’audience n’est utilisé.
+        Le Service dépose uniquement des cookies <strong>strictement nécessaires</strong> à son fonctionnement
+        ; aucun consentement préalable n’est requis pour ceux-ci (article 82 loi Informatique et Libertés,
+        exemptions CNIL). Aucun cookie publicitaire ni outil de mesure d’audience n’est utilisé.
+      </p>
+      <p>
+        <strong>Votre accord est demandé</strong> pour un seul type de contenu, fourni par un tiers : les
+        vidéos YouTube insérées dans certains quiz. Tant que vous n’avez pas accepté, elles ne sont pas
+        chargées et rien n’est transmis à YouTube ; vous pouvez accepter pour une seule vidéo, pour toutes, ou
+        refuser. Refuser est aussi simple qu’accepter et n’empêche pas d’utiliser le Service. Votre choix est
+        conservé 6 mois sur votre appareil, puis redemandé, et vous pouvez le modifier à tout moment :{" "}
+        <CookieSettingsLink className="link-button" />.
+      </p>
+      <p>
+        L’anti-robot du formulaire de contact (Cloudflare Turnstile) n’est chargé que lorsque vous commencez à
+        utiliser ce formulaire ; il sert uniquement à sa sécurité.
       </p>
       <table className="data-table legal-table">
         <thead>
@@ -263,6 +276,20 @@ export default function PolitiqueConfidentialitePage() {
             </td>
             <td>Identifiant anonyme du joueur, pour retrouver sa partie après un rafraîchissement</td>
             <td>48 heures</td>
+          </tr>
+          <tr>
+            <td>
+              <code>sq_consent</code>
+            </td>
+            <td>Mémorise votre choix sur les contenus soumis à accord (vidéos YouTube)</td>
+            <td>6 mois</td>
+          </tr>
+          <tr>
+            <td>
+              <code>__Secure-squizz-admin</code>
+            </td>
+            <td>Réservé au support SQuizz : connexion à l’espace d’administration du Service</td>
+            <td>12 heures</td>
           </tr>
           <tr>
             <td>

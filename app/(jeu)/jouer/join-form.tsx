@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { gameApi } from "@/lib/client/api";
@@ -64,6 +65,10 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
             {busy ? "Connexion…" : "C’est parti !"}
           </button>
         </form>
+        <p className="hint play-privacy">
+          Pour jouer, SQuizz retient seulement ton pseudo et un cookie technique anonyme, effacés au bout de
+          24 à 48 heures. <Link href="/confidentialite#cookies">En savoir plus</Link>
+        </p>
       </section>
     </div>
   );

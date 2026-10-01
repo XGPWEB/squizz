@@ -2,7 +2,8 @@
 import { MEDIA_LIMITS, formatSize, limitFor } from "@/lib/media-limits";
 import { compressImage } from "@/lib/client/compress-image";
 import { useState, type KeyboardEvent } from "react";
-import { ExternalLink, Upload, X } from "lucide-react";
+import { ExternalLink, Play, Upload, X } from "lucide-react";
+import { saveConsent, useConsent } from "@/components/site/cookie-consent";
 import { youtubeId, safeMediaUrl, type Media } from "@/lib/question";
 import { Choice } from "./settings";
 export function MediaView({ media }: { media: Media[] }) {
@@ -24,13 +25,7 @@ export function MediaView({ media }: { media: Media[] }) {
                 aria-label={m.caption || "Vidéo de la question"}
               />
             ) : id ? (
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/${id}`}
-                title={m.caption || "Vidéo YouTube"}
-                allow="encrypted-media; picture-in-picture; fullscreen"
-                allowFullScreen
-                referrerPolicy="strict-origin-when-cross-origin"
-              />
+              <YouTubeVideo id={id} title={m.caption || "Vidéo YouTube"} />
             ) : m.kind === "link" ? (
               <a className="external-resource" href={m.url} target="_blank" rel="noopener noreferrer">
                 <ExternalLink size={18} />
@@ -42,6 +37,45 @@ export function MediaView({ media }: { media: Media[] }) {
           </figure>
         );
       })}
+    </div>
+  );
+}
+/**
+ * A YouTube video loads only with the visitor's agreement (it sends their address to Google, which may set
+ * its own cookies): once for this video, or for all videos through the cookie preferences.
+ */
+function YouTubeVideo({ id, title }: { id: string; title: string }) {
+  const { consent } = useConsent();
+  const [once, setOnce] = useState(false);
+  if (consent?.services.youtube || once)
+    return (
+      <iframe
+        src={`https://www.youtube-nocookie.com/embed/${id}`}
+        title={title}
+        allow="encrypted-media; picture-in-picture; fullscreen"
+        allowFullScreen
+        referrerPolicy="strict-origin-when-cross-origin"
+      />
+    );
+  return (
+    <div className="video-consent" role="group" aria-label={title}>
+      <Play size={30} aria-hidden />
+      <p>
+        <strong>Vidéo YouTube.</strong> En l’affichant, YouTube (Google) reçoit votre adresse IP et peut
+        déposer ses cookies.
+      </p>
+      <div className="row">
+        <button type="button" className="button small" onClick={() => setOnce(true)}>
+          Lire cette vidéo
+        </button>
+        <button
+          type="button"
+          className="button small secondary"
+          onClick={() => saveConsent({ ...consent?.services, youtube: true })}
+        >
+          Toujours autoriser YouTube
+        </button>
+      </div>
     </div>
   );
 }

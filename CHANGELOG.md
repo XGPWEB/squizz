@@ -2,6 +2,14 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.6.0] — 2026-10-01
+
+### Cookies et consentement
+- Bandeau d’information à la première visite (refuser, personnaliser ou accepter, à égalité), panneau « Gérer les cookies » accessible à tout moment, choix conservé 6 mois.
+- Les vidéos YouTube des quiz ne se chargent qu’avec l’accord de la personne (pour une vidéo ou pour toutes).
+- L’anti-robot Cloudflare n’est chargé que lorsque le formulaire de contact est utilisé.
+- Politique de confidentialité mise à jour (liste des cookies, accord, durée).
+
 ## [1.5.0] — 2026-10-01
 
 ### Bibliothèque
@@ -103,6 +111,7 @@ Première version publique, en ligne sur www.squizz.fun.
 - Purge automatique des données, export et suppression de compte.
 - Déploiement avec sauvegarde de la base et retour automatique en cas d'échec ; sauvegardes quotidiennes vérifiées, contrôle de santé, alertes.
 
+[1.6.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.6.0
 [1.5.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.5.0
 [1.4.1]: https://github.com/XGPWEB/squizz/releases/tag/v1.4.1
 [1.4.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.4.0

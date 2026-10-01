@@ -2,10 +2,12 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { openCookiePreferences } from "@/components/site/cookie-consent";
 import { useEffect, useRef, useState } from "react";
 import {
   Building2,
   ChevronDown,
+  Cookie,
   CreditCard,
   History,
   LayoutGrid,
@@ -148,6 +150,15 @@ export function AppBar(p: Props) {
               <Link href={accountHref} className="menu-item" onClick={() => setOpen(false)}>
                 <UserRound size={18} /> Mon compte
               </Link>
+              <button
+                className="menu-item"
+                onClick={() => {
+                  setOpen(false);
+                  openCookiePreferences();
+                }}
+              >
+                <Cookie size={18} /> Gérer les cookies
+              </button>
               {p.isSuperAdmin && p.area === "app" && !p.viewingAs && (
                 <Link href="/super-admin" className="menu-item" onClick={() => setOpen(false)}>
                   <Shield size={18} /> Super-admin

@@ -44,6 +44,8 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 - **Connexion instable** : plus de bouton bloqué ni de double création ; une réponse, un lancement ou un « question suivante » perdus en route sont vérifiés auprès du serveur.
 - **Sécurité** : confirmation de l’adresse e-mail à l’inscription (les comptes existants ne sont pas concernés) ; un tiers ne peut plus bloquer un compte à coups de mauvais mots de passe.
 - **Qualité** : base de test jetable, intégration continue GitHub, nouveaux tests.
+- **Contenus** : SQuizz Original « Manager dans la fonction publique territoriale » ; export et import de quiz (fichier `.squizz` avec ses images) ; quiz « Connais-tu Nogent-sur-Marne ? » livré à Pôle jeunesse par import.
+- **Cookies** : bandeau d’information et panneau de choix, vidéos YouTube soumises à accord, anti-robot chargé seulement à l’utilisation du formulaire de contact.
 
 ## Reste à faire
 

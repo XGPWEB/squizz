@@ -702,3 +702,8 @@ main:focus {
   gap: 10px;
   flex-wrap: wrap;
 }
+.play-privacy {
+  margin: 16px 0 0;
+  font-size: 12px;
+  text-align: center;
+}
