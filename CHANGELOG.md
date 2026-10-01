@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.8.5] — 2026-10-01
+
+### Nuage de mots
+- Mots plus serrés : les lignes sont presque empilées, accents et jambages frôlent le mot voisin, avec un petit écart sur les côtés pour que chaque mot reste lisible.
+- Le nuage s’agrandit pour remplir son cadre, même avec peu de mots ou des mots courts.
+
 ## [1.8.4] — 2026-10-01
 
 ### Nuage de mots

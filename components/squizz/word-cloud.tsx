@@ -11,7 +11,15 @@ async function measurer() {
   const ctx = document.createElement("canvas").getContext("2d")!;
   return (text: string, size: number) => {
     ctx.font = `400 ${size}px ${FONT}`;
-    return ctx.measureText(text).width;
+    const m = ctx.measureText(text);
+    // The body of the letters, slightly trimmed: accents are left out and the tails of « g, p, q » barely count, so that
+    // words sit tight and brush against each other.
+    const bare = ctx.measureText(text.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+    return {
+      width: Math.max(m.width, m.actualBoundingBoxLeft + m.actualBoundingBoxRight),
+      ascent: bare.actualBoundingBoxAscent * 0.96,
+      descent: m.actualBoundingBoxDescent / 6,
+    };
   };
 }
 
@@ -48,11 +56,13 @@ async function downloadImage(placed: PlacedWord[], title: string, responses: num
     size -= 4;
   } while (ctx.measureText(title).width > canvas.width - 160 && size > 28);
   ctx.fillText(title, canvas.width / 2, head / 2 + 20);
+  ctx.textBaseline = "alphabetic";
   for (const w of placed) {
     ctx.font = `400 ${w.size * scale}px ${FONT}`;
     ctx.fillStyle = w.color;
-    ctx.fillText(w.label, w.x * scale, head + w.y * scale);
+    ctx.fillText(w.label, w.x * scale, head + w.baseline * scale);
   }
+  ctx.textBaseline = "middle";
   ctx.font = `700 28px monospace`;
   ctx.fillStyle = "#141413";
   ctx.textAlign = "left";
@@ -122,11 +132,10 @@ export function WordCloud({
             <text
               key={w.label}
               x={w.x}
-              y={w.y}
+              y={w.baseline}
               fontSize={w.size}
               fill={w.color}
               textAnchor="middle"
-              dominantBaseline="central"
               fontFamily={FONT}
             >
               {w.label}

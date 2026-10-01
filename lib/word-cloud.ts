@@ -3,14 +3,23 @@
  * cited 6 times is 3 times as tall as one cited twice), with a floor so that single mentions stay readable.
  * Words are placed from the most to the least cited along a spiral from the centre, without overlap; when
  * they do not all fit, the whole cloud is scaled down and laid out again.
+ *
+ * Words are packed tightly: each one occupies the box of its letters' body, so that accents and the tails
+ * of « g, p, q » may brush against a neighbour — the look of a hand-set poster. Once laid out, the cloud is
+ * enlarged to fill its frame, so that words stay big and close together whatever their number.
  */
 export type CloudWord = { label: string; count: number };
 export type PlacedWord = CloudWord & {
-  /** Centre of the word, in the cloud's own units (0..width, 0..height). */
+  /** Centre of the word's box, in the cloud's own units (0..width, 0..height). */
   x: number;
   y: number;
+  /** Font size. */
   size: number;
+  /** The box of the drawn word. */
   width: number;
+  height: number;
+  /** Where to draw: vertical position of the text's baseline (the text is centred on `x`). */
+  baseline: number;
   color: string;
 };
 
@@ -18,18 +27,22 @@ export const CLOUD = { width: 1000, height: 600, maxWords: 60, minSize: 18 };
 /** Brand colours readable on the cream background. */
 export const CLOUD_COLORS = ["#3445ff", "#ff6abb", "#ff8018", "#141413", "#7a4dd8"];
 
-/** Width of `text` set at `size` px: measured on a canvas in the browser, estimated in tests. */
-export type Measure = (text: string, size: number) => number;
+/**
+ * The room `text` takes when set at `size` px: its width, and how far its box rises above (`ascent`) and
+ * falls below (`descent`) the baseline. Measured on a canvas in the browser, estimated in tests.
+ */
+export type Measure = (text: string, size: number) => { width: number; ascent: number; descent: number };
 
 /** Size proportional to the count: the most cited word gets `top` px, the others their share of it. */
 export function wordSize(count: number, maxCount: number, top: number, min = CLOUD.minSize) {
   return Math.max(min, Math.round((top * count) / Math.max(1, maxCount)));
 }
 
-function overlaps(a: PlacedWord, b: PlacedWord, gap: number) {
+/** Words stay apart sideways (they must remain readable) and sit almost on top of each other. */
+function overlaps(a: PlacedWord, b: PlacedWord) {
   return (
-    Math.abs(a.x - b.x) * 2 < a.width + b.width + gap * 2 &&
-    Math.abs(a.y - b.y) * 2 < a.size + b.size + gap * 2
+    Math.abs(a.x - b.x) * 2 < a.width + b.width + SIDE_GAP * 2 &&
+    Math.abs(a.y - b.y) * 2 < a.height + b.height + LINE_GAP * 2
   );
 }
 
@@ -48,12 +61,15 @@ export function layoutCloud(words: CloudWord[], measure: Measure): PlacedWord[] 
     let ok = true;
     for (const [i, w] of list.entries()) {
       const size = wordSize(w.count, maxCount, top, min);
+      const box = measure(w.label, size);
       const word: PlacedWord = {
         ...w,
         size,
-        width: measure(w.label, size),
+        width: box.width,
+        height: box.ascent + box.descent,
         x: width / 2,
         y: height / 2,
+        baseline: 0,
         color: CLOUD_COLORS[i % CLOUD_COLORS.length],
       };
       if (word.width > width - 20) {
@@ -70,9 +86,9 @@ export function layoutCloud(words: CloudWord[], measure: Measure): PlacedWord[] 
         const inside =
           word.x - word.width / 2 >= 8 &&
           word.x + word.width / 2 <= width - 8 &&
-          word.y - word.size / 2 >= 8 &&
-          word.y + word.size / 2 <= height - 8;
-        if (inside && !placed.some((p) => overlaps(word, p, 6))) {
+          word.y - word.height / 2 >= 8 &&
+          word.y + word.height / 2 <= height - 8;
+        if (inside && !placed.some((p) => overlaps(word, p))) {
           found = true;
           break;
         }
@@ -81,9 +97,46 @@ export function layoutCloud(words: CloudWord[], measure: Measure): PlacedWord[] 
         ok = false;
         break;
       }
+      word.baseline = word.y - word.height / 2 + box.ascent;
       placed.push(word);
     }
-    if (ok) return placed;
+    if (ok) return fill(placed);
   }
   return [];
+}
+
+/** Space kept between two words on the same line, in the cloud's units. */
+const SIDE_GAP = 3;
+/** Space kept between two words one above the other. */
+const LINE_GAP = 1;
+/** Largest font size after enlargement: a single short word does not become a poster. */
+const MAX_SIZE = 320;
+
+/**
+ * Resizes the finished cloud, as a whole, until it fills the frame in width or in height, and centres it:
+ * a few short words take the room instead of floating in the middle. Proportions between words are kept.
+ */
+function fill(placed: PlacedWord[]): PlacedWord[] {
+  const margin = 14;
+  const left = Math.min(...placed.map((w) => w.x - w.width / 2));
+  const right = Math.max(...placed.map((w) => w.x + w.width / 2));
+  // Boxes are tight: leave room for the accents above and the tails below, which stick out of them.
+  const top = Math.min(...placed.map((w) => w.y - w.height / 2 - w.size * 0.2));
+  const bottom = Math.max(...placed.map((w) => w.y + w.height / 2 + w.size * 0.22));
+  const scale = Math.min(
+    (CLOUD.width - 2 * margin) / (right - left),
+    (CLOUD.height - 2 * margin) / (bottom - top),
+    MAX_SIZE / placed[0].size,
+  );
+  const [cx, cy] = [(left + right) / 2, (top + bottom) / 2];
+  const k = scale;
+  return placed.map((w) => ({
+    ...w,
+    x: CLOUD.width / 2 + (w.x - cx) * k,
+    y: CLOUD.height / 2 + (w.y - cy) * k,
+    baseline: CLOUD.height / 2 + (w.baseline - cy) * k,
+    size: w.size * k,
+    width: w.width * k,
+    height: w.height * k,
+  }));
 }
