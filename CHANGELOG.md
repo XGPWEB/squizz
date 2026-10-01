@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.5.0] — 2026-10-01
+
+### Bibliothèque
+- Exporter un quiz dans un fichier `.squizz` (quiz et images) et importer un tel fichier dans son espace, avec les mêmes contrôles que l’éditeur et les quotas de l’offre.
+
 ## [1.4.1] — 2026-10-01
 
 ### Contenu
@@ -98,6 +103,7 @@ Première version publique, en ligne sur www.squizz.fun.
 - Purge automatique des données, export et suppression de compte.
 - Déploiement avec sauvegarde de la base et retour automatique en cas d'échec ; sauvegardes quotidiennes vérifiées, contrôle de santé, alertes.
 
+[1.5.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.5.0
 [1.4.1]: https://github.com/XGPWEB/squizz/releases/tag/v1.4.1
 [1.4.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.4.0
 [1.3.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.3.0

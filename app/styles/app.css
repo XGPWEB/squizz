@@ -698,3 +698,7 @@ main:focus {
     flex: 1;
   }
 }
+.library-create {
+  gap: 10px;
+  flex-wrap: wrap;
+}

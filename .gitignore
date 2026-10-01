@@ -48,3 +48,4 @@ tsconfig.tsbuildinfo
 !.env.example
 /.media/
 /.next-e2e/
+/exports/

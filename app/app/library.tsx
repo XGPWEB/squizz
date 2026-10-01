@@ -1,8 +1,22 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { Check, Copy, Pencil, Play, Plus, Search, Sparkles, Timer, Trash2, Users, X } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import {
+  Check,
+  Copy,
+  Download,
+  Pencil,
+  Play,
+  Plus,
+  Search,
+  Sparkles,
+  Timer,
+  Trash2,
+  Upload,
+  Users,
+  X,
+} from "lucide-react";
 import type { Quiz } from "@/lib/quizzes";
 import type { OrgQuiz } from "@/lib/server/quiz-store";
 import { gameApi, newClientKey, UncertainError, withRetry } from "@/lib/client/api";
@@ -82,6 +96,39 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
       );
       router.push(`/app/quiz/${quiz.id}`);
     });
+  // A .squizz file: the quiz and its images, to keep a copy or import it into another space.
+  const exportQuiz = (q: Quiz) =>
+    run(async () => {
+      const { file } = await gameApi<{ file: unknown }>("export", { quizId: q.id }, 120_000);
+      const blob = new Blob([JSON.stringify(file)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${
+        fold(q.title)
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "") || "quiz"
+      }.squizz`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+  const picker = useRef<HTMLInputElement>(null);
+  const importFile = (file: File) =>
+    run(async () => {
+      if (file.size > 20 * 1024 * 1024)
+        throw new Error("Fichier trop lourd : 20 Mo maximum, médias compris.");
+      let content: unknown;
+      try {
+        content = JSON.parse(await file.text());
+      } catch {
+        throw new Error("Ce fichier n’est pas un quiz SQuizz (.squizz).");
+      }
+      const clientKey = newClientKey();
+      const { quiz } = await withRetry(() =>
+        gameApi<{ quiz: OrgQuiz }>("import", { file: content, clientKey }, 120_000),
+      );
+      setMessage(`« ${quiz.title} » est importé : il est prêt à jouer.`);
+      router.refresh();
+    });
   const remove = (q: Quiz) => {
     if (!confirm(`Supprimer « ${q.title} » ? Cette action est définitive.`)) return;
     run(async () => {
@@ -140,6 +187,17 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
             >
               <Copy size={16} />
             </button>
+            {own && (
+              <button
+                disabled={busy}
+                aria-label={`Exporter ${q.title}`}
+                title="Exporter (fichier .squizz avec ses images)"
+                onClick={() => exportQuiz(q)}
+                className="card-action"
+              >
+                <Download size={16} />
+              </button>
+            )}
             {"canEdit" in q && q.canEdit && (
               <button
                 disabled={busy}
@@ -196,9 +254,30 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
             <Link href="/tarifs">passez à une offre supérieure</Link>.
           </span>
         ) : (
-          <Link className="button" href="/app/quiz/nouveau">
-            <Plus size={18} /> Créer un quiz
-          </Link>
+          <div className="row library-create">
+            <button
+              className="button secondary"
+              disabled={busy}
+              onClick={() => picker.current?.click()}
+              title="Importer un fichier .squizz (quiz et images)"
+            >
+              <Upload size={18} /> Importer
+            </button>
+            <Link className="button" href="/app/quiz/nouveau">
+              <Plus size={18} /> Créer un quiz
+            </Link>
+            <input
+              ref={picker}
+              type="file"
+              accept=".squizz,application/json"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (file) importFile(file);
+              }}
+            />
+          </div>
         )}
       </div>
       <div className="library-tools" role="search">

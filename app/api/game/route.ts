@@ -12,6 +12,7 @@ import {
   listQuizzes,
   updateQuiz,
 } from "@/lib/server/quiz-store";
+import { exportQuiz, importQuiz } from "@/lib/server/quiz-transfer";
 import {
   createRoom,
   gameState,
@@ -39,6 +40,10 @@ const actions: Record<string, Handler> = {
   save: async (_, body) => ({ quiz: await createQuiz(await requireMember(), body.quiz, body.clientKey) }),
   update: async (_, body) => ({
     quiz: await updateQuiz(await requireMember(), body.quizId, body.quiz, body.version, body.force === true),
+  }),
+  export: async (_, body) => ({ file: await exportQuiz(await requireMember(), body.quizId) }),
+  import: async (_, body) => ({
+    quiz: await importQuiz(await requireMember(), body.file, body.clientKey),
   }),
   duplicate: async (_, body) => ({
     quiz: await duplicateQuiz(await requireMember(), body.quizId, body.clientKey),
