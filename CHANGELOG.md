@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.8.3] — 2026-10-01
+
+### Nuage de mots
+- Les mots ne se touchent plus : la place de chaque mot tient compte de ses accents et de ses jambages (« à », « é », « q », « g »), à l’écran comme dans l’image téléchargée.
+- Le bouton « Télécharger l’image » est au-dessus du nuage, visible sans faire défiler la fenêtre des résultats.
+
 ## [1.8.2] — 2026-10-01
 
 Migration `20261002100000_checkout_operation` (appliquée par `deploy.sh`).

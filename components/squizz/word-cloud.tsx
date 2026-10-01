@@ -11,7 +11,13 @@ async function measurer() {
   const ctx = document.createElement("canvas").getContext("2d")!;
   return (text: string, size: number) => {
     ctx.font = `400 ${size}px ${FONT}`;
-    return ctx.measureText(text).width;
+    const m = ctx.measureText(text);
+    // The ink really drawn: accents and descenders count, so that neighbours never touch.
+    return {
+      width: Math.max(m.width, m.actualBoundingBoxLeft + m.actualBoundingBoxRight),
+      ascent: m.actualBoundingBoxAscent,
+      descent: m.actualBoundingBoxDescent,
+    };
   };
 }
 
@@ -48,11 +54,13 @@ async function downloadImage(placed: PlacedWord[], title: string, responses: num
     size -= 4;
   } while (ctx.measureText(title).width > canvas.width - 160 && size > 28);
   ctx.fillText(title, canvas.width / 2, head / 2 + 20);
+  ctx.textBaseline = "alphabetic";
   for (const w of placed) {
     ctx.font = `400 ${w.size * scale}px ${FONT}`;
     ctx.fillStyle = w.color;
-    ctx.fillText(w.label, w.x * scale, head + w.y * scale);
+    ctx.fillText(w.label, w.x * scale, head + w.baseline * scale);
   }
+  ctx.textBaseline = "middle";
   ctx.font = `700 28px monospace`;
   ctx.fillStyle = "#141413";
   ctx.textAlign = "left";
@@ -101,6 +109,16 @@ export function WordCloud({
   if (!words.length) return <p className="hint">Aucun mot proposé.</p>;
   return (
     <div className="word-cloud-block">
+      {/* Above the cloud: always in view, without scrolling the results window. */}
+      {canDownload && placed && placed.length > 0 && (
+        <button
+          type="button"
+          className="button small secondary word-cloud-download"
+          onClick={() => downloadImage(placed, title, responses).catch((e: Error) => setError(e.message))}
+        >
+          <Download size={16} /> Télécharger l’image
+        </button>
+      )}
       {placed && placed.length ? (
         <svg
           className="word-cloud-svg"
@@ -112,11 +130,10 @@ export function WordCloud({
             <text
               key={w.label}
               x={w.x}
-              y={w.y}
+              y={w.baseline}
               fontSize={w.size}
               fill={w.color}
               textAnchor="middle"
-              dominantBaseline="central"
               fontFamily={FONT}
             >
               {w.label}
@@ -144,15 +161,6 @@ export function WordCloud({
           </span>
         ))}
       </p>
-      {canDownload && placed && placed.length > 0 && (
-        <button
-          type="button"
-          className="button small secondary"
-          onClick={() => downloadImage(placed, title, responses).catch((e: Error) => setError(e.message))}
-        >
-          <Download size={16} /> Télécharger l’image
-        </button>
-      )}
       {error && <p className="error">{error}</p>}
     </div>
   );
