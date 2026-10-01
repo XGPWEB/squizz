@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AppHeader } from "@/components/site/app-header";
 import { pageUser } from "@/lib/server/guard";
+import { APP_VERSION } from "@/lib/version";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Super-admin", robots: { index: false, follow: false } };
@@ -16,6 +17,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <main id="contenu" tabIndex={-1}>
         {children}
       </main>
+      <footer className="app-footer">SQuizz v{APP_VERSION}</footer>
     </>
   );
 }

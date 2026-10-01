@@ -707,3 +707,7 @@ main:focus {
   font-size: 12px;
   text-align: center;
 }
+/* Version line under the signed-in areas (dashboard, super-admin). */
+.app-footer {
+  color: #55514b;
+}

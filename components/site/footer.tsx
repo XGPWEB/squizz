@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Brand } from "@/components/site/brand";
 import { CookieSettingsLink } from "@/components/site/cookie-consent";
+import { APP_VERSION } from "@/lib/version";
 
 const columns = [
   {
@@ -56,7 +57,7 @@ export function Footer() {
       </div>
       <div className="footer-bottom">
         <span>
-          © {new Date().getFullYear()} SQuizz · <CookieSettingsLink className="footer-cookie-link" />
+          © {new Date().getFullYear()} SQuizz · v{APP_VERSION} · <CookieSettingsLink className="footer-cookie-link" />
         </span>
         <span>
           Site conçu par <a href="https://www.pressweb.fr/">Pressweb</a>

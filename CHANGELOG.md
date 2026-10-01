@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.8.6] — 2026-10-01
+
+### Version affichée
+- Le numéro de version apparaît en bas du site (à côté du copyright) et en bas de l’espace connecté et du super-admin. Il est lu dans `package.json` : il suit chaque changement de version, sans rien modifier d’autre.
+
 ## [1.8.5] — 2026-10-01
 
 ### Nuage de mots
