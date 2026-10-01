@@ -20,3 +20,35 @@ describe("explication de la réponse", () => {
     expect(() => validateQuestion({ ...q, explanation: "x".repeat(601) })).toThrow(/600/);
   });
 });
+
+test("sondage : nombres, pourcentages, choix en tête et participation", async () => {
+  const { choiceStats } = await import("@/lib/question");
+  const counts = [
+    { label: "A", count: 6 },
+    { label: "B", count: 3 },
+    { label: "C", count: 0 },
+  ];
+  const s = choiceStats(counts, 9, 12);
+  expect(s.rows.map((r) => r.percent)).toEqual([67, 33, 0]);
+  expect(s.rows.map((r) => r.leading)).toEqual([true, false, false]);
+  expect(s.leaders).toEqual(["A"]);
+  expect(s.participation).toBe(75);
+  // Tie, and no answer at all.
+  expect(
+    choiceStats(
+      [
+        { label: "A", count: 2 },
+        { label: "B", count: 2 },
+      ],
+      4,
+    ).leaders,
+  ).toEqual(["A", "B"]);
+  const empty = choiceStats(
+    counts.map((c) => ({ ...c, count: 0 })),
+    0,
+    5,
+  );
+  expect(empty.leaders).toEqual([]);
+  expect(empty.rows.every((r) => r.percent === 0 && !r.leading)).toBe(true);
+  expect(empty.participation).toBe(0);
+});

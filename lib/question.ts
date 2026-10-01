@@ -512,5 +512,22 @@ export function aggregateAnswers(q: Question, answers: AnswerPayload[]) {
     pins: answers.filter((a) => typeof a.x === "number").map((a) => ({ x: a.x!, y: a.y! })),
   };
 }
+/**
+ * Figures shown with a choice question's results: each option's share of the people who answered (with
+ * several answers allowed, shares can add up to more than 100 %), the leading option(s) and, when the
+ * number of players is known, the participation rate.
+ */
+export function choiceStats(counts: { label: string; count: number }[], responses: number, players?: number) {
+  const top = Math.max(0, ...counts.map((c) => c.count));
+  return {
+    rows: counts.map((c) => ({
+      ...c,
+      percent: responses ? Math.round((100 * c.count) / responses) : 0,
+      leading: top > 0 && c.count === top,
+    })),
+    leaders: top > 0 ? counts.filter((c) => c.count === top).map((c) => c.label) : [],
+    participation: players ? Math.min(100, Math.round((100 * responses) / players)) : null,
+  };
+}
 export type PublicQuestion = ReturnType<typeof publicQuestion>;
 export type Aggregate = ReturnType<typeof aggregateAnswers>;

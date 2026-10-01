@@ -9,6 +9,7 @@ import {
   formatValue,
   isScored,
   safeMediaUrl,
+  choiceStats,
 } from "@/lib/question";
 import { MediaView, PinImage } from "./media";
 export function QuestionPlay({
@@ -352,11 +353,15 @@ function SlideView({ slide: q }: { slide: PublicQuestion }) {
 export function QuestionResults({
   question: q,
   aggregate: a,
+  players,
 }: {
   question: PublicQuestion;
   aggregate: Aggregate | null;
+  /** Number of players in the game, to show the participation rate. */
+  players?: number;
 }) {
   if (q.type === "slide") return null;
+  const stats = a ? choiceStats(a.counts, a.responses, players) : null;
   const pinMedia = q.media.find((m) => m.kind === "image");
   return (
     <section className="question-results">
@@ -406,20 +411,51 @@ export function QuestionResults({
         <>
           <p className="hint">
             {a.responses} réponse{a.responses > 1 ? "s" : ""} reçue{a.responses > 1 ? "s" : ""}
+            {stats?.participation != null && players
+              ? ` sur ${players} joueur${players > 1 ? "s" : ""} (${stats.participation} % de participation)`
+              : ""}
           </p>
-          {["quiz", "truefalse", "poll"].includes(q.type) && (
+          {q.type === "poll" && stats && (
+            <div className="stats-row poll-stats">
+              <div>
+                <span>Réponses</span>
+                <strong>{a.responses}</strong>
+              </div>
+              {stats.participation != null && (
+                <div>
+                  <span>Participation</span>
+                  <strong>{stats.participation} %</strong>
+                </div>
+              )}
+              <div>
+                <span>{stats.leaders.length > 1 ? "Ex æquo en tête" : "En tête"}</span>
+                <strong className="poll-leader">
+                  {stats.leaders.length ? stats.leaders.join(" · ") : "—"}
+                </strong>
+              </div>
+            </div>
+          )}
+          {["quiz", "truefalse", "poll"].includes(q.type) && stats && (
             <div className="distribution">
-              {a.counts.map((c, i) => (
-                <div key={i}>
+              {stats.rows.map((c, i) => (
+                <div key={i} className={q.type === "poll" && c.leading ? "leading" : undefined}>
                   <div className="row spaced">
                     <span>{c.label}</span>
-                    <b>{c.count}</b>
+                    <b>
+                      {c.count} <small>vote{c.count > 1 ? "s" : ""}</small> · {c.percent} %
+                    </b>
                   </div>
                   <div className="bar-track">
-                    <span style={{ width: `${a.responses ? (100 * c.count) / a.responses : 0}%` }} />
+                    <span style={{ width: `${c.percent}%` }} />
                   </div>
                 </div>
               ))}
+              {q.multiple && (
+                <p className="hint">
+                  Plusieurs réponses possibles : les pourcentages sont calculés sur le nombre de personnes
+                  ayant répondu, leur total peut dépasser 100 %.
+                </p>
+              )}
             </div>
           )}
           {["slider", "scale", "nps"].includes(q.type) && (
@@ -446,7 +482,7 @@ export function QuestionResults({
                     <div className="row spaced">
                       <span>{v.value}</span>
                       <b>
-                        {v.count} vote{v.count > 1 ? "s" : ""}
+                        {v.count} vote{v.count > 1 ? "s" : ""} · {Math.round((100 * v.count) / a.responses)} %
                       </b>
                     </div>
                     <div className="bar-track">

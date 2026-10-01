@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.7.0] — 2026-10-01
+
+### Résultats
+- Sondage : nombre de votes et pourcentage pour chaque choix, bloc de chiffres (réponses, participation, choix en tête), choix en tête mis en avant.
+- Quiz, vrai/faux, échelle et NPS : pourcentage affiché à côté du nombre de votes ; taux de participation rappelé sous les résultats.
+
 ## [1.6.0] — 2026-10-01
 
 ### Cookies et consentement
@@ -111,6 +117,7 @@ Première version publique, en ligne sur www.squizz.fun.
 - Purge automatique des données, export et suppression de compte.
 - Déploiement avec sauvegarde de la base et retour automatique en cas d'échec ; sauvegardes quotidiennes vérifiées, contrôle de santé, alertes.
 
+[1.7.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.7.0
 [1.6.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.6.0
 [1.5.0]: https://github.com/XGPWEB/squizz/releases/tag/v1.5.0
 [1.4.1]: https://github.com/XGPWEB/squizz/releases/tag/v1.4.1

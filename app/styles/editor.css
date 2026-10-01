@@ -937,3 +937,31 @@ fieldset {
   justify-self: center;
   margin-top: 4px;
 }
+
+/* Poll results: figures, percentages and the leading choice */
+.poll-stats {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.poll-stats > div {
+  flex: 1 1 140px;
+  padding: 14px;
+}
+.poll-stats strong {
+  font-size: 34px;
+  line-height: 1.1;
+}
+.poll-stats .poll-leader {
+  display: block;
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+.distribution b small {
+  font-weight: 400;
+}
+.distribution .leading .bar-track span {
+  background: var(--pink);
+}
+.distribution .leading > .row span {
+  font-weight: 800;
+}

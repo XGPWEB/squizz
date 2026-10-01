@@ -254,7 +254,11 @@ export function GameView({ code }: { code: string }) {
                     <>
                       {game.personal && game.question?.type !== "slide" && <PersonalResult game={game} />}{" "}
                       {game.question && (
-                        <QuestionResults question={game.question} aggregate={game.aggregate} />
+                        <QuestionResults
+                          question={game.question}
+                          aggregate={game.aggregate}
+                          players={game.players.length}
+                        />
                       )}{" "}
                       {game.question?.type !== "slide" && (
                         <>
