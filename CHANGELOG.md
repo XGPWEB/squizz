@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.8.4] — 2026-10-01
+
+### Nuage de mots
+- Retour à la disposition serrée d’origine (les mots peuvent se frôler, accents et jambages compris) ; le bouton « Télécharger l’image » reste au-dessus du nuage.
+
 ## [1.8.3] — 2026-10-01
 
 ### Nuage de mots

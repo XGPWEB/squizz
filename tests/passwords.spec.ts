@@ -1,6 +1,9 @@
 import bcrypt from "bcryptjs";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { hashPassword, verifyPassword } from "@/lib/server/passwords";
+
+// bcrypt is slow on purpose: leave room when the machine is busy (deploy checks, CI).
+vi.setConfig({ testTimeout: 30_000 });
 
 const base = "A".repeat(72);
 
