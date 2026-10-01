@@ -1,5 +1,5 @@
 import "server-only";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import { orgLimits, sizeLabel } from "@/lib/plans";
@@ -30,17 +30,30 @@ export function matchesSignature(type: string, b: Uint8Array) {
 
 type Member = SessionUser & { organizationId: string; organization: Parameters<typeof orgLimits>[0] };
 
-/**
- * Checks a file (format, real content, size) and stores it for the organisation within its media quota:
- * the quota check and the record happen under the organisation lock. Returns the URL used in questions.
- */
-export async function storeMedia(user: Member, bytes: Uint8Array, type: string) {
+/** Format, size and real content of a file, without storing anything: throws the French reason. */
+export function checkMedia(bytes: Uint8Array, type: string) {
   if (!MEDIA_TYPES.includes(type) || bytes.length === 0)
     fail("Formats acceptés : JPG, PNG, WebP, GIF, MP4 ou WebM.");
   if (bytes.length > limitFor(type))
     fail(`Fichier trop lourd : ${formatSize(limitFor(type))} maximum pour ce format.`, 413);
   if (!matchesSignature(type, bytes.slice(0, 32)))
     fail("Le contenu du fichier ne correspond pas à son format.");
+}
+
+/** Removes stored media (rows and files) by their URL: used to undo an import that did not go through. */
+export async function removeMedia(organizationId: string, urls: string[]) {
+  const ids = urls.map((u) => u.slice("/api/media/".length)).filter(isMediaId);
+  if (!ids.length) return;
+  await prisma.media.deleteMany({ where: { organizationId, id: { in: ids } } });
+  await Promise.all(ids.map((id) => rm(mediaPath(id), { force: true })));
+}
+
+/**
+ * Checks a file (format, real content, size) and stores it for the organisation within its media quota:
+ * the quota check and the record happen under the organisation lock. Returns the URL used in questions.
+ */
+export async function storeMedia(user: Member, bytes: Uint8Array, type: string) {
+  checkMedia(bytes, type);
   const quota = orgLimits(user.organization).mediaBytes;
   const id = crypto.randomUUID();
   await withOrgLock(user.organizationId, async (tx) => {

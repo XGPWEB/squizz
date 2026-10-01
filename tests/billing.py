@@ -3,7 +3,7 @@
 One subscription per organisation whatever the clicks, retries, parallel requests and webhook order, and no
 subscription left running once an organisation is deleted.
 """
-import secrets, threading
+import secrets, threading, time
 from helpers import client, request, signup, mock, stripe_event, env, admin_login
 
 PRO, STARTER = 'prod_VMCMxkLAkRlY4k', 'prod_VMCL9yfrMKdVQM'
@@ -109,8 +109,84 @@ orphan = mock('subscription', {'customer': sess5['customer'], 'product': STARTER
 stripe_event('customer.subscription.created', orphan)
 assert not live(sess5['customer'])
 
+# --- A failure right after Stripe created the page (database error) must not lead to a second page -----------
+from helpers import sql
+name6 = f'Org panne {secrets.token_hex(3)}'
+broke, _, _ = signup(name6)
+oid = org_id(name6)
+mine = lambda: [s for s in mock('state')['sessions'].values() if s.get('organizationId') == oid]
+# Throwaway trigger, in the isolated database only: recording the session id fails once Stripe has created it.
+sql(f"""CREATE FUNCTION e2e_checkout_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+  IF NEW.id = '{oid}' AND NEW."checkoutSessionId" IS NOT NULL THEN RAISE EXCEPTION 'e2e: simulated persistence failure'; END IF;
+  RETURN NEW; END; $$;
+  CREATE TRIGGER e2e_checkout_failure BEFORE UPDATE ON "Organization" FOR EACH ROW EXECUTE FUNCTION e2e_checkout_failure();""")
+try:
+    checkout(broke, 'PRO', expect=500)
+    assert len(mine()) == 1 and mine()[0]['status'] == 'open'  # created at Stripe, not recorded here
+finally:
+    sql('DROP TRIGGER IF EXISTS e2e_checkout_failure ON "Organization"; DROP FUNCTION IF EXISTS e2e_checkout_failure();')
+first_session = mine()[0]
+retry = checkout(broke, 'PRO')
+assert retry['url'] == first_session['url'], (retry, first_session)  # the same operation is resumed
+assert [s['id'] for s in mine() if s['status'] == 'open'] == [first_session['id']]
+assert sql(f"""SELECT "checkoutSessionId" FROM "Organization" WHERE id = '{oid}'""") == first_session['id']
+# Retrying with another plan closes the unrecorded page instead of leaving two.
+sql(f"""UPDATE "Organization" SET "checkoutSessionId" = NULL, "checkoutPlan" = NULL WHERE id = '{oid}'""")  # « never recorded »
+checkout(broke, 'STARTER')
+assert [s['product'] for s in mine() if s['status'] == 'open'] == [STARTER]
+assert len(mock('state')['customers']) == len({s['customer'] for s in mock('state')['sessions'].values()})  # no duplicate customer
+
+# --- The claim: only its holder writes or releases; an operation that outlived it closes what it created ------
+name7 = f'Org reservation {secrets.token_hex(3)}'
+slow, _, _ = signup(name7)
+sid = org_id(name7)
+theirs = lambda: [s for s in mock('state')['sessions'].values() if s.get('organizationId') == sid and s['status'] == 'open']
+# Someone else holds the claim: this request waits, gives up, and must not release that claim.
+sql(f"""UPDATE "Organization" SET "checkoutLockedUntil" = (NOW() AT TIME ZONE 'UTC') + INTERVAL '60 seconds', "checkoutLockToken" = 'autre-operation' WHERE id = '{sid}'""")
+checkout(slow, 'PRO', expect=409)
+assert sql(f"""SELECT "checkoutLockToken" FROM "Organization" WHERE id = '{sid}'""") == 'autre-operation'
+assert not theirs()
+# The claim expires (holder gone): the next request takes over normally.
+PAST = "(NOW() AT TIME ZONE 'UTC') - INTERVAL '1 second'"  # the columns are UTC timestamps without time zone
+sql(f"""UPDATE "Organization" SET "checkoutLockedUntil" = {PAST} WHERE id = '{sid}'""")
+
+
+def overtaken(first_plan, second_plan):
+    """A is still waiting for Stripe when its claim expires and B takes over. Returns both answers."""
+    for s in theirs():
+        mock('expire', {'session': s['id']})
+    sql(f"""UPDATE "Organization" SET "checkoutSessionId" = NULL, "checkoutPlan" = NULL, "checkoutOpKey" = NULL,
+            "checkoutLockedUntil" = NULL, "checkoutLockToken" = NULL WHERE id = '{sid}'""")
+    out = {}
+    post = lambda who, plan: out.update({who: request(slow, 'POST', '/api/billing/checkout', {'plan': plan}, expect=None)})
+    mock('delay', {'path': '/v1/checkout/sessions', 'ms': 2500, 'method': 'POST'})
+    try:
+        a_thread = threading.Thread(target=post, args=('a', first_plan))
+        a_thread.start()
+        time.sleep(1.2)  # A holds the claim and is waiting for Stripe to create its page
+        assert sql(f"""SELECT "checkoutOpKey" IS NOT NULL FROM "Organization" WHERE id = '{sid}'""") == 't'
+        sql(f"""UPDATE "Organization" SET "checkoutLockedUntil" = {PAST} WHERE id = '{sid}'""")
+        post('b', second_plan)
+        a_thread.join()
+    finally:
+        mock('delay', {'clear': True})
+    return out
+
+
+# Same plan: B resumes A's operation, Stripe gives it the same page, and nobody closes it.
+out = overtaken('PRO', 'PRO')
+assert len(theirs()) == 1 and out['a'].get('url') == out['b'].get('url') == theirs()[0]['url'], (out, theirs())
+assert sql(f"""SELECT "checkoutSessionId" FROM "Organization" WHERE id = '{sid}'""") == theirs()[0]['id']
+# Another plan: B's page stands, A closes the one it created and says so.
+out = overtaken('PRO', 'STARTER')
+assert [s['product'] for s in theirs()] == [STARTER] and out['b'].get('url') == theirs()[0]['url'], (out, theirs())
+assert 'url' not in out['a'] and 'relais' in out['a']['error'], out
+assert sql(f"""SELECT "checkoutSessionId" FROM "Organization" WHERE id = '{sid}'""") == theirs()[0]['id']
+assert sql(f"""SELECT "checkoutLockToken" IS NULL FROM "Organization" WHERE id = '{sid}'""") == 't'  # released
+
 # The first organisation is untouched by all this.
 assert plan_of(admin) == 'PRO' and [s['id'] for s in live(first['customer'])] == [first['id']]
 print('PASS: one checkout under double clicks and parallel requests, plan change on the same subscription, '
       'duplicate and orphan subscriptions cancelled, late webhook adopted, deletion cancels Stripe first '
-      '(failure deletes nothing, retry works), all against the Stripe mock.')
+      '(failure deletes nothing, retry works), checkout resumed after a persistence failure, claim held and '
+      'released by its holder only — all against the Stripe mock.')

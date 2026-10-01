@@ -123,3 +123,14 @@ def stripe_event(kind, obj, expect=200):
     except urllib.error.HTTPError as e:
         status = e.code
     assert status == expect, ('webhook', kind, status)
+
+
+def sql(query):
+    """Runs SQL on the isolated test database only (scripts/e2e.sh exports its URL): never anything else."""
+    import subprocess
+    url = os.environ.get('DATABASE_URL', '').split('?')[0]
+    name = url.rsplit('/', 1)[-1]
+    assert os.environ.get('NEXT_DIST_DIR') == '.next-e2e' and name.endswith(('_e2e', '_test')), 'base isolée obligatoire'
+    assert '@localhost' in url or '@127.0.0.1' in url or '//localhost' in url or '//127.0.0.1' in url, url
+    out = subprocess.run(['psql', url, '-v', 'ON_ERROR_STOP=1', '-Atqc', query], check=True, capture_output=True, text=True)
+    return out.stdout.strip()

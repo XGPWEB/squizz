@@ -85,6 +85,7 @@ export function Organizations() {
       )}
       {creating && (
         <form
+          method="post"
           className="invite-form boxed"
           onSubmit={(e) => {
             e.preventDefault();

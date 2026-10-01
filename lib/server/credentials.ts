@@ -1,13 +1,13 @@
 import "server-only";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { EMAIL_NOT_VERIFIED } from "@/lib/auth-messages";
 import { KNOWN_DEVICE_S, LOGIN_WINDOW_S, loginRefusal } from "@/lib/login-throttle";
 import { clearRateLimit, clientIp, limitScale, peekRateLimit, rateLimit } from "./rate-limit";
 import { hashToken } from "./tokens";
+import { hashPassword, hashPasswordSync, verifyPassword } from "./passwords";
 
 /** Compared against when the account does not exist, so the response time never reveals it. */
-const DUMMY_HASH = bcrypt.hashSync("squizz-compte-inexistant", 12);
+const DUMMY_HASH = hashPasswordSync("squizz-compte-inexistant");
 
 /**
  * Email + password check shared by the client login and the super-admin login. Returns the user,
@@ -34,7 +34,7 @@ export async function verifyCredentials(rawEmail: string, password: string, head
   if (refusal) throw new Error(refusal);
 
   const user = await prisma.user.findUnique({ where: { email }, include: { organization: true } });
-  const valid = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+  const { ok: valid, upgrade } = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);
   if (!user || !user.active || !valid) {
     // Only failures count against the account, so the owner's own sign-ins never use up its allowance.
     await Promise.all([
@@ -49,7 +49,13 @@ export async function verifyCredentials(rawEmail: string, password: string, head
   if (!user.emailVerifiedAt && user.role !== "SUPER_ADMIN") throw new Error(EMAIL_NOT_VERIFIED);
   await prisma.user.update({
     where: { id: user.id },
-    data: { failedLoginCount: 0, lockedUntil: null, lastLoginAt: new Date() },
+    data: {
+      failedLoginCount: 0,
+      lockedUntil: null,
+      lastLoginAt: new Date(),
+      // A hash from before the current scheme is replaced now that the password is known to be right.
+      ...(upgrade && { passwordHash: await hashPassword(password) }),
+    },
   });
   // Only this address+account counter is reset: a successful login must not refill an
   // attacker's allowance for other accounts. This address becomes « known » for this account.

@@ -80,6 +80,7 @@ export function QuestionPlay({
       )}
       {["text", "open", "wordcloud"].includes(q.type) && (
         <form
+          method="post"
           className="response-form"
           onSubmit={(e) => {
             e.preventDefault();
@@ -224,6 +225,7 @@ export function QuestionPlay({
       )}
       {q.type === "brainstorm" && (
         <form
+          method="post"
           className="response-form"
           onSubmit={(e) => {
             e.preventDefault();

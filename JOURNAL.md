@@ -53,6 +53,14 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 - **Droits** : une organisation garde toujours un administrateur actif, même si deux administrateurs se rétrogradent au même instant.
 - **Tests** : un faux Stripe local permet de tester la facturation sans aucun paiement réel.
 
+## 1er octobre 2026 — Corrections de l’audit approfondi (version 1.8.2)
+
+- **Mots de passe** : jamais dans l’adresse de la page, même si la page n’a pas fini de charger ; les mots de passe très longs ne sont plus confondus.
+- **Paiement** : après une panne au mauvais moment, on retrouve la même page de paiement, jamais deux.
+- **Export / import** : les images ne se mélangent plus, un import refusé ne laisse aucune trace, et tout quiz exporté peut être réimporté.
+- **Sessions** : après un changement de mot de passe, une désactivation ou une suspension, l’ancien écran de partie perd la main en 5 secondes au plus.
+- **Téléphone** : onglets nommés pour les lecteurs d’écran, état de l’enregistrement visible dans l’éditeur.
+
 ## Reste à faire
 
 - Stripe : ajouter l’événement `checkout.session.expired` au webhook (facultatif).

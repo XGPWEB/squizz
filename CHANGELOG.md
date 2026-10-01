@@ -2,6 +2,20 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.8.2] — 2026-10-01
+
+Migration `20261002100000_checkout_operation` (appliquée par `deploy.sh`).
+
+### Corrections de l’audit approfondi
+- Formulaires : tous les formulaires qui modifient quelque chose partent en POST, et les formulaires de connexion, d’inscription, d’invitation et de mot de passe attendent que la page soit prête — un mot de passe ne peut plus se retrouver dans l’adresse.
+- Facturation : après une panne survenue juste après la création d’une page de paiement, la nouvelle tentative reprend la même page au lieu d’en ouvrir une seconde ; une demande ne peut plus libérer ni écraser la réservation d’une autre ; client Stripe retrouvé plutôt que recréé ; délai maximal sur les appels Stripe.
+- Export / import : chaque image garde sa propre référence (plus d’images confondues) ; un import refusé ne laisse ni quiz, ni fichier, ni quota consommé ; un import relancé rend le quiz déjà créé même si le quota est atteint ; même plafond à l’export et à l’import (14 Mo de médias), avec un message clair.
+- Mots de passe : deux mots de passe longs qui commencent pareil ne sont plus confondus (au-delà de 72 octets) ; les comptes existants sont convertis à leur prochaine connexion.
+- Sessions : une session révoquée (mot de passe changé, membre désactivé, organisation suspendue) n’est plus reconnue comme animatrice par l’écran de partie, en 5 secondes au plus.
+- Accessibilité : les onglets gardent un nom sur téléphone ; l’état de l’enregistrement reste visible sur téléphone dans l’éditeur.
+- Dépendances de développement mises à jour (`npm audit` : 0 alerte).
+- Tests : scénario `auth-hardening`, scénarios `billing` et `transfer` étendus, tests unitaires (mots de passe, sessions, références de médias, formulaires).
+
 ## [1.8.1] — 2026-10-01
 
 ### Corrections d’audit

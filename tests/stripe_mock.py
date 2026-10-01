@@ -7,9 +7,10 @@ Test controls (JSON), under /_mock:
   POST /_mock/reset                      forget everything
   GET  /_mock/state                      everything created so far, and the calls received
   POST /_mock/complete {"session": id}   « pay » a Checkout session: creates its subscription
+  POST /_mock/expire {"session": id}     the page is no longer payable
   POST /_mock/subscription {"customer": id, "product": id, "organizationId": id}   a subscription made elsewhere
   POST /_mock/fail {"method": "DELETE", "path": "/v1/subscriptions", "status": 500, "times": 3}
-  POST /_mock/delay {"path": "/v1/checkout/sessions", "ms": 400}
+  POST /_mock/delay {"path": "/v1/checkout/sessions", "ms": 400, "method": "POST"}   (method optional)
 """
 import json, sys, threading, time, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -84,7 +85,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.control(method, path, json.loads(raw or '{}'))
         body = flat(urllib.parse.parse_qsl(raw))
         for d in list(STATE['delays']):
-            if path.startswith(d['path']):
+            if path.startswith(d['path']) and d.get('method') in (None, method):
                 time.sleep(d['ms'] / 1000)
         with LOCK:
             STATE['calls'].append({'method': method, 'path': path})
@@ -107,6 +108,8 @@ class Handler(BaseHTTPRequestHandler):
         listing = lambda rows: (200, {'object': 'list', 'data': rows, 'has_more': False, 'url': path})
         if parts[0] == 'products' and method == 'GET':
             return 200, {'id': parts[1], 'object': 'product', 'default_price': f'price_{parts[1]}'}
+        if parts[0] == 'customers' and method == 'GET':
+            return listing([c for c in STATE['customers'].values() if query.get('email') in (None, c['email'])])
         if parts[0] == 'customers' and method == 'POST':
             c = {'id': new_id('cus'), 'object': 'customer', 'email': body.get('email'), 'metadata': body.get('metadata', {})}
             STATE['customers'][c['id']] = c
@@ -166,6 +169,9 @@ class Handler(BaseHTTPRequestHandler):
                 sub = subscription(s['customer'], s['product'], s['organizationId'])
                 s['status'], s['subscription'] = 'complete', sub['id']
                 return self.reply(200, {'session': s, 'subscription': sub})
+            if path == '/_mock/expire':
+                STATE['sessions'][body['session']]['status'] = 'expired'
+                return self.reply(200, {'ok': True})
             if path == '/_mock/subscription':
                 return self.reply(200, subscription(body['customer'], body['product'], body.get('organizationId')))
             if path == '/_mock/fail':

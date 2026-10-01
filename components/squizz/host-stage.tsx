@@ -181,6 +181,7 @@ function Lobby({ game, busy, run, settle, joinUrl, origin, onError }: Props) {
           <span className="hint">Vous jouez aussi depuis cet écran.</span>
         ) : (
           <form
+            method="post"
             className="host-self-join"
             onSubmit={(e) => {
               e.preventDefault();

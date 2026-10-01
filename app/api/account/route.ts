@@ -1,11 +1,11 @@
 import { rm } from "node:fs/promises";
-import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { route, json } from "@/lib/server/api";
 import { accountUser } from "@/lib/server/guard";
 import { audit } from "@/lib/server/audit";
 import { fail } from "@/lib/server/http";
+import { verifyPassword } from "@/lib/server/passwords";
 import { mediaPath } from "@/lib/server/media-store";
 import { sendMail } from "@/lib/server/mail";
 import { accountDeletedEmail } from "@/lib/server/email-templates";
@@ -27,7 +27,7 @@ export const DELETE = route(async (req) => {
     z.object({ password: z.string().min(1, "Indiquez votre mot de passe.") }),
   );
   const row = await prisma.user.findUniqueOrThrow({ where: { id: user.id } });
-  if (!(await bcrypt.compare(password, row.passwordHash))) fail("Mot de passe incorrect.", 403);
+  if (!(await verifyPassword(password, row.passwordHash)).ok) fail("Mot de passe incorrect.", 403);
 
   const orgId = user.organizationId;
   if (orgId && user.role === "ORG_ADMIN") {

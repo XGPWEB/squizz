@@ -1,15 +1,15 @@
 import "server-only";
-import bcrypt from "bcryptjs";
 import type { Prisma, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { orgLimits } from "@/lib/plans";
 import { withOrgLock } from "./org-lock";
 import { fail } from "./http";
+import { hashPassword } from "./passwords";
 import { hashToken, newToken } from "./tokens";
 import { appUrl, sendMail } from "./mail";
 import { invitationEmail, passwordChangedEmail, resetEmail, verifyEmail } from "./email-templates";
 
-export const hashPassword = (password: string) => bcrypt.hash(password, 12);
+export { hashPassword };
 
 export async function assertEmailFree(email: string) {
   if (await prisma.user.findUnique({ where: { email } }))

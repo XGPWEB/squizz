@@ -220,6 +220,7 @@ export function TeamManager() {
             <UserPlus size={22} style={{ display: "inline", verticalAlign: "-3px" }} /> Inviter un membre
           </h2>
           <form
+            method="post"
             className="invite-form"
             onSubmit={(e) => {
               e.preventDefault();
@@ -306,6 +307,7 @@ export function TeamManager() {
         <section className="panel">
           <h2>Organisation</h2>
           <form
+            method="post"
             className="invite-form"
             onSubmit={(e) => {
               e.preventDefault();

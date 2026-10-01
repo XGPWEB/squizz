@@ -642,8 +642,16 @@ fieldset {
     padding: 15px;
     bottom: 6px;
   }
+  /* The save status stays visible on phones (draft kept, saved, unsaved), above the button. */
+  .editor-save {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
   .editor-save > span {
-    display: none;
+    font-size: 12px;
+    line-height: 1.35;
+    text-align: center;
   }
   .editor-save > .button {
     width: 100%;

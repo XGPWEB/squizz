@@ -91,6 +91,7 @@ export function QuizEditor({
         <h1>{editing ? "On peaufine votre quiz." : "Votre quiz. Vos règles."}</h1>
       </div>
       <form
+        method="post"
         onSubmit={(e) => {
           e.preventDefault();
           submit();

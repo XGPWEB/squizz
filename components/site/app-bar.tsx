@@ -107,6 +107,10 @@ export function AppBar(p: Props) {
             href={i.href}
             className={`app-tab ${active(i) ? "active" : ""}`}
             aria-current={active(i) ? "page" : undefined}
+            // The label is hidden on phones (icon only): the link keeps its name for screen readers, and a
+            // tooltip for everyone.
+            aria-label={i.label}
+            title={i.label}
           >
             <i.icon size={18} aria-hidden />
             <span>{i.label}</span>

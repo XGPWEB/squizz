@@ -106,6 +106,7 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
 
   return (
     <form
+      method="post"
       className="contact-form"
       onFocusCapture={() => setEngaged(true)}
       onPointerDownCapture={() => setEngaged(true)}

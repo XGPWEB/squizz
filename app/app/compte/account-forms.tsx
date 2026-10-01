@@ -65,6 +65,7 @@ export function AccountForms({
       <section className="panel">
         <h2>Profil</h2>
         <form
+          method="post"
           className="invite-form"
           onSubmit={(e) => {
             e.preventDefault();
@@ -87,6 +88,7 @@ export function AccountForms({
       <section className="panel">
         <h2>Mot de passe</h2>
         <form
+          method="post"
           className="stack"
           style={{ maxWidth: 440 }}
           onSubmit={(e) => {
@@ -142,6 +144,7 @@ export function AccountForms({
             quiz et ses médias sont supprimés aussi.
           </p>
           <form
+            method="post"
             className="invite-form"
             onSubmit={(e) => {
               e.preventDefault();

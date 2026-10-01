@@ -1,6 +1,7 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import Stripe from "stripe";
-import type { Organization, Plan } from "@prisma/client";
+import type { Organization, Plan, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { PLAN_KEYS, PLANS } from "@/lib/plans";
 import { CONTACT_EMAIL } from "@/lib/company-info";
@@ -40,7 +41,12 @@ export function stripeEndpoint(env: NodeJS.ProcessEnv = process.env) {
 let client: Stripe | null = null;
 export function stripe() {
   if (!billingEnabled()) fail("Le paiement en ligne n’est pas encore disponible.", 503);
-  client ??= new Stripe(process.env.STRIPE_SECRET_KEY!, stripeEndpoint());
+  // A call never hangs longer than 20 seconds (one automatic retry): far below the checkout claim.
+  client ??= new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    ...stripeEndpoint(),
+    timeout: 20_000,
+    maxNetworkRetries: 1,
+  });
   return client;
 }
 
@@ -70,14 +76,20 @@ const KEEPS_PLAN = new Set<Stripe.Subscription.Status>(["active", "trialing", "p
 /** Statuses that end the subscription: back to the free plan. */
 const ENDS = new Set<Stripe.Subscription.Status>(["canceled", "unpaid", "incomplete_expired"]);
 
+/**
+ * The organisation's Stripe customer. If one was created but could not be recorded (database failure,
+ * process stopped), it is found again by its organisation id instead of creating a second one; the
+ * creation itself carries a stable idempotency key.
+ */
 async function customerFor(org: Organization, email: string) {
   if (org.stripeCustomerId) return org.stripeCustomerId;
-  const customer = await stripe().customers.create({
-    email,
-    name: org.name,
-    metadata: { organizationId: org.id },
-    preferred_locales: ["fr"],
-  });
+  const known = await stripe().customers.list({ email, limit: 100 });
+  const customer =
+    known.data.find((c) => c.metadata?.organizationId === org.id) ??
+    (await stripe().customers.create(
+      { email, name: org.name, metadata: { organizationId: org.id }, preferred_locales: ["fr"] },
+      { idempotencyKey: `squizz-customer-${org.id}` },
+    ));
   await prisma.organization.update({ where: { id: org.id }, data: { stripeCustomerId: customer.id } });
   return customer.id;
 }
@@ -91,31 +103,81 @@ async function liveSubscriptions(customerId: string) {
   return list.data.filter(isLive).sort((a, b) => a.created - b.created);
 }
 
-const CHECKOUT_CLAIM_MS = 90_000;
+/**
+ * How long a checkout claim lasts if its holder never releases it (process stopped). Longer than any normal
+ * operation: the Stripe client gives up on a call after 20 seconds.
+ */
+export const CHECKOUT_CLAIM_MS = 90_000;
 
 /**
  * Takes the organisation's checkout claim: one atomic UPDATE, so it holds across requests and processes.
- * Returns false when another request holds it (double click, retry, second tab).
+ * Returns the holder's token, or null when another request holds it (double click, retry, second tab).
  */
 async function claimCheckout(orgId: string) {
   const now = new Date();
+  const token = randomUUID();
   const { count } = await prisma.organization.updateMany({
     where: { id: orgId, OR: [{ checkoutLockedUntil: null }, { checkoutLockedUntil: { lt: now } }] },
-    data: { checkoutLockedUntil: new Date(now.getTime() + CHECKOUT_CLAIM_MS) },
+    data: { checkoutLockedUntil: new Date(now.getTime() + CHECKOUT_CLAIM_MS), checkoutLockToken: token },
+  });
+  return count === 1 ? token : null;
+}
+
+/** Waits a few seconds for the claim: a concurrent request (double click, retry, second tab) finishes first. */
+async function waitForClaim(orgId: string) {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const token = await claimCheckout(orgId);
+    if (token) return token;
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }
+  return null;
+}
+
+/** Releases the claim only if this operation still holds it: never the claim of the one that replaced it. */
+const releaseCheckout = (orgId: string, token: string) =>
+  prisma.organization.updateMany({
+    where: { id: orgId, checkoutLockToken: token },
+    data: { checkoutLockedUntil: null, checkoutLockToken: null },
+  });
+
+type CheckoutState = Pick<
+  Prisma.OrganizationUpdateManyMutationInput,
+  "checkoutSessionId" | "checkoutPlan" | "checkoutOpKey"
+>;
+
+/** Writes the checkout state only while still holding an unexpired claim. False: the claim was lost. */
+async function writeAsHolder(orgId: string, token: string, data: CheckoutState) {
+  const { count } = await prisma.organization.updateMany({
+    where: { id: orgId, checkoutLockToken: token, checkoutLockedUntil: { gt: new Date() } },
+    data,
   });
   return count === 1;
 }
-const releaseCheckout = (orgId: string) =>
-  prisma.organization.updateMany({ where: { id: orgId }, data: { checkoutLockedUntil: null } });
+
+/** Closes a Checkout page; one that is already expired, paid or gone needs nothing more. */
+async function expireSession(id: string) {
+  try {
+    await stripe().checkout.sessions.expire(id);
+  } catch (e) {
+    if (isMissing(e) || e instanceof Stripe.errors.StripeInvalidRequestError) return;
+    throw e;
+  }
+}
+
+const LOST_CLAIM =
+  "Une autre demande de paiement a pris le relais pour votre organisation. Réessayez dans un instant.";
 
 /**
  * Starts a subscription (Stripe Checkout page) or, when one is already running, switches it to the new plan
  * with a prorated invoice. Returns the page to open.
  *
- * An organisation never ends up with two paid subscriptions: requests are serialised by a persistent claim;
- * a subscription Stripe already has (webhook late or lost) is adopted instead of selling another; and only
- * one Checkout page is open at a time — the same one is returned for the same plan, the previous one is
- * expired before another plan's page is created.
+ * An organisation never ends up with two payable pages, hence never with two subscriptions:
+ * - requests are serialised by a persistent claim, written and released only by its holder;
+ * - what Stripe really has is read first: a subscription already paid (webhook late or lost) is adopted, and
+ *   every Checkout page still open for the customer is either reused (same plan) or expired — including a
+ *   page created by an earlier attempt that failed before it could be recorded;
+ * - the operation has a durable identity (`checkoutOpKey`) kept until its page is recorded: after a network
+ *   failure, a database error or a stopped process, the retry resumes it with the same idempotency key.
  */
 export async function subscribe(org: Organization, email: string, plan: Plan) {
   if (org.partner) fail("Votre organisation est partenaire : l’offre Premium vous est déjà offerte.");
@@ -124,42 +186,20 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
   const site = appUrl();
 
   // Wait a few seconds for a concurrent request to finish, then answer from what it stored.
-  let claimed = false;
-  for (let attempt = 0; attempt < 20 && !(claimed = await claimCheckout(org.id)); attempt++)
-    await new Promise((resolve) => setTimeout(resolve, 300));
-  if (!claimed)
+  const token = await waitForClaim(org.id);
+  if (!token)
     fail(
       "Une demande de paiement est déjà en cours pour votre organisation. Réessayez dans un instant.",
       409,
     );
   try {
     let fresh = await prisma.organization.findUniqueOrThrow({ where: { id: org.id } });
-
-    // The page opened earlier: still open, paid (webhook not received yet) or expired.
-    let open: Stripe.Checkout.Session | null = null;
-    if (fresh.checkoutSessionId) {
-      const session = await stripe()
-        .checkout.sessions.retrieve(fresh.checkoutSessionId)
-        .catch((e) => (isMissing(e) ? null : Promise.reject(e)));
-      if (session?.status === "open") open = session;
-      else {
-        if (session?.status === "complete" && session.subscription) {
-          const id =
-            typeof session.subscription === "string" ? session.subscription : session.subscription.id;
-          await syncSubscription(await stripe().subscriptions.retrieve(id));
-        }
-        await prisma.organization.update({
-          where: { id: org.id },
-          data: { checkoutSessionId: null, checkoutPlan: null },
-        });
-      }
-    }
+    const customer = await customerFor(fresh, email);
 
     // What Stripe really has for this customer, whatever the webhooks delivered so far.
-    if (fresh.stripeCustomerId) {
-      const live = await liveSubscriptions(fresh.stripeCustomerId);
-      if (live.length && fresh.stripeSubscriptionId !== live[0].id) await syncSubscription(live[0]);
-    }
+    const live = await liveSubscriptions(customer);
+    if (live.length && fresh.stripeSubscriptionId !== live[0].id) await syncSubscription(live[0]);
+    const open = (await stripe().checkout.sessions.list({ customer, status: "open", limit: 100 })).data;
     fresh = await prisma.organization.findUniqueOrThrow({ where: { id: org.id } });
 
     if (fresh.stripeSubscriptionId) {
@@ -170,13 +210,12 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
           409,
         );
       if (isLive(sub)) {
-        if (open)
-          await stripe()
-            .checkout.sessions.expire(open.id)
-            .catch((e) => (isMissing(e) ? null : Promise.reject(e)));
-        await prisma.organization.update({
-          where: { id: org.id },
-          data: { checkoutSessionId: null, checkoutPlan: null },
+        // Already subscribed: no payment page may stay open.
+        for (const s of open) await expireSession(s.id);
+        await writeAsHolder(org.id, token, {
+          checkoutSessionId: null,
+          checkoutPlan: null,
+          checkoutOpKey: null,
         });
         const item = sub.items.data[0];
         if (item.price.id === price) fail("C’est déjà votre offre actuelle.");
@@ -190,13 +229,24 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
       }
     }
 
-    if (open) {
-      // Same plan: the same page again (double click, new attempt, second tab).
-      if (fresh.checkoutPlan === plan && open.url) return open.url;
-      // Another plan: the previous page is closed first, so only one can ever be paid.
-      await stripe().checkout.sessions.expire(open.id);
+    // One page at most: the one for this plan is reused (recorded or not), every other one is closed.
+    const reusable = open.find((s) => s.metadata?.plan === plan && s.url) ?? null;
+    for (const s of open) if (s.id !== reusable?.id) await expireSession(s.id);
+    if (reusable) {
+      if (
+        !(await writeAsHolder(org.id, token, {
+          checkoutSessionId: reusable.id,
+          checkoutPlan: plan,
+          checkoutOpKey: null,
+        }))
+      )
+        fail(LOST_CLAIM, 409);
+      return reusable.url!;
     }
-    const customer = await customerFor(fresh, email);
+
+    // Nothing to resume at Stripe: the operation gets (or keeps) its durable identity before anything is created.
+    const opKey = fresh.checkoutOpKey ?? randomUUID();
+    if (!(await writeAsHolder(org.id, token, { checkoutOpKey: opKey }))) fail(LOST_CLAIM, 409);
     const session = await stripe().checkout.sessions.create(
       {
         mode: "subscription",
@@ -218,17 +268,33 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
           },
         },
       },
-      // A network retry of this very call returns the same page.
-      { idempotencyKey: `squizz-checkout-${org.id}-${plan}-${fresh.checkoutLockedUntil?.getTime() ?? 0}` },
+      // The same operation retried (same key, same plan) gets the same page from Stripe.
+      { idempotencyKey: `squizz-checkout-${opKey}-${plan}` },
     );
     if (!session.url) fail("Stripe n’a pas renvoyé de page de paiement.", 502);
-    await prisma.organization.update({
-      where: { id: org.id },
-      data: { checkoutSessionId: session.id, checkoutPlan: plan },
-    });
-    return session.url;
+    // Recorded only by the holder of the claim.
+    if (
+      await writeAsHolder(org.id, token, {
+        checkoutSessionId: session.id,
+        checkoutPlan: plan,
+        checkoutOpKey: null,
+      })
+    )
+      return session.url;
+    // This operation outlived its claim: the one that replaced it is in charge. Once it is done, either it
+    // resumed this very page (same operation key, same plan: Stripe gave it the same one) and the page
+    // stands, or it settled on something else and the page created here is closed.
+    const after = await waitForClaim(org.id);
+    try {
+      const now = await prisma.organization.findUnique({ where: { id: org.id } });
+      if (after && now?.checkoutSessionId === session.id) return session.url;
+      await expireSession(session.id);
+    } finally {
+      if (after) await releaseCheckout(org.id, after).catch(() => null);
+    }
+    fail(LOST_CLAIM, 409);
   } finally {
-    await releaseCheckout(org.id);
+    await releaseCheckout(org.id, token).catch(() => null);
   }
 }
 
@@ -293,6 +359,7 @@ export async function stopBillingForDeletion(org: Organization) {
       cancelRequestedAt: null,
       checkoutSessionId: null,
       checkoutPlan: null,
+      checkoutOpKey: null,
     },
   });
   return { cancelled };

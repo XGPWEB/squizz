@@ -21,6 +21,8 @@ import type { Quiz } from "@/lib/quizzes";
 import type { OrgQuiz } from "@/lib/server/quiz-store";
 import { gameApi, newClientKey, UncertainError, withRetry } from "@/lib/client/api";
 import { estimateLabel } from "@/lib/quiz-duration";
+import { MAX_TRANSFER_FILE_BYTES, MAX_TRANSFER_MEDIA_BYTES } from "@/lib/quiz-file";
+import { formatSize } from "@/lib/media-limits";
 
 type Props = {
   quizzes: OrgQuiz[];
@@ -114,8 +116,10 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
   const picker = useRef<HTMLInputElement>(null);
   const importFile = (file: File) =>
     run(async () => {
-      if (file.size > 20 * 1024 * 1024)
-        throw new Error("Fichier trop lourd : 20 Mo maximum, médias compris.");
+      if (file.size > MAX_TRANSFER_FILE_BYTES)
+        throw new Error(
+          `Fichier trop lourd : ${formatSize(MAX_TRANSFER_FILE_BYTES)} maximum (soit environ ${formatSize(MAX_TRANSFER_MEDIA_BYTES)} de médias).`,
+        );
       let content: unknown;
       try {
         content = JSON.parse(await file.text());

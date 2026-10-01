@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+import { hashPassword } from "../lib/server/passwords";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -14,7 +14,7 @@ async function main() {
     throw new Error(
       "Définissez SEED_SUPER_ADMIN_EMAIL et SEED_SUPER_ADMIN_PASSWORD (10 caractères minimum).",
     );
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await hashPassword(password);
   await prisma.user.upsert({
     where: { email },
     update: {
@@ -36,7 +36,7 @@ async function main() {
 
   if (process.env.SEED_DEMO === "1") {
     const demoPassword = process.env.SEED_DEMO_PASSWORD || password;
-    const hash = await bcrypt.hash(demoPassword, 12);
+    const hash = await hashPassword(demoPassword);
     const existing = await prisma.user.findUnique({ where: { email: "admin@demo.squizz.fun" } });
     if (!existing) {
       await prisma.organization.create({

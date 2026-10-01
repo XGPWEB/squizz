@@ -23,6 +23,7 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
           </div>
         )}
         <form
+          method="post"
           className="stack"
           onSubmit={async (e) => {
             e.preventDefault();

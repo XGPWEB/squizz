@@ -1,10 +1,10 @@
-import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { route, json, nameSchema, passwordSchema } from "@/lib/server/api";
 import { accountUser } from "@/lib/server/guard";
 import { setPassword } from "@/lib/server/accounts";
 import { fail } from "@/lib/server/http";
+import { verifyPassword } from "@/lib/server/passwords";
 
 const schema = z.object({
   current: z.string().min(1, "Indiquez votre mot de passe actuel."),
@@ -18,7 +18,8 @@ export const POST = route(async (req) => {
   if (user.viewingAs) fail("Quittez la vue de l’organisation pour modifier votre propre compte.", 403);
   const input = await json(req, schema);
   const row = await prisma.user.findUniqueOrThrow({ where: { id: user.id } });
-  if (!(await bcrypt.compare(input.current, row.passwordHash))) fail("Mot de passe actuel incorrect.", 403);
+  if (!(await verifyPassword(input.current, row.passwordHash)).ok)
+    fail("Mot de passe actuel incorrect.", 403);
   await setPassword(user.id, input.next);
 });
 

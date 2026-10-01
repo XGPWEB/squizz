@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 /** Form shell with busy state and a French error banner; `onSubmit` throws to show an error. */
 export function AuthForm({
@@ -19,6 +19,12 @@ export function AuthForm({
 }) {
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  // False on the server and until hydration: the form cannot be submitted before its handler exists.
+  const ready = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   return (
     <section className="panel narrow">
       <p className="eyebrow">{eyebrow}</p>
@@ -28,7 +34,10 @@ export function AuthForm({
           {error}
         </div>
       )}
+      {/* Never GET: before React takes over (slow connection, script blocked), a native submission would put
+          the fields — passwords included — in the address. The button also waits for React to be ready. */}
       <form
+        method="post"
         className="stack"
         onSubmit={async (e) => {
           e.preventDefault();
@@ -44,9 +53,12 @@ export function AuthForm({
         }}
       >
         {children}
-        <button className="button" disabled={busy}>
+        <button className="button" disabled={busy || !ready}>
           {busy ? "Un instant…" : submit}
         </button>
+        <noscript>
+          <p className="info-box">Activez JavaScript dans votre navigateur pour utiliser ce formulaire.</p>
+        </noscript>
       </form>
       {footer && <div className="auth-footer">{footer}</div>}
     </section>
