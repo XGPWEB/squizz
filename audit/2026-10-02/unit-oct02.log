@@ -1,0 +1,13 @@
+
+> squizz@1.10.3 test
+> vitest run
+
+
+ RUN  v4.1.11 /private/tmp/squizz-audit-20261002
+
+
+ Test Files  19 passed (19)
+      Tests  51 passed (51)
+   Start at  20:33:56
+   Duration  4.28s (transform 467ms, setup 0ms, import 711ms, tests 4.51s, environment 1ms)
+

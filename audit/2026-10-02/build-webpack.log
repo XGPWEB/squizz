@@ -1,0 +1,99 @@
+▲ Next.js 16.3.7 (webpack)
+- Environments: .env
+✓ Running next.config.ts took 78ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 8.8s
+  Running TypeScript ...
+
+  We detected TypeScript in your project and reconfigured your tsconfig.json file for you.
+  The following suggested values were added to your tsconfig.json. These values can be changed to fit your project's needs:
+
+  	- include was updated to add '.next-audit-production/types/**/*.ts'
+  	- include was updated to add '.next-audit-production/dev/types/**/*.ts'
+
+  Finished TypeScript in 3.4s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/38) ...
+  Generating static pages using 7 workers (9/38) 
+  Generating static pages using 7 workers (18/38) 
+  Generating static pages using 7 workers (28/38) 
+✓ Generating static pages using 7 workers (38/38) in 481ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /alternative-kahoot
+├ ƒ /api/account
+├ ƒ /api/account/export
+├ ƒ /api/account/forgot
+├ ƒ /api/account/password
+├ ƒ /api/account/reset
+├ ƒ /api/account/signup
+├ ƒ /api/account/verify
+├ ƒ /api/account/verify/resend
+├ ƒ /api/admin/audit
+├ ƒ /api/admin/messages/[id]
+├ ƒ /api/admin/organizations
+├ ƒ /api/admin/organizations/[id]
+├ ƒ /api/admin/organizations/[id]/view
+├ ƒ /api/admin/session
+├ ƒ /api/admin/users/[id]
+├ ƒ /api/admin/users/[id]/reset
+├ ƒ /api/admin/view
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/billing/checkout
+├ ƒ /api/billing/portal
+├ ƒ /api/billing/webhook
+├ ƒ /api/contact
+├ ƒ /api/game
+├ ƒ /api/health
+├ ƒ /api/invitations/[token]
+├ ƒ /api/media
+├ ƒ /api/media/[id]
+├ ƒ /api/monitoring
+├ ƒ /api/org
+├ ƒ /api/org/invitations
+├ ƒ /api/org/invitations/[id]
+├ ƒ /api/org/members/[id]
+├ ƒ /api/org/subscription
+├ ƒ /app
+├ ƒ /app/abonnement
+├ ƒ /app/compte
+├ ƒ /app/equipe
+├ ƒ /app/quiz/[id]
+├ ƒ /app/quiz/nouveau
+├ ○ /apple-icon.png
+├ ƒ /cgu
+├ ƒ /confidentialite
+├ ƒ /connexion
+├ ○ /icon.png
+├ ƒ /inscription
+├ ƒ /invitation/[token]
+├ ƒ /jouer
+├ ○ /llms.txt
+├ ƒ /mentions-legales
+├ ƒ /mot-de-passe-oublie
+├ ○ /opengraph-image.png
+├ ƒ /partie/[code]
+├ ƒ /reinitialiser/[token]
+├ ○ /robots.txt
+├ ○ /sitemap.xml
+├ ƒ /super-admin
+├ ƒ /super-admin/compte
+├ ƒ /super-admin/connexion
+├ ƒ /super-admin/journal
+├ ƒ /super-admin/messages
+├ ƒ /super-admin/monitoring
+├ ƒ /super-admin/organisations/[id]
+├ ƒ /super-admin/utilisateurs
+├ ƒ /tarifs
+├ ○ /twitter-image.png
+└ ƒ /verifier-email/[token]
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

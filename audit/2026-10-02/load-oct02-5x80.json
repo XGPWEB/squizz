@@ -1,0 +1,99 @@
+{
+  "clients": 5,
+  "players_per_game": 80,
+  "players": 400,
+  "rounds": 3,
+  "mode": "local production build, one Node worker, isolated database; HTTP clients, not rendered browsers",
+  "polling_delay_ms": 900,
+  "load_seconds": 156,
+  "total_seconds": 156,
+  "response_MB": 427,
+  "polling_requests_per_second": 423.2,
+  "summary": {
+    "join": {
+      "requests": 400,
+      "ok": 400,
+      "errors": 0,
+      "statuses": {
+        "200": 400
+      },
+      "p50_ms": 34,
+      "p95_ms": 76,
+      "p99_ms": 80,
+      "max_ms": 81
+    },
+    "library": {
+      "requests": 155,
+      "ok": 155,
+      "errors": 0,
+      "statuses": {
+        "200": 155
+      },
+      "p50_ms": 13,
+      "p95_ms": 50,
+      "p99_ms": 70,
+      "max_ms": 77
+    },
+    "host_action": {
+      "requests": 20,
+      "ok": 20,
+      "errors": 0,
+      "statuses": {
+        "200": 20
+      },
+      "p50_ms": 21,
+      "p95_ms": 24,
+      "p99_ms": 25,
+      "max_ms": 25
+    },
+    "player_poll": {
+      "requests": 65046,
+      "ok": 65046,
+      "errors": 0,
+      "statuses": {
+        "200": 65046
+      },
+      "p50_ms": 30,
+      "p95_ms": 57,
+      "p99_ms": 117,
+      "max_ms": 389
+    },
+    "host_poll": {
+      "requests": 811,
+      "ok": 811,
+      "errors": 0,
+      "statuses": {
+        "200": 811
+      },
+      "p50_ms": 30,
+      "p95_ms": 60,
+      "p99_ms": 125,
+      "max_ms": 382
+    },
+    "answer": {
+      "requests": 1200,
+      "ok": 1200,
+      "errors": 0,
+      "statuses": {
+        "200": 1200
+      },
+      "p50_ms": 18,
+      "p95_ms": 39,
+      "p99_ms": 42,
+      "max_ms": 44
+    },
+    "validation": {
+      "requests": 20,
+      "ok": 20,
+      "errors": 0,
+      "statuses": {
+        "200": 20
+      },
+      "p50_ms": 8,
+      "p95_ms": 26,
+      "p99_ms": 27,
+      "max_ms": 27
+    }
+  },
+  "failures": []
+}

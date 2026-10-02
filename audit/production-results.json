@@ -1,0 +1,49 @@
+[
+  {
+    "path": "/api/org",
+    "status": 401
+  },
+  {
+    "path": "/api/account/export",
+    "status": 401
+  },
+  {
+    "path": "/api/admin/organizations",
+    "status": 401
+  },
+  {
+    "path": "/api/admin/audit",
+    "status": 401
+  },
+  {
+    "path": "/api/admin/users/x/reset",
+    "status": 401
+  },
+  {
+    "production_security_headers": "PASS"
+  },
+  {
+    "production_signup_limit": [
+      400,
+      400,
+      400,
+      400,
+      400,
+      429
+    ]
+  },
+  {
+    "unauthenticated_malformed_inputs": [
+      401,
+      401,
+      401,
+      401,
+      401,
+      401,
+      401
+    ]
+  },
+  {
+    "unknown_game_page": 200
+  }
+]

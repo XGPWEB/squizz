@@ -1,0 +1,200 @@
+{
+  "clients": 5,
+  "players_per_game": 80,
+  "players": 400,
+  "rounds": 3,
+  "mode": "local production build, one Node worker, isolated database; HTTP clients, not rendered browsers",
+  "polling_delay_ms": 900,
+  "load_seconds": 156,
+  "total_seconds": 156,
+  "response_MB": 424,
+  "polling_requests_per_second": 419.4,
+  "summary": {
+    "join": {
+      "requests": 400,
+      "ok": 400,
+      "errors": 0,
+      "statuses": {
+        "200": 400
+      },
+      "p50_ms": 32,
+      "p95_ms": 352,
+      "p99_ms": 357,
+      "max_ms": 360
+    },
+    "library": {
+      "requests": 155,
+      "ok": 155,
+      "errors": 0,
+      "statuses": {
+        "200": 155
+      },
+      "p50_ms": 15,
+      "p95_ms": 48,
+      "p99_ms": 96,
+      "max_ms": 96
+    },
+    "host_action": {
+      "requests": 20,
+      "ok": 20,
+      "errors": 0,
+      "statuses": {
+        "200": 20
+      },
+      "p50_ms": 22,
+      "p95_ms": 37,
+      "p99_ms": 37,
+      "max_ms": 37
+    },
+    "player_poll": {
+      "requests": 64588,
+      "ok": 64468,
+      "errors": 120,
+      "statuses": {
+        "200": 64468
+      },
+      "p50_ms": 38,
+      "p95_ms": 91,
+      "p99_ms": 126,
+      "max_ms": 171
+    },
+    "host_poll": {
+      "requests": 808,
+      "ok": 808,
+      "errors": 0,
+      "statuses": {
+        "200": 808
+      },
+      "p50_ms": 38,
+      "p95_ms": 91,
+      "p99_ms": 129,
+      "max_ms": 139
+    },
+    "answer": {
+      "requests": 1200,
+      "ok": 1200,
+      "errors": 0,
+      "statuses": {
+        "200": 1200
+      },
+      "p50_ms": 24,
+      "p95_ms": 59,
+      "p99_ms": 91,
+      "max_ms": 92
+    },
+    "validation": {
+      "requests": 20,
+      "ok": 20,
+      "errors": 0,
+      "statuses": {
+        "200": 20
+      },
+      "p50_ms": 10,
+      "p95_ms": 22,
+      "p99_ms": 22,
+      "max_ms": 22
+    }
+  },
+  "failures": [
+    {
+      "category": "player_poll",
+      "code": "784379",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "784379",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "632890",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "805673",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "632890",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "category": "player_poll",
+      "code": "632890",
+      "error": "TypeError: fetch failed"
+    }
+  ]
+}

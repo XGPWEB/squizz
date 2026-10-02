@@ -1,0 +1,44 @@
+[
+  {
+    "name": "event_pass_concurrent",
+    "distinct_urls": 4,
+    "open_sessions": 4,
+    "errors": []
+  },
+  {
+    "name": "event_pass_delete_race",
+    "deletion": {
+      "deleted": "organization"
+    },
+    "checkout": {
+      "error": "Une erreur empêche cette action. Réessayez dans un instant."
+    },
+    "organization_exists": 0,
+    "open_sessions": 1
+  },
+  {
+    "name": "game_api_monitoring",
+    "response": {
+      "error": "Une erreur empêche cette action. Réessaie dans un instant."
+    },
+    "recorded_alerts": 0,
+    "all_game_api_alerts": 0,
+    "other_api_alerts_present": true
+  },
+  {
+    "name": "reset_persistence_failure",
+    "first": {
+      "error": "Une erreur empêche cette action. Réessayez dans un instant."
+    },
+    "retry": {
+      "error": "Ce lien n’est plus valable. Refaites une demande."
+    },
+    "token_marked_used": "true"
+  },
+  {
+    "name": "join_downgrade_race",
+    "limit": 5,
+    "players": 6,
+    "rejected": 0
+  }
+]

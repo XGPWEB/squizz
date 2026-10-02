@@ -1,0 +1,77 @@
+[
+  {
+    "name": "export_multiple_media",
+    "refs": [
+      [
+        "1",
+        "2"
+      ],
+      [
+        "1",
+        "1"
+      ],
+      [
+        "1",
+        "1"
+      ],
+      [
+        "1",
+        "1"
+      ],
+      [
+        "1",
+        "1"
+      ]
+    ],
+    "unique": false
+  },
+  {
+    "name": "failed_import_media",
+    "error": "Chaque question doit avoir un titre de 1 à 300 caractères.",
+    "before": 0,
+    "after": 44
+  },
+  {
+    "name": "import_retry_at_quota",
+    "first_id": "cmupxaomx000t7zu2y8mpveir",
+    "second_id": null,
+    "error": "Votre offre permet 1 quiz. Supprimez-en un ou passez à une offre supérieure (page Tarifs)."
+  },
+  {
+    "name": "null_question_import",
+    "response": {
+      "error": "Chaque question doit avoir un titre de 1 à 300 caractères."
+    }
+  },
+  {
+    "name": "password_suffix_collision",
+    "different_password_authenticated": true
+  },
+  {
+    "name": "revoked_session_game",
+    "read_granted": true,
+    "write_error": "Rejoins d’abord cette partie."
+  },
+  {
+    "name": "polling_load",
+    "requests": 200,
+    "players": 50,
+    "concurrency": 20,
+    "seconds": 0.474,
+    "p50_ms": 40.7,
+    "p95_ms": 85.8,
+    "max_ms": 114.1,
+    "successful": 200
+  },
+  {
+    "name": "checkout_delete_race",
+    "deletion": {
+      "deleted": "organization"
+    },
+    "checkout": {
+      "url": "https://checkout.mock/pay/cs_mock0002"
+    },
+    "open_session_for_race": false,
+    "open_sessions": []
+  }
+]

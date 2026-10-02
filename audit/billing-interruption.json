@@ -1,0 +1,14 @@
+{
+  "name": "checkout_persistence_failure",
+  "first": {
+    "error": "Une erreur empêche cette action. Réessayez dans un instant."
+  },
+  "retry": {
+    "url": "https://checkout.mock/pay/cs_mock0005"
+  },
+  "open_sessions": 2,
+  "session_ids": [
+    "cs_mock0004",
+    "cs_mock0005"
+  ]
+}

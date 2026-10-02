@@ -1,0 +1,90 @@
+[
+  {
+    "name": "export_multiple_media",
+    "refs": [
+      [
+        "1",
+        "2"
+      ],
+      [
+        "1",
+        "2"
+      ],
+      [
+        "1",
+        "2"
+      ],
+      [
+        "1",
+        "2"
+      ],
+      [
+        "1",
+        "2"
+      ]
+    ],
+    "unique": true
+  },
+  {
+    "name": "failed_import_media",
+    "error": "Chaque question doit avoir un titre de 1 à 300 caractères.",
+    "before": 0,
+    "after": 0
+  },
+  {
+    "name": "import_retry_at_quota",
+    "first_id": "cmuraogel00o6i2dgeseikkxc",
+    "second_id": "cmuraogel00o6i2dgeseikkxc",
+    "error": null
+  },
+  {
+    "name": "null_question_import",
+    "response": {
+      "error": "Chaque question doit avoir un titre de 1 à 300 caractères."
+    }
+  },
+  {
+    "name": "password_suffix_collision",
+    "different_password_authenticated": false
+  },
+  {
+    "name": "revoked_session_game",
+    "read_granted": false,
+    "write_error": "Rejoins d’abord cette partie."
+  },
+  {
+    "name": "polling_load",
+    "requests": 200,
+    "players": 50,
+    "concurrency": 20,
+    "seconds": 1.172,
+    "p50_ms": 63.1,
+    "p95_ms": 341.5,
+    "max_ms": 359.4,
+    "successful": 200
+  },
+  {
+    "name": "checkout_delete_race",
+    "deletion": {
+      "deleted": "organization"
+    },
+    "checkout": {
+      "error": "Une autre demande de paiement a pris le relais pour votre organisation. Réessayez dans un instant."
+    },
+    "open_session_for_race": false,
+    "open_sessions": []
+  },
+  {
+    "name": "checkout_persistence_failure",
+    "first": {
+      "error": "Une erreur empêche cette action. Réessayez dans un instant."
+    },
+    "retry": {
+      "url": "https://checkout.mock/pay/cs_mock0047"
+    },
+    "open_sessions": 1,
+    "session_ids": [
+      "cs_mock0047"
+    ]
+  }
+]

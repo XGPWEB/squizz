@@ -1,0 +1,40 @@
+fixture 1/5
+fixture 2/5
+fixture 3/5
+fixture 4/5
+fixture 5/5
+Joined 400 players; errors: 0
+Round 1/3 completed; requests: 22843; errors: 0
+Connection diagnostic: TypeError: fetch failed Error: connect ECONNRESET 127.0.0.1:5190 ECONNRESET
+Connection diagnostic: TypeError: fetch failed Error: connect ECONNRESET 127.0.0.1:5190 ECONNRESET
+Connection diagnostic: TypeError: fetch failed Error: connect ECONNRESET 127.0.0.1:5190 ECONNRESET
+Round 2/3 completed; requests: 44782; errors: 9
+node:net:829
+      throw new ErrnoException(err, 'setTypeOfService');
+      ^
+
+Error: setTypeOfService EINVAL
+    at Socket.setTypeOfService (node:net:829:13)
+    at writeH1 (node:internal/deps/undici/undici:8022:16)
+    at Object.write (node:internal/deps/undici/undici:7758:18)
+    at _resume (node:internal/deps/undici/undici:9656:54)
+    at resume (node:internal/deps/undici/undici:9589:7)
+    at Client.<computed> (node:internal/deps/undici/undici:9370:35)
+    at node:internal/deps/undici/undici:9539:26
+    at Socket.<anonymous> (node:internal/deps/undici/undici:3342:13)
+    at Object.onceWrapper (node:events:630:28)
+    at Socket.emit (node:events:509:28) {
+  errno: -22,
+  code: 'EINVAL',
+  syscall: 'setTypeOfService'
+}
+
+Node.js v24.19.0
+Traceback (most recent call last):
+  File "/Users/xaviergerinette/SQuizz/squizz/tests/load-multiclient.py", line 38, in <module>
+    subprocess.run(['node', 'audit/load-multiclient.mjs'], cwd=root, env=env, input=json.dumps(fixtures), text=True, check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['node', 'audit/load-multiclient.mjs']' returned non-zero exit status 1.

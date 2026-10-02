@@ -1,0 +1,19 @@
+{
+  "name": "preview_submits_editor",
+  "viewport": "390 x 844",
+  "steps": [
+    "Open editor",
+    "Change quiz title to Audit du blind test — brouillon",
+    "Open preview",
+    "Enter Aznavour",
+    "Click Envoyer ma réponse"
+  ],
+  "observed_url": "/app?ok=modifie",
+  "observed_notice": "Vos modifications sont enregistrées.",
+  "quiz_in_database": {
+    "title": "Audit du blind test — brouillon",
+    "version": 2
+  },
+  "reproductions": 2,
+  "youtube_playback_attempted": false
+}

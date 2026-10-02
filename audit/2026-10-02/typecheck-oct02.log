@@ -1,0 +1,4 @@
+
+> squizz@1.10.3 typecheck
+> tsc --noEmit
+
