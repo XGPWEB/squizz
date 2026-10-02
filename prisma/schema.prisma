@@ -61,6 +61,10 @@ model Organization {
   /// What that operation sends to Stripe, word for word: a resumed operation repeats exactly this (Stripe
   /// refuses a repeated idempotency key whose parameters differ, e.g. a page expiry computed again).
   checkoutOpParams     Json?
+  /// Offer chosen on the pricing page before signing up (a paid plan or « EVENEMENT »): the first sign-in
+  /// opens the subscription page on it, whatever link was followed after confirming the address. Emptied
+  /// once that page has shown it.
+  wantedOffer          String?
   /// Event pass (one-off payment, lib/plans.ts): its limits apply until this date, whatever `plan` says.
   eventPassUntil       DateTime?
   createdAt            DateTime           @default(now())

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, CreditCard, Ticket } from "lucide-react";
 import type { Plan } from "@prisma/client";
 import { postJson } from "@/lib/client/api";
@@ -80,10 +80,16 @@ export function SubscriptionManager({
       router.refresh();
     } catch (e) {
       setError((e as Error).message);
+      // The message is at the top of the page, the button that failed may be far below.
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setBusy(false);
     }
   }
+  // Arriving for an offer chosen on the pricing page: it is brought into view (it may be below the fold).
+  useEffect(() => {
+    document.querySelector(".wanted")?.scrollIntoView({ block: "center" });
+  }, []);
   const open = (path: string, body?: object) =>
     run(async () => {
       const { url } = await postJson<{ url: string }>(path, body);

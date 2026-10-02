@@ -2,6 +2,14 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.9] — 2026-10-02
+
+Migration `20261002500000_wanted_offer` (appliquée par `deploy.sh`).
+
+### Offres
+- L’offre choisie sur la page Tarifs avant de créer un compte est retenue avec l’organisation : à la première connexion, l’espace s’ouvre directement sur la page Abonnement, l’offre choisie mise en avant et amenée à l’écran. Cela ne dépend plus du lien suivi après la confirmation par e-mail (autre appareil, bouton « Connexion », lien modifié par la messagerie).
+- Page Abonnement : quand un paiement ne peut pas démarrer, la page remonte jusqu’au message d’erreur, qui restait hors de l’écran en haut de page.
+
 ## [1.10.8] — 2026-10-02
 
 Migration `20261002400000_checkout_op_params` (appliquée par `deploy.sh`). Suite de la revue des corrections 1.10.7 (`REVIEW-1.10.7.md`).

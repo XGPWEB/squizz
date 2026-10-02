@@ -5,6 +5,7 @@ import { assertEmailFree, hashPassword, sendEmailVerification } from "@/lib/serv
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { fail } from "@/lib/server/http";
 import { safeNext } from "@/lib/next-path";
+import { offerOfPath } from "@/lib/plans";
 
 const schema = z.object({
   organization: nameSchema,
@@ -24,14 +25,17 @@ export const POST = route(async (req) => {
   const input = await json(req, schema);
   await assertEmailFree(input.email);
   const passwordHash = await hashPassword(input.password);
+  const next = input.suite ? safeNext(input.suite) : undefined;
   const org = await prisma.organization.create({
     data: {
       name: input.organization,
+      // Kept with the organisation: the first sign-in opens on it even if the emailed link is not the way in
+      // (another device, the « Connexion » button, a link rewritten by the mailbox).
+      wantedOffer: next ? offerOfPath(next) : null,
       users: { create: { email: input.email, name: input.name, passwordHash, role: "ORG_ADMIN" } },
     },
     include: { users: true },
   });
-  const next = input.suite ? safeNext(input.suite) : undefined;
   const { devLink } = await sendEmailVerification(org.users[0], next === "/app" ? undefined : next);
   return { verify: true, ...(devLink && { devLink }) };
 });

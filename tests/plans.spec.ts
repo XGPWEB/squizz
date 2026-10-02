@@ -6,6 +6,8 @@ import {
   effectivePlan,
   hasEventPass,
   limitsSummary,
+  offerOf,
+  offerOfPath,
   orgLimits,
   passIsUseful,
   planBadge,
@@ -52,4 +54,19 @@ test("le pack événement donne les limites Premium pendant sa durée, puis rend
   expect(passIsUseful("PRO")).toBe(true);
   expect(passIsUseful("PREMIUM")).toBe(false);
   expect(planBadge({ ...running, plan: "PREMIUM" }).label).toBe(PLANS.PREMIUM.label);
+});
+
+test("l’offre choisie sur la page Tarifs : une offre payante ou le pack, rien d’autre", () => {
+  expect(offerOf("PRO")).toBe("PRO");
+  expect(offerOf("EVENEMENT")).toBe("EVENEMENT");
+  expect([offerOf("FREE"), offerOf("toString"), offerOf(null), offerOf(undefined)]).toEqual([
+    null,
+    null,
+    null,
+    null,
+  ]);
+  expect(offerOfPath("/app/abonnement?offre=PREMIUM")).toBe("PREMIUM");
+  expect(offerOfPath("/app/abonnement?offre=EVENEMENT")).toBe("EVENEMENT");
+  expect(offerOfPath("/app/abonnement")).toBeNull();
+  expect(offerOfPath("/app/equipe?offre=PRO")).toBeNull();
 });

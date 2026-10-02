@@ -91,6 +91,15 @@ export const EVENT_PASS = {
   stripe: "prod_VMugZ1ibhjTp4K",
 } as const;
 
+/** The event pass as an offer of the pricing page (« ?offre=EVENEMENT »), next to the paid plans. */
+export const PASS_OFFER = "EVENEMENT";
+/** The offer named by « ?offre= »: a paid plan or the event pass; anything else is no offer. */
+export const offerOf = (value: unknown) =>
+  value === PASS_OFFER ? PASS_OFFER : (PLAN_KEYS.find((k) => k === value && k !== "FREE") ?? null);
+/** The offer a pricing-page button leads to (« /app/abonnement?offre=PRO »). */
+export const offerOfPath = (path: string) =>
+  path.startsWith("/app/abonnement?") ? offerOf(new URLSearchParams(path.split("?")[1]).get("offre")) : null;
+
 /** What decides an organisation's limits. Dates may arrive as text in the browser. */
 type OrgPlan = { plan: Plan; partner: boolean; eventPassUntil?: Date | string | null };
 

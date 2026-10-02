@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { PLAN_KEYS } from "@/lib/plans";
+import { PLAN_KEYS, offerOf } from "@/lib/plans";
 import { getSessionUser } from "@/lib/server/guard";
 import { prisma } from "@/lib/prisma";
 import { billingEnabled, reconcileEventPasses } from "@/lib/server/billing";
@@ -14,14 +14,18 @@ const PASS = "EVENEMENT";
 
 export default async function SubscriptionPage({ searchParams }: { searchParams: Promise<Params> }) {
   const { offre, paiement } = await searchParams;
-  const wanted = offre === PASS ? PASS : (PLAN_KEYS.find((k) => k === offre) ?? null);
+  const asked = offre === PASS ? PASS : (PLAN_KEYS.find((k) => k === offre) ?? null);
   const user = await getSessionUser();
   // Not signed in: sign in (or sign up), then come back here.
   if (!user)
-    redirect(`/connexion?suite=${encodeURIComponent(`/app/abonnement${wanted ? `?offre=${wanted}` : ""}`)}`);
+    redirect(`/connexion?suite=${encodeURIComponent(`/app/abonnement${asked ? `?offre=${asked}` : ""}`)}`);
   if (!user.organization) redirect("/super-admin");
   if (user.role === "HOST") redirect("/app/equipe");
   let org = user.organization;
+  // The offer chosen before signing up is shown once, then forgotten: later visits are ordinary ones.
+  const wanted = asked ?? offerOf(org.wantedOffer);
+  if (org.wantedOffer && !user.viewingAs)
+    await prisma.organization.update({ where: { id: org.id }, data: { wantedOffer: null } });
   // Back from paying the event pass: it is granted now, without waiting for Stripe's own notification.
   if (paiement === "pack") {
     await reconcileEventPasses(org).catch((e) => console.error("Pack événement : rattrapage impossible", e));
