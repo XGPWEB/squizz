@@ -6,6 +6,9 @@ import type { Instrumentation } from "next";
  */
 export const onRequestError: Instrumentation.onRequestError = async (err, request, context) => {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
+  const { isVisitorGone } = await import("@/lib/monitoring");
+  // Not an error of the site: no alert, no e-mail.
+  if (isVisitorGone(err)) return;
   const { reportAlert, errorMessage } = await import("@/lib/server/monitoring");
   await reportAlert({
     type: context.routeType === "render" ? "page" : "server",

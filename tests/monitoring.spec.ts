@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { alertLabel, cronStatus, safePath } from "@/lib/monitoring";
+import { alertLabel, cronStatus, isVisitorGone, safePath } from "@/lib/monitoring";
 
 const HOUR = 3600_000;
 
@@ -27,4 +27,10 @@ test("le chemin gardé dans une alerte ne contient ni jeton ni paramètres", () 
 test("un type d’alerte inconnu garde son nom", () => {
   expect(alertLabel("server")).toBe("Erreur serveur");
   expect(alertLabel("autre")).toBe("autre");
+});
+
+test("un visiteur parti avant la fin de l’affichage n’est pas une erreur du site", () => {
+  expect(isVisitorGone(new Error("The destination stream closed early."))).toBe(true);
+  expect(isVisitorGone(new Error("Cannot read properties of undefined"))).toBe(false);
+  expect(isVisitorGone("The destination stream closed early.")).toBe(false);
 });

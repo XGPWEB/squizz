@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.12] — 2026-10-02
+
+### Monitoring
+- Un visiteur qui quitte une page avant qu’elle soit entièrement envoyée (onglet fermé, autre page ouverte) ne crée plus d’alerte « Erreur d’affichage : The destination stream closed early » ni d’e-mail : ce n’est pas une erreur du site.
+
 ## [1.10.11] — 2026-10-02
 
 ### Offres

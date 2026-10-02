@@ -51,3 +51,10 @@ export const safePath = (raw: string) =>
     .map((part) => (/^[\w-]{20,}$/.test(part) ? "…" : part))
     .join("/")
     .slice(0, 300);
+
+/**
+ * The visitor left before the page was fully sent (tab closed, another page opened, departure to Stripe):
+ * Next.js reports the interrupted rendering as an error, but nothing is wrong on the server.
+ */
+export const isVisitorGone = (err: unknown) =>
+  err instanceof Error && err.message.includes("The destination stream closed early");
