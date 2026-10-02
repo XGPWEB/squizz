@@ -90,10 +90,25 @@ export function SubscriptionManager({
   useEffect(() => {
     document.querySelector(".wanted")?.scrollIntoView({ block: "center" });
   }, []);
+  // Back from Stripe with the browser's « back » button: the page is shown again as it was left, buttons
+  // still waiting. It is brought up to date and usable again.
+  useEffect(() => {
+    const back = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setBusy(false);
+      router.refresh();
+    };
+    window.addEventListener("pageshow", back);
+    return () => window.removeEventListener("pageshow", back);
+  }, [router]);
   const open = (path: string, body?: object) =>
     run(async () => {
       const { url } = await postJson<{ url: string }>(path, body);
       window.location.assign(url);
+      // Leaving for Stripe: nothing more may happen on this page, so this never ends (no refresh, buttons
+      // kept waiting). A refresh started now is cut short by the departure; Next then falls back to reloading
+      // the current page, and that reload cancels the departure: the payment page never opened.
+      await new Promise<never>(() => {});
     });
 
   function choose(plan: Plan) {

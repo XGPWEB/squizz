@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.10] — 2026-10-02
+
+### Corrigé
+- Page Abonnement : cliquer sur « Choisir… », « Acheter le pack » ou « Factures et moyen de paiement » ouvre bien la page Stripe. Jusqu’ici, la page se rafraîchissait juste après avoir demandé le départ vers Stripe ; ce rafraîchissement, interrompu par le départ, faisait recharger la page en cours et annulait le départ : le plus souvent, rien ne semblait se passer. Le serveur, lui, créait bien la page de paiement.
+- Retour depuis Stripe avec le bouton « précédent » du navigateur : la page Abonnement est remise à jour et ses boutons sont de nouveau utilisables.
+
 ## [1.10.9] — 2026-10-02
 
 Migration `20261002500000_wanted_offer` (appliquée par `deploy.sh`).

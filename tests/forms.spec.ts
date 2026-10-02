@@ -36,3 +36,12 @@ test("un formulaire qui contient une fenêtre (portail) n’agit pas sur l’env
   expect(handlers.length).toBeGreaterThan(0);
   expect(handlers.filter((m) => !m[0].includes("e.stopPropagation()"))).toEqual([]);
 });
+
+test("en partant vers Stripe, la page Abonnement ne se rafraîchit plus (le départ serait annulé)", () => {
+  // A refresh cut short by the departure makes Next reload the current page, which cancels the departure:
+  // in production the payment page did not open. After « assign », the action must never finish.
+  const src = readFileSync("app/app/abonnement/subscription-manager.tsx", "utf8");
+  const leaving = [...src.matchAll(/window\.location\.assign\([^)]*\);([\s\S]{0,600}?)\n {4}\}\);/g)];
+  expect(leaving.length).toBeGreaterThan(0);
+  expect(leaving.filter((m) => !m[1].includes("await new Promise<never>(() => {});"))).toEqual([]);
+});
