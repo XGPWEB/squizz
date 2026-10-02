@@ -737,3 +737,90 @@ main:focus {
 .panel.event-pass p {
   margin: 0;
 }
+/* Super-admin monitoring: scheduled tasks and alerts. */
+.usage.warn {
+  background: var(--pink);
+}
+.cron-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin: 16px 0;
+}
+.cron-card {
+  padding: 18px;
+  background: white;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.cron-card.failed,
+.cron-card.late {
+  box-shadow: 5px 5px 0 var(--pink);
+}
+.cron-card p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.cron-status {
+  padding: 3px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--acid);
+  font: 700 11px monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.cron-status.failed,
+.cron-status.late {
+  background: var(--pink);
+}
+.cron-status.never {
+  background: var(--cream);
+}
+.cron-dots {
+  display: flex;
+  gap: 6px;
+  min-height: 14px;
+  margin-top: 12px;
+}
+.cron-dots i {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--acid);
+}
+.cron-dots i.failed {
+  background: var(--pink);
+}
+.monitoring-head h2 {
+  margin: 0;
+}
+.window-tabs,
+.type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.type-chips {
+  margin: 16px 0;
+}
+.window-tabs a,
+.type-chips a {
+  padding: 5px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: white;
+  color: var(--ink);
+  font: 700 12px monospace;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+}
+.window-tabs a.active,
+.type-chips a.active {
+  background: var(--ink);
+  color: var(--acid);
+}

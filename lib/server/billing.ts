@@ -9,6 +9,7 @@ import { fail, HttpError } from "./http";
 import { appUrl, sendMail } from "./mail";
 import { billingAlertEmail, eventPassEmail, organizationUpdateEmail } from "./email-templates";
 import { withOrgLock } from "./org-lock";
+import { reportAlert } from "./monitoring";
 
 /**
  * Stripe billing. Online payment is on only when the secret key and the webhook secret are set (in
@@ -385,6 +386,10 @@ export async function applyEventPass(session: Stripe.Checkout.Session) {
   if (!granted) {
     // Paid for an organisation that no longer exists: Pressweb refunds by hand.
     console.error(`Stripe : pack événement ${session.id} payé sans organisation`);
+    void reportAlert({
+      type: "billing",
+      message: `Pack événement ${session.id} payé, organisation introuvable`,
+    });
     void sendMail(
       CONTACT_EMAIL,
       billingAlertEmail({
@@ -511,6 +516,7 @@ async function cancelUnwanted(sub: Stripe.Subscription, reason: string) {
       .subscriptions.cancel(sub.id)
       .catch((e) => (isMissing(e) ? null : Promise.reject(e)));
   console.error(`Stripe : abonnement ${sub.id} annulé (${reason})`);
+  void reportAlert({ type: "billing", message: `Abonnement ${sub.id} annulé automatiquement : ${reason}` });
   void sendMail(CONTACT_EMAIL, billingAlertEmail({ subscriptionId: sub.id, reason }));
 }
 

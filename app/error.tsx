@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 
-/** Shown when a page crashes; the details go to the server logs, never to the visitor. */
+/** Shown when a page crashes; the details go to the server logs and the monitoring page, never to the visitor. */
 export default function ErrorPage({
   error,
   reset,
@@ -12,6 +12,16 @@ export default function ErrorPage({
 }) {
   useEffect(() => {
     console.error(error);
+    // An error raised on the server (it has a digest) is already recorded there: only the browser's own are sent.
+    if (error.digest) return;
+    void fetch("/api/monitoring", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `${error.name} : ${error.message}`.slice(0, 500),
+        path: window.location.pathname,
+      }),
+    }).catch(() => null);
   }, [error]);
   return (
     <main>

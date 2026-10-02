@@ -3,6 +3,7 @@ import { HttpError, assertSameOrigin, fail } from "@/lib/server/http";
 import { requireMember } from "@/lib/server/guard";
 import { mediaKind, mediaType, storeMedia } from "@/lib/server/media-store";
 import { MEDIA_LIMITS, formatSize } from "@/lib/media-limits";
+import { errorMessage, reportAlert } from "@/lib/server/monitoring";
 export const dynamic = "force-dynamic";
 
 const MB = 1024 * 1024;
@@ -37,6 +38,12 @@ export async function POST(req: Request) {
   } catch (e) {
     if (e instanceof HttpError) return Response.json({ error: e.message }, { status: e.status, headers });
     console.error(e);
+    void reportAlert({
+      type: "server",
+      message: errorMessage(e),
+      path: "/api/media",
+      context: { method: "POST" },
+    });
     return Response.json(
       { error: "L’import a échoué. Réessayez avec un fichier plus petit." },
       { status: 503, headers },

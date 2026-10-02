@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 import { openCookiePreferences } from "@/components/site/cookie-consent";
 import { useEffect, useRef, useState } from "react";
 import {
+  Activity,
   Building2,
   ChevronDown,
   Cookie,
@@ -89,6 +90,7 @@ export function AppBar(p: Props) {
           { href: "/super-admin/utilisateurs", label: "Utilisateurs", icon: Users },
           { href: "/super-admin/messages", label: "Messages", icon: Mail },
           { href: "/super-admin/journal", label: "Journal", icon: History },
+          { href: "/super-admin/monitoring", label: "Monitoring", icon: Activity },
         ];
   const active = (i: Item) =>
     i.exact

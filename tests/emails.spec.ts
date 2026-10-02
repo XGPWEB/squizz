@@ -17,6 +17,11 @@ describe("e-mails SQuizz", async () => {
       link: "https://www.squizz.fun/invitation/abc",
       days: 7,
     }),
+    "alerte-monitoring": t.systemAlertEmail({
+      type: "server",
+      message: "PrismaClientKnownRequestError : la base ne répond pas",
+      path: "/api/game",
+    }),
     "pack-evenement": t.eventPassEmail({
       name: "Xavier",
       organization: "Pressweb",

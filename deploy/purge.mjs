@@ -10,6 +10,7 @@ const now = Date.now();
 const ago = (days) => new Date(now - days * DAY);
 const mediaDir = path.resolve(process.env.MEDIA_DIR || "/opt/squizz-media");
 const report = {};
+const startedAt = new Date();
 
 async function run() {
   // Games, players and answers: 24 hours (players and answers follow by cascade).
@@ -47,6 +48,9 @@ async function run() {
   report.inscriptions = (
     await prisma.organization.deleteMany({ where: { id: { in: abandoned.map((o) => o.id) } } })
   ).count;
+  // Monitoring (alerts and runs of the scheduled tasks): 90 days, as MONITORING_RETENTION_DAYS says.
+  report.alertes = (await prisma.systemAlert.deleteMany({ where: { createdAt: { lt: ago(90) } } })).count;
+  await prisma.cronRun.deleteMany({ where: { startedAt: { lt: ago(90) } } });
   report.liens = (
     await prisma.passwordResetToken.deleteMany({
       where: { OR: [{ expiresAt: { lt: ago(1) } }, { usedAt: { not: null } }] },
@@ -91,10 +95,23 @@ async function run() {
   report.fichiers = orphans;
 }
 
+/** Shown on the super-admin's monitoring page (CronRun); a failure to record never changes the outcome. */
+const record = (success, detail) =>
+  prisma.cronRun
+    .create({
+      data: { job: "purge", startedAt, finishedAt: new Date(), success, detail: detail.slice(0, 500) },
+    })
+    .catch((err) => console.error("purge : exécution non enregistrée", err));
+
 run()
-  .then(() => console.log(`${new Date().toISOString()} purge OK ${JSON.stringify(report)}`))
-  .catch((err) => {
+  .then(async () => {
+    console.log(`${new Date().toISOString()} purge OK ${JSON.stringify(report)}`);
+    const removed = Object.values(report).reduce((a, b) => a + b, 0);
+    await record(true, `${removed} élément${removed > 1 ? "s" : ""} supprimé${removed > 1 ? "s" : ""}`);
+  })
+  .catch(async (err) => {
     console.error(`${new Date().toISOString()} purge ÉCHEC`, err);
     process.exitCode = 1;
+    await record(false, String(err?.message ?? err));
   })
   .finally(() => prisma.$disconnect());

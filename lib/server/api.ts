@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { assertJson, assertSameOrigin, HttpError } from "./http";
+import { errorMessage, reportAlert } from "./monitoring";
 
 type Ctx<P> = { params: Promise<P> };
 
@@ -19,6 +20,12 @@ export function route<P = Record<string, never>>(fn: (req: Request, params: P) =
       if (e instanceof z.ZodError)
         return Response.json({ error: e.issues[0]?.message ?? "Données invalides." }, { status: 400 });
       console.error(e);
+      void reportAlert({
+        type: "server",
+        message: errorMessage(e),
+        path: new URL(req.url).pathname,
+        context: { method: req.method },
+      });
       return Response.json(
         { error: "Une erreur empêche cette action. Réessayez dans un instant." },
         { status: 500 },

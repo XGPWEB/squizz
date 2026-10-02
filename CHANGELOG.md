@@ -2,6 +2,15 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.0] — 2026-10-02
+
+Migration `20261002300000_monitoring` (appliquée par `deploy.sh`). Scripts du serveur à mettre à jour avec `bash deploy.sh --setup`.
+
+### Monitoring
+- Nouvelle page « Monitoring » dans le super-admin : alertes des 7, 30 ou 90 derniers jours, triées par type, et état des tâches de nuit (sauvegarde, purge) avec leurs 7 dernières exécutions.
+- Sont enregistrés : les erreurs serveur inattendues, les pages qui plantent (côté serveur comme dans le navigateur), les e-mails qui ne partent pas, les anomalies de facturation et les échecs du contrôle de santé.
+- Chaque type d’alerte est aussi envoyé par e-mail, au plus une fois par demi-heure. Aucun jeton ni paramètre d’adresse n’est gardé dans une alerte ; alertes et exécutions sont supprimées après 90 jours.
+
 ## [1.9.1] — 2026-10-02
 
 ### Super-admin

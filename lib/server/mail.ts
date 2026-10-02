@@ -30,6 +30,10 @@ export async function sendMail(to: string, { subject, text, html }: Email, reply
   } catch (err) {
     // Callers still show the link (invitation, reset) or keep the stored message, so a mail outage never blocks them.
     console.error(`[mail] envoi impossible à ${to} :`, err);
+    // Loaded on demand: the monitoring itself sends e-mails. The recipient is not kept, only the subject.
+    void import("./monitoring").then((m) =>
+      m.reportAlert({ type: "mail", message: `${m.errorMessage(err)} — objet : ${subject}` }),
+    );
     return false;
   }
 }

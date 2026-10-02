@@ -73,9 +73,21 @@ umask 077
 LOG=/var/log/squizz-backup.log
 DIR=/opt/backups/squizz-db
 STAMP=$(date +%Y%m%d-%H%M)
+START=$(date -u '+%Y-%m-%d %H:%M:%S')
 log() { echo "$(date '+%Y-%m-%d %H:%M') — $*" >> "$LOG"; }
+URL=$(grep '^DATABASE_URL=' /opt/squizz-secrets.env | cut -d= -f2-)
+URL=${URL#\"}; URL=${URL%\"}   # the value may be quoted in the secrets file
+URL=${URL%%\?*}               # pg_dump rejects Prisma's pool parameters
+# Shown on the super-admin's monitoring page; never changes the outcome of the backup.
+record() {
+  psql "$URL" -q -v start="$START" -v ok="$1" -v detail="$2" >/dev/null 2>>"$LOG" <<'SQL' || true
+INSERT INTO "CronRun" ("id", "job", "startedAt", "finishedAt", "success", "detail")
+VALUES (gen_random_uuid()::text, 'backup', :'start'::timestamp, now() AT TIME ZONE 'UTC', :'ok'::boolean, :'detail');
+SQL
+}
 alerte() {
   log "ÉCHEC — $1"
+  record false "$1"
   DEST=$(grep '^ALERT_EMAIL=' /opt/squizz-secrets.env | cut -d= -f2-)
   if [ -n "$DEST" ] && command -v msmtp >/dev/null; then
     printf 'To: %s\nSubject: [ALERTE] SQuizz — sauvegarde en echec\n\n%s\nHeure : %s\nLes sauvegardes existantes n ont pas ete purgees.\n' \
@@ -83,9 +95,6 @@ alerte() {
   fi
   exit 1
 }
-URL=$(grep '^DATABASE_URL=' /opt/squizz-secrets.env | cut -d= -f2-)
-URL=${URL#\"}; URL=${URL%\"}   # the value may be quoted in the secrets file
-URL=${URL%%\?*}               # pg_dump rejects Prisma's pool parameters
 pg_dump --no-owner "$URL" | gzip > "$DIR/squizz-$STAMP.sql.gz" || alerte "pg_dump a échoué"
 # A real check of the content, not just the size: every table must be in the dump.
 [ "$(zcat "$DIR/squizz-$STAMP.sql.gz" | grep -c '^COPY ')" -ge 10 ] || alerte "dump incomplet (tables manquantes)"
@@ -96,6 +105,7 @@ find "$DIR" -name 'squizz-*.gz' -mtime +6 -newermt '-35 days' | while read -r f;
 done
 find "$DIR" -name 'squizz-*.gz' -mtime +35 -delete
 log "OK — squizz-$STAMP"
+record true "squizz-$STAMP ($(du -ch "$DIR/squizz-$STAMP.sql.gz" "$DIR/squizz-media-$STAMP.tar.gz" | tail -1 | cut -f1))"
 SH
 
 # --- Health check every 5 minutes, alert with a 30-minute cooldown ------------------------------
@@ -111,6 +121,13 @@ if [ "$CODE" = "200" ]; then rm -f "$STAMP"; exit 0; fi
 echo "$(date '+%Y-%m-%d %H:%M') — santé $CODE" >> "$LOG"
 if [ ! -f "$STAMP" ] || [ $(( $(date +%s) - $(stat -c %Y "$STAMP") )) -gt 1800 ]; then
   touch "$STAMP"
+  # Also listed on the super-admin's monitoring page (when the database answers).
+  URL=$(grep '^DATABASE_URL=' /opt/squizz-secrets.env | cut -d= -f2-)
+  URL=${URL#\"}; URL=${URL%\"}; URL=${URL%%\?*}
+  psql "$URL" -q -v message="Contrôle de santé : $CODE" >/dev/null 2>&1 <<'SQL' || true
+INSERT INTO "SystemAlert" ("id", "type", "message", "createdAt")
+VALUES (gen_random_uuid()::text, 'health', :'message', now() AT TIME ZONE 'UTC');
+SQL
   DEST=$(grep '^ALERT_EMAIL=' /opt/squizz-secrets.env | cut -d= -f2-)
   if [ -n "$DEST" ] && command -v msmtp >/dev/null; then
     printf 'To: %s\nSubject: [ALERTE] SQuizz ne repond plus\n\nEtat : %s (a %s).\n' \

@@ -254,6 +254,32 @@ model AuditLog {
   @@index([createdAt])
 }
 
+/// Something went wrong without anyone seeing it on screen (server error, e-mail not sent, billing oddity,
+/// health check). Listed on the super-admin's monitoring page; kept 90 days (deploy/purge.mjs).
+model SystemAlert {
+  id        String   @id @default(cuid())
+  /// One of the keys of ALERT_TYPES (lib/monitoring.ts).
+  type      String
+  message   String
+  context   Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+/// One run of a scheduled task on the server (backup, purge), written by the task itself.
+model CronRun {
+  id         String    @id @default(cuid())
+  /// One of the jobs of CRON_JOBS (lib/monitoring.ts).
+  job        String
+  startedAt  DateTime
+  finishedAt DateTime?
+  success    Boolean
+  detail     String?
+
+  @@index([job, startedAt])
+}
+
 /// Sliding-window counters for login and signup throttling.
 model RateLimit {
   key       String   @id

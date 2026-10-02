@@ -58,7 +58,7 @@ done
 curl -sf "http://127.0.0.1:$PORT/api/health" >/dev/null || { echo "Le serveur de test n’a pas démarré :" >&2; tail -30 "$LOG" >&2; exit 1; }
 
 export SQUIZZ_URL="http://127.0.0.1:$PORT"
-SCENARIOS=${*:-game-flow rich-game-flow timeout quiz-management accounts contact super-admin game-live rights security editing email-verification transfer admins billing event-pass auth-hardening}
+SCENARIOS=${*:-game-flow rich-game-flow timeout quiz-management accounts contact super-admin game-live rights security editing email-verification transfer admins billing event-pass monitoring auth-hardening}
 FAILED=0
 for t in $SCENARIOS; do
   if python3 "tests/$t.py" >"$LOG.$t" 2>&1; then echo "ok    $t"; else echo "ÉCHEC $t"; tail -8 "$LOG.$t"; FAILED=1; fi

@@ -2,6 +2,7 @@ import "server-only";
 import { COMPANY_INFO } from "@/lib/company-info";
 import type { Plan } from "@prisma/client";
 import { EVENT_PASS, PLANS, isPaid, limitsSummary, priceLabel } from "@/lib/plans";
+import { alertLabel } from "@/lib/monitoring";
 import { appUrl } from "./mail";
 
 /**
@@ -463,6 +464,23 @@ export function eventPassEmail(o: { name: string; organization: string; until: D
       highlight: "prêt",
       body: `<p style="margin:0 0 12px">Bonjour ${esc(o.name)},</p><p style="margin:0 0 12px">Le <strong>${EVENT_PASS.label}</strong> est activé pour l’espace <strong>${esc(o.organization)}</strong> jusqu’au <strong>${until}</strong> : ${detail}.</p><p style="margin:0">Paiement unique, sans abonnement : rien ne sera renouvelé. Après cette date, votre espace retrouve son offre habituelle et vos quiz sont conservés.</p>`,
       cta: { label: "Préparer mon événement", url: `${site}/app` },
+    }),
+  };
+}
+
+/** Tells Pressweb that something failed silently; the details are on the super-admin's monitoring page. */
+export function systemAlertEmail(o: { type: string; message: string; path?: string }): Email {
+  const site = appUrl();
+  const label = alertLabel(o.type);
+  return {
+    subject: `[SQuizz] ${label}`,
+    text: `${label}\n\n${o.message}${o.path ? `\n${o.path}` : ""}\n\nDétail et historique : ${site}/super-admin/monitoring\n\nUne alerte du même type ne sera pas renvoyée par e-mail avant 30 minutes.`,
+    html: layout({
+      preheader: `${label} : ${o.message}`,
+      eyebrow: "Monitoring",
+      title: `${label}.`,
+      body: `<p style="margin:0 0 12px"><strong>${esc(o.message)}</strong></p>${o.path ? `<p style="margin:0 0 12px;font-family:monospace">${esc(o.path)}</p>` : ""}<p style="margin:0">Une alerte du même type ne sera pas renvoyée par e-mail avant 30 minutes.</p>`,
+      cta: { label: "Ouvrir le monitoring", url: `${site}/super-admin/monitoring` },
     }),
   };
 }
