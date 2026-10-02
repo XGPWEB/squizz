@@ -60,6 +60,24 @@ link = request(root, 'POST', f'/api/admin/users/{user_id}/reset')['link']
 request(client(), 'POST', '/api/account/reset', {'token': link.rsplit('/', 1)[1], 'password': 'B' * 80 + '-un'})
 assert can_login(email, 'B' * 80 + '-un') and not can_login(email, 'B' * 80 + '-deux')
 
+# A reset link is only used up when the password is really changed: a failed write leaves it usable.
+link = request(root, 'POST', f'/api/admin/users/{user_id}/reset')['link']
+reset = lambda expect: request(client(), 'POST', '/api/account/reset',
+                               {'token': link.rsplit('/', 1)[1], 'password': 'Apres-la-panne-123'}, expect=expect)
+sql(f"""CREATE FUNCTION test_password_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+  IF NEW.id = '{user_id}' AND NEW."passwordHash" <> OLD."passwordHash" THEN RAISE EXCEPTION 'TEST_PASSWORD_FAILURE'; END IF;
+  RETURN NEW; END; $$;
+  CREATE TRIGGER test_password_failure BEFORE UPDATE ON "User" FOR EACH ROW EXECUTE FUNCTION test_password_failure();""")
+try:
+    reset(500)
+finally:
+    sql('DROP TRIGGER test_password_failure ON "User"; DROP FUNCTION test_password_failure();')
+assert sql(f"""SELECT count(*) FROM "PasswordResetToken" WHERE "userId" = '{user_id}' AND "usedAt" IS NULL""") == '1'
+assert can_login(email, 'B' * 80 + '-un')
+reset(200)
+assert can_login(email, 'Apres-la-panne-123') and not can_login(email, 'B' * 80 + '-un')
+reset(404)  # used once, for good
+
 # An account created before this change (plain bcrypt) still signs in, and is upgraded on that login.
 old_pw = 'Ancien-mdp-' + secrets.token_hex(4)
 legacy = subprocess.run(['node', '-e', 'console.log(require("bcryptjs").hashSync(process.argv[1], 12))', old_pw],

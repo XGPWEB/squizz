@@ -1,6 +1,6 @@
 """Super-admin monitoring page: alerts and scheduled tasks. bash scripts/e2e.sh monitoring"""
-import os, secrets, subprocess
-from helpers import BASE, client, request, signup, env, admin_login, sql, mock
+import os, secrets, subprocess, time
+from helpers import BASE, client, call, request, signup, env, admin_login, sql, mock
 
 root = admin_login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
 page = lambda c=root, query='': c.open(BASE + '/super-admin/monitoring' + query, timeout=60).read().decode()
@@ -27,6 +27,28 @@ request(admin, 'POST', '/api/billing/checkout', {'plan': 'PRO'}, expect=500)
 mock('fail', {'clear': True})
 seen = page(query='?type=server')
 assert 'Erreur serveur' in seen and 'POST /api/billing/checkout' in seen, seen[-3000:]
+
+# --- So is one caught by the game API (quiz library, games), with its action; an ordinary refusal is not ------
+fault = f'TEST_GAME_FAILURE_{secrets.token_hex(4)}'
+game_alerts = lambda: int(sql("""SELECT count(*) FROM "SystemAlert" WHERE context->>'path' = '/api/game'"""))
+before = game_alerts()
+call(admin, 'join', expect=404, code='000000', name='Personne')
+call(admin, 'save', expect=400, quiz={'title': '', 'questions': []})
+assert game_alerts() == before
+sql(f"""CREATE FUNCTION test_game_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+  IF NEW.title = '{fault}' THEN RAISE EXCEPTION '{fault}'; END IF; RETURN NEW; END; $$;
+  CREATE TRIGGER test_game_failure BEFORE INSERT ON "Quiz" FOR EACH ROW EXECUTE FUNCTION test_game_failure();""")
+try:
+    call(admin, 'save', expect=500, quiz={'title': fault, 'questions': [{'text': 'Q ?', 'options': ['a', 'b'], 'correct': 0}]})
+finally:
+    sql('DROP TRIGGER test_game_failure ON "Quiz"; DROP FUNCTION test_game_failure();')
+# (The stored message is cut to 500 characters, so the alert is found by its route, not by the fault's name.)
+recorded = lambda: sql("""SELECT string_agg(context->>'method' || ' ' || (context->>'action'), ',') FROM "SystemAlert" WHERE context->>'path' = '/api/game'""")
+for _ in range(20):
+    if game_alerts() > before: break
+    time.sleep(0.2)
+assert game_alerts() == before + 1 and recorded().endswith('POST save'), recorded()
+assert 'POST /api/game' in page(query='?type=server')
 
 # --- The backup script records its runs with this statement (deploy/setup-server.sh) ----------------------
 record = '''INSERT INTO "CronRun" ("id", "job", "startedAt", "finishedAt", "success", "detail")

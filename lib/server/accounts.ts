@@ -119,18 +119,24 @@ export async function createResetLink(userId: string) {
   return `${appUrl()}/reinitialiser/${token}`;
 }
 
+/** What a new password changes on the account: every open session is revoked, a lockout is lifted. */
+export const newPasswordData = (passwordHash: string) => ({
+  passwordHash,
+  sessionVersion: { increment: 1 },
+  failedLoginCount: 0,
+  lockedUntil: null,
+});
+/** Warns the user that their password changed: only once the change is written. */
+export const warnPasswordChanged = (user: { email: string; name: string }) =>
+  void sendMail(user.email, passwordChangedEmail({ name: user.name }));
+
 /** Sets a new password, revokes every open session of that user and warns them by email. */
 export async function setPassword(userId: string, password: string) {
   const user = await prisma.user.update({
     where: { id: userId },
-    data: {
-      passwordHash: await hashPassword(password),
-      sessionVersion: { increment: 1 },
-      failedLoginCount: 0,
-      lockedUntil: null,
-    },
+    data: newPasswordData(await hashPassword(password)),
   });
-  void sendMail(user.email, passwordChangedEmail({ name: user.name }));
+  warnPasswordChanged(user);
 }
 
 export const VERIFY_HOURS = 24;

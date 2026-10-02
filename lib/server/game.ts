@@ -164,11 +164,20 @@ export async function joinRoom(who: string, code: string, rawName: unknown) {
   // or slip in after the host has started.
   const inserted = await prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${code}))`;
+    // The cap is read once the lock is held, not before waiting for it: the organisation's limit of this
+    // very moment decides (a pass may have ended, the plan may have changed while this join was queued).
+    // Its row stays share-locked until the player is in, so the limit cannot change in between.
+    const [now] = await tx.$queryRaw<(Parameters<typeof orgLimits>[0] & { maxPlayers: number })[]>`
+      SELECT r."maxPlayers", o."plan"::text AS "plan", o."partner", o."eventPassUntil"
+      FROM "Room" r JOIN "Organization" o ON o."id" = r."organizationId"
+      WHERE r."code" = ${code} FOR SHARE OF o`;
+    if (!now) return 0;
+    const cap = Math.min(now.maxPlayers, orgLimits(now).maxPlayersPerGame);
     return tx.$executeRaw`
       INSERT INTO "Player" ("code", "id", "name")
       SELECT ${code}, ${who}, ${name}
       WHERE EXISTS (SELECT 1 FROM "Room" WHERE "code" = ${code} AND "phase" = 'lobby')
-        AND (SELECT COUNT(*) FROM "Player" WHERE "code" = ${code} AND NOT "kicked") < ${room.maxPlayers}
+        AND (SELECT COUNT(*) FROM "Player" WHERE "code" = ${code} AND NOT "kicked") < ${cap}
       ON CONFLICT DO NOTHING`;
   });
   if (!inserted) fail("Ce pseudo est déjà utilisé, la partie est pleine ou elle a commencé.");

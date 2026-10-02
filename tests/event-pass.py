@@ -2,7 +2,7 @@
 
 Paid once, granted once: Premium limits for 7 days, extended by a second pass, back to the plan afterwards.
 """
-import secrets, time
+import concurrent.futures, os, secrets, subprocess, time
 from helpers import BASE, client, call, request, signup, invite, mock, stripe_event, set_plan, sql
 
 buy = lambda c, expect=200: request(c, 'POST', '/api/billing/checkout', {'pass': True}, expect=expect)
@@ -66,6 +66,72 @@ for i in range(4):
     call(client(), 'join', code=code, name=f'Apres {i}')
 call(client(), 'join', code=code, name='En trop', expect=400)
 assert joined() == 5
+
+# --- Joins queued behind the game's lock when the pass ends get the limit of the moment they enter -------------
+sql(f"""UPDATE "Organization" SET "eventPassUntil" = (now() AT TIME ZONE 'UTC') + interval '1 day' WHERE name = '{name}'""")
+queue = call(admin, 'create', quizId='geo')['code']
+holder = subprocess.Popen(['psql', os.environ['DATABASE_URL'].split('?')[0], '-X', '-qAt'], text=True,
+                          stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+holder.stdin.write(f"BEGIN; SELECT pg_advisory_xact_lock(hashtext('{queue}')); SELECT 'LOCKED';\n"); holder.stdin.flush()
+while holder.stdout.readline().strip() != 'LOCKED': pass
+try:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=7) as pool:
+        waiting = [pool.submit(call, client(), 'join', None, code=queue, name=f'File {i}') for i in range(7)]
+        time.sleep(1.5)  # all seven are now waiting for the lock, their room read under the pass
+        sql(f"""UPDATE "Organization" SET "eventPassUntil" = (now() AT TIME ZONE 'UTC') - interval '1 minute' WHERE name = '{name}'""")
+        holder.stdin.write('COMMIT;\n\\q\n'); holder.stdin.flush()
+        refused = sum('error' in f.result() for f in waiting)
+finally:
+    holder.terminate(); holder.wait(timeout=5)
+time.sleep(0.5)
+state = call(admin, 'state', code=queue)
+assert state['maxPlayers'] == 5 and len(state['players']) == 5 and refused == 2, (state['maxPlayers'], len(state['players']), refused)
+
+# --- Simultaneous purchases (double click, several tabs) open one payment page, not one each --------------------
+rush, _, rush_pw = signup(f'Org pack rafale {secrets.token_hex(3)}')
+session_of = lambda c: [s for s in mock('state')['sessions'].values() if s['metadata'].get('organizationId') == org(c)['id']]
+buy(rush)  # creates the Stripe customer; its page is closed so that nothing is there to reuse
+mock('expire', {'session': session_of(rush)[0]['id']})
+mock('delay', {'path': '/v1/checkout/sessions', 'method': 'POST', 'ms': 600})
+try:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        urls = {r['url'] for r in pool.map(lambda _: buy(rush), range(4))}
+finally:
+    mock('delay', {'clear': True})
+still_open = [s for s in session_of(rush) if s['status'] == 'open']
+assert len(urls) == 1 and len(still_open) == 1, (urls, still_open)
+# Paid: buying again is a new purchase (it adds days), with a page of its own.
+mock('complete', {'session': still_open[0]['id']})
+assert buy(rush)['url'] not in urls
+# A purchase interrupted before its page was known is resumed, not doubled: the retry gets the same page.
+rush_id = org(rush)['id']
+mock('expire', {'session': [s for s in session_of(rush) if s['status'] == 'open'][0]['id']})
+sql(f"""CREATE FUNCTION test_pass_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+  IF NEW.id = '{rush_id}' AND OLD."checkoutOpKey" IS NOT NULL AND NEW."checkoutOpKey" IS NULL THEN RAISE EXCEPTION 'TEST_PASS_FAILURE'; END IF;
+  RETURN NEW; END; $$;
+  CREATE TRIGGER test_pass_failure BEFORE UPDATE ON "Organization" FOR EACH ROW EXECUTE FUNCTION test_pass_failure();""")
+try:
+    buy(rush, expect=500)
+finally:
+    sql('DROP TRIGGER test_pass_failure ON "Organization"; DROP FUNCTION test_pass_failure();')
+assert len([s for s in session_of(rush) if s['status'] == 'open']) == 1
+resumed = buy(rush)['url']
+assert [s['url'] for s in session_of(rush) if s['status'] == 'open'] == [resumed]
+
+# --- An organisation deleted while its payment page is being created leaves nothing payable at Stripe ----------
+mock('expire', {'session': [s for s in session_of(rush) if s['status'] == 'open'][0]['id']})
+mock('delay', {'path': '/v1/checkout/sessions', 'method': 'POST', 'ms': 2000})
+try:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        buying = pool.submit(buy, rush, None)
+        time.sleep(0.7)
+        assert request(rush, 'DELETE', '/api/account', {'password': rush_pw}) == {'deleted': 'organization'}
+        buying.result()
+finally:
+    mock('delay', {'clear': True})
+assert sql(f"""SELECT count(*) FROM "Organization" WHERE id = '{rush_id}'""") == '0'
+left = [s for s in mock('state')['sessions'].values() if s['metadata'].get('organizationId') == rush_id and s['status'] == 'open']
+assert not left, left
 
 # --- A plan that already gives as much does not need it; a subscription can still be taken with a pass ---------
 set_plan(name, 'PREMIUM')

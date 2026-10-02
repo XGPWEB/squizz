@@ -305,53 +305,94 @@ const isEventPass = (s: Stripe.Checkout.Session) =>
   s.mode === "payment" && s.metadata?.kind === EVENT_PASS_KIND;
 
 /**
- * Sells the event pass: one payment on a Stripe Checkout page, no subscription. Returns the page to open; a
- * page still open for the pass is reused, so clicking twice never shows two of them. The pass itself is
- * granted when Stripe reports the payment (see applyEventPass).
+ * Sells the event pass: one payment on a Stripe Checkout page, no subscription. Returns the page to open. The
+ * pass itself is granted when Stripe reports the payment (see applyEventPass).
+ *
+ * As for subscriptions, an organisation never has two payable pages for the same purchase:
+ * - requests are serialised by the organisation's checkout claim (double click, second tab, retry): the
+ *   first one creates the page, the others find it open at Stripe and return it;
+ * - the operation keeps a durable identity (`checkoutOpKey`) until its page exists: a retry after a network
+ *   failure or a stopped process resumes it with the same idempotency key;
+ * - once that page is paid or expired, the next purchase is a new operation: buying again to add days works.
+ * A page created for an organisation deleted in the meantime is closed at once.
  */
 export async function buyEventPass(org: Organization, email: string) {
   if (org.partner) fail("Votre organisation est partenaire : l’offre Premium vous est déjà offerte.");
   if (!passIsUseful(org.plan))
     fail(`Votre offre ${PLANS[org.plan].label} donne déjà tout ce qu’apporte le ${EVENT_PASS.label}.`);
   const site = appUrl();
-  const customer = await customerFor(org, email);
-  const open = (await stripe().checkout.sessions.list({ customer, status: "open", limit: 100 })).data;
-  const reusable = open.find((s) => isEventPass(s) && s.url);
-  if (reusable) return reusable.url!;
-  // A price configured in Stripe (STRIPE_PRICE_EVENT_PASS), else the price of lib/plans.ts sent with the page,
-  // filed under the Stripe product of the pass: what is charged is always what the site announces.
-  const configured = process.env.STRIPE_PRICE_EVENT_PASS;
-  const session = await stripe().checkout.sessions.create({
-    mode: "payment",
-    customer,
-    client_reference_id: org.id,
-    line_items: [
-      configured
-        ? { price: configured, quantity: 1 }
-        : {
-            quantity: 1,
-            price_data: {
-              currency: "eur",
-              unit_amount: EVENT_PASS.price * 100,
-              product: EVENT_PASS.stripe,
+  const token = await waitForClaim(org.id);
+  if (!token)
+    fail(
+      "Une demande de paiement est déjà en cours pour votre organisation. Réessayez dans un instant.",
+      409,
+    );
+  try {
+    const fresh = await prisma.organization.findUniqueOrThrow({ where: { id: org.id } });
+    const customer = await customerFor(fresh, email);
+    const open = (await stripe().checkout.sessions.list({ customer, status: "open", limit: 100 })).data;
+    const reusable = open.find((s) => isEventPass(s) && s.url);
+    if (reusable) return reusable.url!;
+    // A price configured in Stripe (STRIPE_PRICE_EVENT_PASS), else the price of lib/plans.ts sent with the
+    // page, filed under the Stripe product of the pass: what is charged is always what the site announces.
+    const configured = process.env.STRIPE_PRICE_EVENT_PASS;
+    const create = (opKey: string) =>
+      stripe().checkout.sessions.create(
+        {
+          mode: "payment",
+          customer,
+          client_reference_id: org.id,
+          line_items: [
+            configured
+              ? { price: configured, quantity: 1 }
+              : {
+                  quantity: 1,
+                  price_data: {
+                    currency: "eur",
+                    unit_amount: EVENT_PASS.price * 100,
+                    product: EVENT_PASS.stripe,
+                  },
+                },
+          ],
+          metadata: { organizationId: org.id, kind: EVENT_PASS_KIND },
+          payment_intent_data: { description: `SQuizz — ${EVENT_PASS.label} (${org.name})` },
+          invoice_creation: { enabled: true },
+          locale: "fr",
+          expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
+          success_url: `${site}/app/abonnement?paiement=pack`,
+          cancel_url: `${site}/app/abonnement?paiement=annule`,
+          custom_text: {
+            submit: {
+              message: `En payant, vous acceptez les CGU de SQuizz (www.squizz.fun/cgu) et demandez l’activation immédiate du pack pour ${EVENT_PASS.days} jours. Paiement unique, sans abonnement ni renouvellement.`,
             },
           },
-    ],
-    metadata: { organizationId: org.id, kind: EVENT_PASS_KIND },
-    payment_intent_data: { description: `SQuizz — ${EVENT_PASS.label} (${org.name})` },
-    invoice_creation: { enabled: true },
-    locale: "fr",
-    expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
-    success_url: `${site}/app/abonnement?paiement=pack`,
-    cancel_url: `${site}/app/abonnement?paiement=annule`,
-    custom_text: {
-      submit: {
-        message: `En payant, vous acceptez les CGU de SQuizz (www.squizz.fun/cgu) et demandez l’activation immédiate du pack pour ${EVENT_PASS.days} jours. Paiement unique, sans abonnement ni renouvellement.`,
-      },
-    },
-  });
-  if (!session.url) fail("Stripe n’a pas renvoyé de page de paiement.", 502);
-  return session.url;
+        },
+        { idempotencyKey: `squizz-pass-${opKey}` },
+      );
+    // The operation gets (or keeps) its durable identity before anything is created at Stripe.
+    let opKey = fresh.checkoutOpKey ?? randomUUID();
+    if (!(await writeAsHolder(org.id, token, { checkoutOpKey: opKey }))) fail(LOST_CLAIM, 409);
+    let session = await create(opKey);
+    if (fresh.checkoutOpKey) {
+      // An operation resumed: Stripe answers a key it knows with its first answer. If that page has been paid
+      // or has expired since, this purchase is a new operation.
+      const current = await stripe().checkout.sessions.retrieve(session.id);
+      if (current.status !== "open") {
+        opKey = randomUUID();
+        if (!(await writeAsHolder(org.id, token, { checkoutOpKey: opKey }))) fail(LOST_CLAIM, 409);
+        session = await create(opKey);
+      }
+    }
+    if (!session.url) fail("Stripe n’a pas renvoyé de page de paiement.", 502);
+    // The page exists: the operation is over. Written only by the holder of the claim, for an organisation
+    // that is still there.
+    if (await writeAsHolder(org.id, token, { checkoutOpKey: null })) return session.url;
+    // The organisation was deleted meanwhile, or this operation outlived its claim: nothing payable is left.
+    await expireSession(session.id);
+    fail(LOST_CLAIM, 409);
+  } finally {
+    await releaseCheckout(org.id, token).catch(() => null);
+  }
 }
 
 /**
@@ -428,7 +469,17 @@ export async function reconcileEventPasses(org: Organization) {
  * caller deletes nothing) if Stripe cannot confirm, so a deleted organisation is never left with a running
  * subscription; calling it again after a failure is safe (what is already cancelled is skipped).
  */
-export async function stopBillingForDeletion(org: Organization) {
+export async function stopBillingForDeletion(stale: Organization) {
+  // Under the checkout claim: a payment page being created right now (subscription or event pass) is waited
+  // for, then closed with the others. The claim is kept on success, so nothing can be sold between this and
+  // the deletion that follows; it ends with the organisation, or by itself if the deletion does not happen.
+  const token = await waitForClaim(stale.id);
+  if (!token)
+    fail(
+      "Une demande de paiement est en cours pour cette organisation : rien n’a été supprimé. Réessayez dans un instant.",
+      409,
+    );
+  const org = (await prisma.organization.findUnique({ where: { id: stale.id } })) ?? stale;
   if (!org.stripeCustomerId && !org.stripeSubscriptionId && !org.checkoutSessionId) return { cancelled: [] };
   const cancelled: string[] = [];
   try {
@@ -465,6 +516,8 @@ export async function stopBillingForDeletion(org: Organization) {
       cancelled.push(id);
     }
   } catch (e) {
+    // Nothing will be deleted: sales are possible again, and the deletion can be retried at once.
+    await releaseCheckout(org.id, token).catch(() => null);
     console.error(`Stripe : résiliation impossible avant la suppression de ${org.id}`, e);
     if (e instanceof HttpError && e.status !== 503) throw e;
     fail(

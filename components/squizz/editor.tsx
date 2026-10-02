@@ -94,6 +94,9 @@ export function QuizEditor({
         method="post"
         onSubmit={(e) => {
           e.preventDefault();
+          // React bubbles events through portals: a form inside a dialog of the editor (the preview's
+          // answer form) must never save the quiz.
+          if (e.target !== e.currentTarget) return;
           submit();
         }}
       >

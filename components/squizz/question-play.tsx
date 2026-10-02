@@ -91,6 +91,8 @@ export function QuestionPlay({
           className="response-form"
           onSubmit={(e) => {
             e.preventDefault();
+            // Shown in the editor's preview too, inside the editor's own form.
+            e.stopPropagation();
             send({ text });
           }}
         >
@@ -238,6 +240,7 @@ export function QuestionPlay({
           className="response-form"
           onSubmit={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             send({ ideas: ideas.filter((s) => s.trim()) });
           }}
         >

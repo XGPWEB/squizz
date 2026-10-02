@@ -4,6 +4,7 @@ import { orgLimits } from "@/lib/plans";
 import { assertSameOrigin, fail, HttpError, readBody, type Body } from "@/lib/server/http";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { requireMember } from "@/lib/server/guard";
+import { errorMessage, reportAlert } from "@/lib/server/monitoring";
 import {
   createQuiz,
   deleteQuiz,
@@ -93,17 +94,27 @@ async function handle(req: Request) {
   const who = polling ? await lightIdentity(req) : await identity(req);
   const reply = (data: unknown, status = 200) =>
     Response.json(data, { status, headers: identityHeaders(req, who) });
+  // Named in the alert of an unexpected error: only ever one of the actions above, never what was sent.
+  let known: string | undefined;
   try {
     assertSameOrigin(req);
     const body = await readBody(req);
     const action = String(body.action || "list");
     const handler = Object.hasOwn(actions, action) ? actions[action] : null;
     if (!handler) fail("Action inconnue.");
+    known = action;
     if (req.method !== "POST" && !readOnly.has(action)) fail("Méthode non autorisée.", 405);
     return reply(await handler(who.id, body, req));
   } catch (error) {
+    // Ordinary refusals (full game, wrong code, limit reached…) are answers, not alerts.
     if (error instanceof HttpError) return reply({ ...error.details, error: error.message }, error.status);
     console.error(error);
+    void reportAlert({
+      type: "server",
+      message: errorMessage(error),
+      path: new URL(req.url).pathname,
+      context: { method: req.method, action: known },
+    });
     return reply({ error: "Une erreur empêche cette action. Réessaie dans un instant." }, 500);
   }
 }

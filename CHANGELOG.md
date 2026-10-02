@@ -2,6 +2,18 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.7] — 2026-10-02
+
+Corrections issues de l’audit approfondi du 2 octobre (`AUDIT-2026-10-02-APPROFONDI.md`).
+
+### Corrigé
+- Éditeur : répondre dans l’aperçu d’une question (texte, blind test, question ouverte, nuage de mots, idées) n’enregistre plus le quiz et ne fait plus quitter l’éditeur.
+- Mot de passe oublié : si l’enregistrement du nouveau mot de passe échoue, le lien de réinitialisation reste utilisable (le lien et le mot de passe sont écrits ensemble).
+- Monitoring : les erreurs inattendues de la bibliothèque de quiz et des parties (`/api/game`) apparaissent dans le super-admin, avec l’action concernée. Les refus ordinaires (partie pleine, code inconnu…) ne créent pas d’alerte.
+- Parties : la limite de joueurs est relue au moment précis où un joueur entre ; des arrivées en attente au moment où un pack ou une offre prend fin n’entrent plus avec l’ancienne limite.
+- Pack Événement : des demandes d’achat simultanées (double clic, plusieurs onglets) ouvrent une seule page de paiement ; un achat interrompu est repris au lieu d’être doublé. Racheter un pack après paiement reste possible.
+- Suppression d’une organisation : une page de paiement en cours de création est attendue puis fermée avant la suppression ; aucune page payable ne reste chez Stripe.
+
 ## [1.10.6] — 2026-10-02
 
 ### Site
