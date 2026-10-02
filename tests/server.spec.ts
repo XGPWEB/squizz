@@ -19,7 +19,8 @@ describe("vue « en tant qu'administrateur »", async () => {
       JSON.stringify({ adminId: "admin-1", organizationId: "org-2", exp: 9e9 }),
     ).toString("base64url");
     expect(readViewToken(`${forged}.${sig}`, "admin-1")).toBeNull();
-    expect(readViewToken(`${payload}.x${sig.slice(1)}`, "admin-1")).toBeNull();
+    // A first character that is really another one: one signature in 64 already starts with « x ».
+    expect(readViewToken(`${payload}.${sig[0] === "x" ? "y" : "x"}${sig.slice(1)}`, "admin-1")).toBeNull();
     expect(readViewToken("n'importe quoi", "admin-1")).toBeNull();
     expect(readViewToken(undefined, "admin-1")).toBeNull();
   });
