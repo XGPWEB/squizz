@@ -131,6 +131,7 @@ Toutes les actions ont un délai maximal (15 s ; 2 min pour l'import d'un média
 ```sh
 npm test                    # unitaires (Vitest) — bloquants au déploiement avec tsc et le lint
 npm run test:e2e            # intégration sur une base jetable squizz_e2e et un serveur :5174
+npm run test:browser        # seulement les parcours en vrai navigateur (Playwright, tests/browser)
 ```
 
 Stripe n'est jamais appelé par les tests : `scripts/e2e.sh` lance un faux Stripe local (`tests/stripe_mock.py`, avec pannes et lenteurs injectables, et les règles d'idempotence de Stripe : première réponse rejouée telle quelle, refus d'une clé dont les paramètres ont changé) vers lequel l'application est dirigée par `STRIPE_API_BASE` — variable ignorée en production.
@@ -139,7 +140,15 @@ Stripe n'est jamais appelé par les tests : `scripts/e2e.sh` lance un faux Strip
 
 Intégration : `game-flow`, `rich-game-flow`, `game-live` (plafond de joueurs en concurrence, retrait d'un joueur, compte à rebours), `quiz-management`, `accounts` (rôles, offres, partenaires, super-admin), `rights` (export, suppression de compte), `security` (requêtes d'autres sites, pas de verrouillage, puzzle), `editing` (conflits, anti-doublons, duplication, actions de jeu répétées), `email-verification`, `transfer` (export/import), `admins` (dernier administrateur sous requêtes simultanées), `billing` (un seul abonnement, résiliation avant suppression, webhooks dans le désordre — faux Stripe), `contact`, `super-admin`, `timeout`. Les limites de débit sont multipliées par 100 hors production pour que les tests puissent créer de nombreux comptes.
 
-**Intégration continue** (`.github/workflows/ci.yml`) : à chaque envoi sur `main`/`plateforme` et pour chaque pull request, types, lint, formatage et tests unitaires, puis les scénarios d'intégration sur un PostgreSQL jetable.
+**En vrai navigateur** (`tests/browser/*.pw.ts`, Playwright avec Chromium, scénario `browser` de `scripts/e2e.sh`) : ce que les scénarios Python ne voient pas, puisqu'ils interrogent le serveur sans navigateur. Sur une nouvelle machine, installer une fois le navigateur : `npx playwright install chromium`.
+
+- `achat` : offre choisie sur la page Tarifs, création du compte, connexion, arrivée directe sur la page de paiement, puis retour sans second départ ; achat du Pack Événement jusqu'au pack actif ; portail Stripe. Les pages Stripe sont remplacées par une page vide servie avec un délai, et les rafraîchissements de la page sont coupés au moment du clic (`cutRefreshes`) : c'est la panne vue en production, où un rafraîchissement interrompu annulait le départ vers Stripe.
+- `editeur` : répondre dans l'aperçu d'une question n'enregistre rien et ne quitte pas l'éditeur ; le bouton d'enregistrement fonctionne.
+- `partie` : l'animateur lance une partie, un joueur la rejoint depuis un écran de téléphone, répond aux questions, podium des deux côtés.
+
+Ils tournent sur le serveur de développement : le préchargement des pages, propre au site de production, n'est pas exercé.
+
+**Intégration continue** (`.github/workflows/ci.yml`) : à chaque envoi sur `main`/`plateforme` et pour chaque pull request, types, lint, formatage et tests unitaires, puis les scénarios d'intégration et les parcours en navigateur sur un PostgreSQL jetable (traces Playwright gardées 7 jours en cas d'échec).
 
 ## Versions
 

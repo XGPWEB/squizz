@@ -18,6 +18,7 @@
     "db:studio": "prisma studio",
     "test:e2e": "bash scripts/e2e.sh",
     "test:e2e:isolated": "bash scripts/e2e.sh",
+    "test:browser": "bash scripts/e2e.sh browser",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -40,6 +41,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "4.2.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "22.19.19",

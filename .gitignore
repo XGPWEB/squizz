@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/.playwright/
+/test-results/
 __pycache__/
 
 # next.js
