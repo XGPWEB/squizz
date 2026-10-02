@@ -1,5 +1,7 @@
 # Audit approfondi SQuizz — 2 octobre 2026
 
+> **Mise à jour du 2 octobre 2026 : les six défauts ci-dessous sont corrigés dans la version 1.10.7** (commit `4569458`, déployée le même jour). Le rapport est conservé tel qu’il a été rédigé sur la 1.10.3 ; une ligne « Corrigé en 1.10.7 » sous chaque défaut résume la correction et son test de régression. Validation des corrections : 18 scénarios d’intégration, 52 tests unitaires, TypeScript, ESLint et build de production, sur une base locale jetable et le simulateur Stripe — elles n’ont pas été rejouées sur le site de production. Détail dans [CHANGELOG.md](CHANGELOG.md).
+
 Version auditée : **1.10.3**. Le code a été figé dans une copie locale pendant que Claude Code travaillait sur le dépôt. Les fichiers applicatifs de cette copie correspondent à ceux des commits `6d5ac3f` et `1f9aee6`. En fin d’audit, le commit `bd408bb` (1.10.4) change seulement les classes de couleur de deux boutons de la page Tarifs ; ce diff a été lu, sans rejouer le build ou les parcours sur cette nouvelle version. Les six chemins défectueux restent identiques. Un manifeste SHA-256 est conservé dans [source-manifest.json](/Users/xaviergerinette/SQuizz/squizz/audit/2026-10-02/source-manifest.json).
 
 **Résultat : six défauts reproduits, dont un prioritaire P1.** Les scénarios habituels passent, ainsi que les principales corrections de l’ancien audit. Cela ne couvre pas encore correctement les achats concurrents, certaines pannes de persistance et les événements de formulaire de l’aperçu.
@@ -9,6 +11,8 @@ Aucun code applicatif corrigé ou déployé. Les ajouts au dépôt sont ce rappo
 ## Défauts confirmés
 
 ### 1. P1 — Plusieurs pages payables pour le même achat du Pack Événement
+
+> **Corrigé en 1.10.7.** `buyEventPass` passe par la réservation de paiement de l’organisation (celle des abonnements) et garde une identité d’opération avec clé d’idempotence jusqu’à ce que la page existe. Racheter un pack après paiement reste possible. Tests dans `tests/event-pass.py` : quatre achats simultanés ouvrent une seule page (le test échoue sur le code d’avant), reprise après interruption, nouvel achat après paiement.
 
 **Reproduction :** après création du client Stripe et expiration d’une première session, quatre achats simultanés ont créé **quatre URL distinctes et quatre sessions Checkout ouvertes**, sans erreur. Un délai de 600 ms sur le POST du simulateur rend la concurrence déterministe.
 
@@ -20,6 +24,8 @@ Code : [recherche/création de session](/Users/xaviergerinette/SQuizz/squizz/lib
 
 ### 2. P2 — Un achat en cours laisse une session payable après suppression de l’organisation
 
+> **Corrigé en 1.10.7.** `stopBillingForDeletion` prend la réservation de paiement : un achat en cours est attendu, sa page fermée, et la réservation gardée jusqu’à la suppression. Une page créée pour une organisation disparue est expirée. Test dans `tests/event-pass.py` (suppression pendant la création de la page). Limites : ce test n’a pas été isolé pour le voir échouer sur le code d’avant ; si un achat dure plus de six secondes, la suppression répond 409 et doit être relancée.
+
 **Reproduction :** avec le client Stripe déjà créé, le POST de création du pack est retardé de deux secondes. La suppression du compte et de son organisation intervient pendant ce délai. Résultat : organisation absente de PostgreSQL, **une session du pack encore ouverte chez Stripe**. La demande d’achat retourne une erreur, car l’écriture d’audit intervient ensuite avec une organisation/utilisateur supprimés.
 
 La suppression ferme les sessions qu’elle connaît avant la suppression, mais `buyEventPass` peut en créer une après ce contrôle. À la différence du parcours abonnement, il ne vérifie pas après création que l’organisation et l’opération sont encore valides, et n’expire pas cette session.
@@ -29,6 +35,8 @@ La suppression ferme les sessions qu’elle connaît avant la suppression, mais 
 Code : [création du pack](/Users/xaviergerinette/SQuizz/squizz/lib/server/billing.ts:324), [suppression et arrêt de la facturation](/Users/xaviergerinette/SQuizz/squizz/app/api/account/route.ts:53). Preuve : `event_pass_delete_race` dans le JSON des sondes.
 
 ### 3. P2 — Répondre dans l’aperçu enregistre réellement le brouillon et quitte l’éditeur
+
+> **Corrigé en 1.10.7.** Le formulaire de l’éditeur ignore les envois qui viennent de ses fenêtres (portails), et les formulaires de réponse de `QuestionPlay` arrêtent la propagation. Contrôle navigateur sur base de test : après « Envoyer ma réponse », l’aperçu reste ouvert, l’adresse ne change pas, titre et version du quiz inchangés en base ; « Enregistrer les modifications » fonctionne toujours. Limite : le test automatique (`tests/forms.spec.ts`) vérifie la présence des deux protections dans le code source, pas le comportement dans un navigateur.
 
 **Reproduction dans le build de production, deux fois :** ouvrir l’éditeur du blind test, changer son titre sans enregistrer, ouvrir « Aperçu », saisir « Aznavour », puis cliquer « Envoyer ma réponse ». Le navigateur quitte l’éditeur vers `/app?ok=modifie` et affiche « Vos modifications sont enregistrées ». Le titre de brouillon est effectivement présent dans PostgreSQL, version 2.
 
@@ -40,6 +48,8 @@ Code : [formulaire de réponse](/Users/xaviergerinette/SQuizz/squizz/components/
 
 ### 4. P2 — Les erreurs internes de l’API de jeu échappent au monitoring
 
+> **Corrigé en 1.10.7.** Le gestionnaire de `/api/game` appelle `reportAlert` pour les erreurs inattendues, avec la route, la méthode et l’action ; les refus métier ne créent pas d’alerte. Test dans `tests/monitoring.py` (échoue sur le code d’avant).
+
 **Reproduction :** un trigger temporaire, limité au titre d’un quiz d’audit, refuse son INSERT. `/api/game` retourne une erreur interne ; aucune alerte ne mentionne cette panne. Le contrôle de toutes les alertes portant le chemin `/api/game` donne également **zéro**, alors que les alertes d’autres API sont bien enregistrées.
 
 Le gestionnaire central de cette API capture les erreurs et ne fait que `console.error` avant de répondre 500. Il n’appelle pas `reportAlert`. Comme l’erreur est capturée, elle ne remonte pas non plus à `onRequestError`. Le monitoring rate ainsi les pannes internes sur les actions de bibliothèque et de partie traitées par ce gestionnaire.
@@ -50,6 +60,8 @@ Code : [gestionnaire d’erreur](/Users/xaviergerinette/SQuizz/squizz/app/api/ga
 
 ### 5. P2 — Une panne d’écriture consomme définitivement le lien de réinitialisation
 
+> **Corrigé en 1.10.7.** Le hash est calculé avant la transaction ; le lien est réclamé et le compte modifié dans la même transaction, et l’e-mail d’avertissement part après. Test dans `tests/auth-hardening.py` : après une panne d’écriture, le lien reste utilisable, puis ne sert qu’une fois (échoue sur le code d’avant).
+
 **Reproduction :** un lien valide est créé. Un trigger temporaire refuse uniquement la mise à jour du hash du mot de passe de ce compte d’audit. La première réinitialisation échoue, puis le trigger est retiré. La même demande retourne alors « Ce lien n’est plus valable. Refaites une demande ». Le token est marqué utilisé alors que l’écriture du mot de passe a échoué.
 
 Le token est réclamé dans une opération déjà validée, avant l’appel séparé à `setPassword`. La panne laisse donc le compte avec son ancien mot de passe et son lien consommé. L’utilisateur doit demander un autre lien, sous réserve des limitations de débit.
@@ -59,6 +71,8 @@ Le token est réclamé dans une opération déjà validée, avant l’appel sép
 Code : [réinitialisation](/Users/xaviergerinette/SQuizz/squizz/app/api/account/reset/route.ts:14). Preuve : `reset_persistence_failure` dans le JSON des sondes.
 
 ### 6. P2 — Les arrivées en attente gardent l’ancien quota après un changement d’offre
+
+> **Corrigé en 1.10.7.** `joinRoom` relit la limite une fois le verrou de la partie obtenu, la ligne de l’organisation étant verrouillée en lecture jusqu’à l’insertion. Les joueurs déjà admis restent. Test dans `tests/event-pass.py` : sept arrivées en attente à la fin du pack, cinq admises, deux refusées (échoue sur le code d’avant : sept admises).
 
 **Reproduction :** partie créée sous Premium ; le verrou PostgreSQL de cette partie est tenu par la sonde. Six nouvelles demandes d’entrée sont lancées, puis l’organisation passe à Gratuit avant de libérer le verrou. Les six demandes réussissent. L’état final annonce **limite de 5 joueurs, mais 6 joueurs admis**. Aucun de ces joueurs n’avait été inséré avant la baisse d’offre.
 
