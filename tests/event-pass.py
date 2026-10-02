@@ -105,18 +105,42 @@ mock('complete', {'session': still_open[0]['id']})
 assert buy(rush)['url'] not in urls
 # A purchase interrupted before its page was known is resumed, not doubled: the retry gets the same page.
 rush_id = org(rush)['id']
-mock('expire', {'session': [s for s in session_of(rush) if s['status'] == 'open'][0]['id']})
-sql(f"""CREATE FUNCTION test_pass_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
-  IF NEW.id = '{rush_id}' AND OLD."checkoutOpKey" IS NOT NULL AND NEW."checkoutOpKey" IS NULL THEN RAISE EXCEPTION 'TEST_PASS_FAILURE'; END IF;
-  RETURN NEW; END; $$;
-  CREATE TRIGGER test_pass_failure BEFORE UPDATE ON "Organization" FOR EACH ROW EXECUTE FUNCTION test_pass_failure();""")
-try:
-    buy(rush, expect=500)
-finally:
-    sql('DROP TRIGGER test_pass_failure ON "Organization"; DROP FUNCTION test_pass_failure();')
-assert len([s for s in session_of(rush) if s['status'] == 'open']) == 1
-resumed = buy(rush)['url']
-assert [s['url'] for s in session_of(rush) if s['status'] == 'open'] == [resumed]
+open_pages = lambda: [s for s in session_of(rush) if s['status'] == 'open']
+def interrupted():
+    """Stripe creates the page, then the database refuses to note that the operation is over."""
+    sql(f"""CREATE FUNCTION test_pass_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+      IF NEW.id = '{rush_id}' AND OLD."checkoutOpKey" IS NOT NULL AND NEW."checkoutOpKey" IS NULL THEN RAISE EXCEPTION 'TEST_PASS_FAILURE'; END IF;
+      RETURN NEW; END; $$;
+      CREATE TRIGGER test_pass_failure BEFORE UPDATE ON "Organization" FOR EACH ROW EXECUTE FUNCTION test_pass_failure();""")
+    try:
+        buy(rush, expect=500)
+    finally:
+        sql('DROP TRIGGER test_pass_failure ON "Organization"; DROP FUNCTION test_pass_failure();')
+    assert len(open_pages()) == 1
+    return open_pages()[0]
+mock('expire', {'session': open_pages()[0]['id']})
+kept = interrupted()
+assert buy(rush)['url'] == kept['url'] and len(open_pages()) == 1
+
+# --- Failure, then the page expires, then a retry: the operation is repeated to the letter, not recomputed -----
+# Stripe answers a key it knows with its first answer (the page as it was), and refuses that key with other
+# parameters. The retry a second later must send the same expiry, see that the page is dead, and open a new one.
+mock('expire', {'session': kept['id']})
+dead = interrupted()
+mock('expire', {'session': dead['id']})
+seen = mock('state')
+time.sleep(1.2)
+again = buy(rush)['url']
+after = mock('state')
+assert again != dead['url'] and [s['url'] for s in open_pages()] == [again], (again, open_pages())
+assert after['idempotencyErrors'] == seen['idempotencyErrors'] and after['replays'] == seen['replays'] + 1, (seen['replays'], after['replays'], after['idempotencyErrors'])
+# Stripe itself fails while creating the page: it remembers that failure for the key, so the retry needs a new one.
+mock('expire', {'session': open_pages()[0]['id']})
+mock('fail', {'method': 'POST', 'path': '/v1/checkout/sessions', 'status': 500, 'times': 1})
+buy(rush, expect=500)
+mock('fail', {'clear': True})
+assert not open_pages()
+assert buy(rush)['url'].startswith('https://checkout.mock/') and len(open_pages()) == 1
 
 # --- An organisation deleted while its payment page is being created leaves nothing payable at Stripe ----------
 mock('expire', {'session': [s for s in session_of(rush) if s['status'] == 'open'][0]['id']})

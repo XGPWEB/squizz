@@ -58,6 +58,9 @@ model Organization {
   /// Durable identity of the checkout being prepared, kept until its page is recorded: a retry after a
   /// failure resumes the same operation (same Stripe idempotency key) instead of starting another.
   checkoutOpKey        String?
+  /// What that operation sends to Stripe, word for word: a resumed operation repeats exactly this (Stripe
+  /// refuses a repeated idempotency key whose parameters differ, e.g. a page expiry computed again).
+  checkoutOpParams     Json?
   /// Event pass (one-off payment, lib/plans.ts): its limits apply until this date, whatever `plan` says.
   eventPassUntil       DateTime?
   createdAt            DateTime           @default(now())

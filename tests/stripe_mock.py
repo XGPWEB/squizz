@@ -3,6 +3,10 @@
 The app is pointed at it with STRIPE_API_BASE (ignored in production). It keeps customers, Checkout sessions
 and subscriptions in memory and never talks to Stripe: no payment, no real subscription.
 
+Idempotency keys behave as at Stripe: the first answer given for a key — a failure included — is kept as it
+was and given again, whatever happened to the object since; the same key with other parameters is refused
+(« idempotency_error »). A Checkout page must expire at least 30 minutes after its creation.
+
 Test controls (JSON), under /_mock:
   POST /_mock/reset                      forget everything
   GET  /_mock/state                      everything created so far, and the calls received
@@ -12,7 +16,7 @@ Test controls (JSON), under /_mock:
   POST /_mock/fail {"method": "DELETE", "path": "/v1/subscriptions", "status": 500, "times": 3}
   POST /_mock/delay {"path": "/v1/checkout/sessions", "ms": 400, "method": "POST"}   (method optional)
 """
-import json, sys, threading, time, urllib.parse
+import copy, json, sys, threading, time, urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 LOCK = threading.Lock()
@@ -23,7 +27,8 @@ def reset():
     # Ids keep counting across resets: the test database outlives them, and an id is never given twice.
     n = STATE.get('n', 0)
     STATE.clear()
-    STATE.update(customers={}, sessions={}, subscriptions={}, calls=[], failures=[], delays=[], idempotent={}, n=n)
+    STATE.update(customers={}, sessions={}, subscriptions={}, calls=[], failures=[], delays=[], idempotent={}, n=n,
+                 replays=0, idempotencyErrors=0)
 
 
 reset()
@@ -91,16 +96,27 @@ class Handler(BaseHTTPRequestHandler):
                 time.sleep(d['ms'] / 1000)
         with LOCK:
             STATE['calls'].append({'method': method, 'path': path})
+            key = self.headers.get('Idempotency-Key') if method == 'POST' else None
+            if key and key in STATE['idempotent']:
+                first = STATE['idempotent'][key]
+                if first['request'] != (path, body):
+                    STATE['idempotencyErrors'] += 1
+                    return self.reply(400, {'error': {'type': 'idempotency_error', 'message':
+                        'Keys for idempotent requests can only be used with the same parameters they were first used with.'}})
+                STATE['replays'] += 1
+                return self.reply(first['status'], copy.deepcopy(first['answer']))
+            # What is answered now is what this key will always be answered (a snapshot, not the live object).
+            keep = lambda status, answer: STATE['idempotent'].update(
+                {key: {'request': (path, body), 'status': status, 'answer': copy.deepcopy(answer)}}) if key else None
             for f in STATE['failures']:
                 if f['method'] == method and path.startswith(f['path']) and f['times'] > 0:
                     f['times'] -= 1
-                    return self.reply(f['status'], {'error': {'type': 'api_error', 'message': 'Mock failure'}})
-            key = self.headers.get('Idempotency-Key')
-            if method == 'POST' and key and key in STATE['idempotent']:
-                return self.reply(200, STATE['idempotent'][key])
+                    failure = {'error': {'type': 'api_error', 'message': 'Mock failure'}}
+                    keep(f['status'], failure)
+                    return self.reply(f['status'], failure)
             status, out = self.api(method, path, query, body)
-            if method == 'POST' and key and status == 200:
-                STATE['idempotent'][key] = out
+            if status == 200:
+                keep(status, out)
         if status == 404:
             return self.missing(out)
         self.reply(status, out)
@@ -119,6 +135,9 @@ class Handler(BaseHTTPRequestHandler):
         if parts[:2] == ['checkout', 'sessions']:
             sessions = STATE['sessions']
             if len(parts) == 2 and method == 'POST':
+                if 'expires_at' in body and int(body['expires_at']) < time.time() + 30 * 60:
+                    return 400, {'error': {'type': 'invalid_request_error', 'param': 'expires_at', 'message':
+                                           'The `expires_at` timestamp must be at least 30 minutes from Checkout Session creation.'}}
                 item = body['line_items']['0']
                 # A one-off payment (the event pass) sends its own price, filed under its product.
                 product = item['price'].removeprefix('price_') if 'price' in item else item.get('price_data', {}).get('product')
@@ -167,7 +186,8 @@ class Handler(BaseHTTPRequestHandler):
                 reset()
                 return self.reply(200, {'ok': True})
             if path == '/_mock/state':
-                return self.reply(200, {k: STATE[k] for k in ('customers', 'sessions', 'subscriptions', 'calls')})
+                return self.reply(200, {k: STATE[k] for k in ('customers', 'sessions', 'subscriptions', 'calls',
+                                                              'replays', 'idempotencyErrors')})
             if path == '/_mock/complete':
                 s = STATE['sessions'][body['session']]
                 if s['status'] != 'open':

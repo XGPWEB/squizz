@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import Stripe from "stripe";
-import type { Organization, Plan, Prisma } from "@prisma/client";
+import { Prisma, type Organization, type Plan } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { EVENT_PASS, PLAN_KEYS, PLANS, passIsUseful } from "@/lib/plans";
 import { CONTACT_EMAIL } from "@/lib/company-info";
@@ -144,8 +144,10 @@ const releaseCheckout = (orgId: string, token: string) =>
 
 type CheckoutState = Pick<
   Prisma.OrganizationUpdateManyMutationInput,
-  "checkoutSessionId" | "checkoutPlan" | "checkoutOpKey"
+  "checkoutSessionId" | "checkoutPlan" | "checkoutOpKey" | "checkoutOpParams"
 >;
+/** No operation in progress. */
+const NO_OP = { checkoutOpKey: null, checkoutOpParams: Prisma.DbNull } satisfies CheckoutState;
 
 /** Writes the checkout state only while still holding an unexpired claim. False: the claim was lost. */
 async function writeAsHolder(orgId: string, token: string, data: CheckoutState) {
@@ -166,6 +168,72 @@ async function expireSession(id: string) {
   }
 }
 
+type PageParams = Stripe.Checkout.SessionCreateParams;
+/** Stripe's shortest life for a Checkout page, in seconds. */
+const MIN_PAGE_SECONDS = 30 * 60;
+/** When a new page stops being payable: Stripe's minimum, plus the time a failed creation may be resumed. */
+const pageExpiry = () => Math.floor(Date.now() / 1000) + MIN_PAGE_SECONDS + 60;
+/** A stored operation is resumed only while Stripe would still accept its expiry if it had never seen it. */
+const RESUME_MARGIN_SECONDS = 15;
+
+/**
+ * Creates the Checkout page of an operation, or resumes the operation that was creating it. Called under
+ * the organisation's claim, once it is known that no page of this kind is open at Stripe.
+ *
+ * The operation is written down before Stripe is called: its key and the exact parameters it sends. A retry
+ * (network failure, database error, stopped process, or the request that took over an expired claim)
+ * repeats that very request — same idempotency key, same parameters to the letter, as Stripe requires: a
+ * parameter computed again, like the expiry, would be refused. Stripe then answers what it answered the
+ * first time, so the page it returns may have been paid or have expired since, or be an error it remembers:
+ * in those cases, and when the stored operation is for something else or too old to be sent again, a new
+ * operation starts with a new key. A network doubt never changes the key.
+ */
+async function openCheckoutPage(
+  org: Organization,
+  token: string,
+  prefix: string,
+  sameKind: (params: PageParams) => boolean,
+  build: () => PageParams,
+) {
+  const start = async () => {
+    const key = randomUUID();
+    const params = build();
+    const written = await writeAsHolder(org.id, token, {
+      checkoutOpKey: key,
+      checkoutOpParams: params as unknown as Prisma.InputJsonValue,
+    });
+    if (!written) fail(LOST_CLAIM, 409);
+    return stripe().checkout.sessions.create(params, { idempotencyKey: `${prefix}-${key}` });
+  };
+  const stored = org.checkoutOpParams as unknown as PageParams | null;
+  const resumable =
+    org.checkoutOpKey &&
+    stored &&
+    sameKind(stored) &&
+    (stored.expires_at ?? 0) - Date.now() / 1000 >= MIN_PAGE_SECONDS + RESUME_MARGIN_SECONDS;
+  if (!resumable) return start();
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe().checkout.sessions.create(stored, {
+      idempotencyKey: `${prefix}-${org.checkoutOpKey}`,
+    });
+  } catch (e) {
+    // The key is given up only when it can never give a page: Stripe remembers its own failure of the first
+    // attempt for this key, or refuses the stored request for good. Anything open at Stripe was looked for
+    // before coming here, so a new operation cannot double a page.
+    const spent =
+      e instanceof Stripe.errors.StripeAPIError ||
+      e instanceof Stripe.errors.StripeIdempotencyError ||
+      (e instanceof Stripe.errors.StripeInvalidRequestError && e.statusCode !== 409);
+    if (spent) return start();
+    // A mere doubt (Stripe unreachable, busy, or still handling this very key): the operation and its key
+    // stay as they are, to be resumed by the next attempt.
+    throw e;
+  }
+  const current = await stripe().checkout.sessions.retrieve(session.id);
+  return current.status === "open" ? current : start();
+}
+
 const LOST_CLAIM =
   "Une autre demande de paiement a pris le relais pour votre organisation. Réessayez dans un instant.";
 
@@ -178,8 +246,9 @@ const LOST_CLAIM =
  * - what Stripe really has is read first: a subscription already paid (webhook late or lost) is adopted, and
  *   every Checkout page still open for the customer is either reused (same plan) or expired — including a
  *   page created by an earlier attempt that failed before it could be recorded;
- * - the operation has a durable identity (`checkoutOpKey`) kept until its page is recorded: after a network
- *   failure, a database error or a stopped process, the retry resumes it with the same idempotency key.
+ * - the operation has a durable identity (`checkoutOpKey`) and its exact parameters (`checkoutOpParams`)
+ *   kept until its page is recorded: after a network failure, a database error or a stopped process, the
+ *   retry repeats the very same request (see openCheckoutPage).
  */
 export async function subscribe(org: Organization, email: string, plan: Plan) {
   if (org.partner) fail("Votre organisation est partenaire : l’offre Premium vous est déjà offerte.");
@@ -217,7 +286,7 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
         await writeAsHolder(org.id, token, {
           checkoutSessionId: null,
           checkoutPlan: null,
-          checkoutOpKey: null,
+          ...NO_OP,
         });
         const item = sub.items.data[0];
         if (item.price.id === price) fail("C’est déjà votre offre actuelle.");
@@ -239,18 +308,20 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
         !(await writeAsHolder(org.id, token, {
           checkoutSessionId: reusable.id,
           checkoutPlan: plan,
-          checkoutOpKey: null,
+          ...NO_OP,
         }))
       )
         fail(LOST_CLAIM, 409);
       return reusable.url!;
     }
 
-    // Nothing to resume at Stripe: the operation gets (or keeps) its durable identity before anything is created.
-    const opKey = fresh.checkoutOpKey ?? randomUUID();
-    if (!(await writeAsHolder(org.id, token, { checkoutOpKey: opKey }))) fail(LOST_CLAIM, 409);
-    const session = await stripe().checkout.sessions.create(
-      {
+    // No open page at Stripe: create it, or resume the operation that was creating it.
+    const session = await openCheckoutPage(
+      fresh,
+      token,
+      "squizz-checkout",
+      (p) => p.mode === "subscription" && p.metadata?.plan === plan,
+      () => ({
         mode: "subscription",
         customer,
         client_reference_id: org.id,
@@ -259,8 +330,7 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
         subscription_data: { metadata: { organizationId: org.id } },
         locale: "fr",
         allow_promotion_codes: true,
-        // Stripe's minimum: an abandoned page stops being payable after 30 minutes.
-        expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
+        expires_at: pageExpiry(),
         success_url: `${site}/app/abonnement?paiement=ok`,
         cancel_url: `${site}/app/abonnement?paiement=annule`,
         custom_text: {
@@ -269,9 +339,7 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
               "En vous abonnant, vous acceptez les CGU de SQuizz (www.squizz.fun/cgu) et demandez l’activation immédiate de l’offre. Sans engagement : arrêt à tout moment depuis votre espace.",
           },
         },
-      },
-      // The same operation retried (same key, same plan) gets the same page from Stripe.
-      { idempotencyKey: `squizz-checkout-${opKey}-${plan}` },
+      }),
     );
     if (!session.url) fail("Stripe n’a pas renvoyé de page de paiement.", 502);
     // Recorded only by the holder of the claim.
@@ -279,7 +347,7 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
       await writeAsHolder(org.id, token, {
         checkoutSessionId: session.id,
         checkoutPlan: plan,
-        checkoutOpKey: null,
+        ...NO_OP,
       })
     )
       return session.url;
@@ -301,7 +369,8 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
 }
 
 const EVENT_PASS_KIND = "event-pass";
-const isEventPass = (s: Stripe.Checkout.Session) =>
+/** A Checkout page of the event pass, or the parameters that create one. */
+const isEventPass = (s: Pick<Stripe.Checkout.Session, "mode" | "metadata"> | PageParams) =>
   s.mode === "payment" && s.metadata?.kind === EVENT_PASS_KIND;
 
 /**
@@ -311,8 +380,8 @@ const isEventPass = (s: Stripe.Checkout.Session) =>
  * As for subscriptions, an organisation never has two payable pages for the same purchase:
  * - requests are serialised by the organisation's checkout claim (double click, second tab, retry): the
  *   first one creates the page, the others find it open at Stripe and return it;
- * - the operation keeps a durable identity (`checkoutOpKey`) until its page exists: a retry after a network
- *   failure or a stopped process resumes it with the same idempotency key;
+ * - the operation keeps a durable identity and its exact parameters until its page exists: a retry after a
+ *   network failure or a stopped process repeats the very same request (see openCheckoutPage);
  * - once that page is paid or expired, the next purchase is a new operation: buying again to add days works.
  * A page created for an organisation deleted in the meantime is closed at once.
  */
@@ -332,61 +401,47 @@ export async function buyEventPass(org: Organization, email: string) {
     const customer = await customerFor(fresh, email);
     const open = (await stripe().checkout.sessions.list({ customer, status: "open", limit: 100 })).data;
     const reusable = open.find((s) => isEventPass(s) && s.url);
-    if (reusable) return reusable.url!;
+    if (reusable) {
+      // Its page is there: whatever operation was creating it is over.
+      await writeAsHolder(org.id, token, NO_OP);
+      return reusable.url!;
+    }
     // A price configured in Stripe (STRIPE_PRICE_EVENT_PASS), else the price of lib/plans.ts sent with the
     // page, filed under the Stripe product of the pass: what is charged is always what the site announces.
     const configured = process.env.STRIPE_PRICE_EVENT_PASS;
-    const create = (opKey: string) =>
-      stripe().checkout.sessions.create(
-        {
-          mode: "payment",
-          customer,
-          client_reference_id: org.id,
-          line_items: [
-            configured
-              ? { price: configured, quantity: 1 }
-              : {
-                  quantity: 1,
-                  price_data: {
-                    currency: "eur",
-                    unit_amount: EVENT_PASS.price * 100,
-                    product: EVENT_PASS.stripe,
-                  },
-                },
-          ],
-          metadata: { organizationId: org.id, kind: EVENT_PASS_KIND },
-          payment_intent_data: { description: `SQuizz — ${EVENT_PASS.label} (${org.name})` },
-          invoice_creation: { enabled: true },
-          locale: "fr",
-          expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
-          success_url: `${site}/app/abonnement?paiement=pack`,
-          cancel_url: `${site}/app/abonnement?paiement=annule`,
-          custom_text: {
-            submit: {
-              message: `En payant, vous acceptez les CGU de SQuizz (www.squizz.fun/cgu) et demandez l’activation immédiate du pack pour ${EVENT_PASS.days} jours. Paiement unique, sans abonnement ni renouvellement.`,
+    const session = await openCheckoutPage(fresh, token, "squizz-pass", isEventPass, () => ({
+      mode: "payment",
+      customer,
+      client_reference_id: org.id,
+      line_items: [
+        configured
+          ? { price: configured, quantity: 1 }
+          : {
+              quantity: 1,
+              price_data: {
+                currency: "eur",
+                unit_amount: EVENT_PASS.price * 100,
+                product: EVENT_PASS.stripe,
+              },
             },
-          },
+      ],
+      metadata: { organizationId: org.id, kind: EVENT_PASS_KIND },
+      payment_intent_data: { description: `SQuizz — ${EVENT_PASS.label} (${org.name})` },
+      invoice_creation: { enabled: true },
+      locale: "fr",
+      expires_at: pageExpiry(),
+      success_url: `${site}/app/abonnement?paiement=pack`,
+      cancel_url: `${site}/app/abonnement?paiement=annule`,
+      custom_text: {
+        submit: {
+          message: `En payant, vous acceptez les CGU de SQuizz (www.squizz.fun/cgu) et demandez l’activation immédiate du pack pour ${EVENT_PASS.days} jours. Paiement unique, sans abonnement ni renouvellement.`,
         },
-        { idempotencyKey: `squizz-pass-${opKey}` },
-      );
-    // The operation gets (or keeps) its durable identity before anything is created at Stripe.
-    let opKey = fresh.checkoutOpKey ?? randomUUID();
-    if (!(await writeAsHolder(org.id, token, { checkoutOpKey: opKey }))) fail(LOST_CLAIM, 409);
-    let session = await create(opKey);
-    if (fresh.checkoutOpKey) {
-      // An operation resumed: Stripe answers a key it knows with its first answer. If that page has been paid
-      // or has expired since, this purchase is a new operation.
-      const current = await stripe().checkout.sessions.retrieve(session.id);
-      if (current.status !== "open") {
-        opKey = randomUUID();
-        if (!(await writeAsHolder(org.id, token, { checkoutOpKey: opKey }))) fail(LOST_CLAIM, 409);
-        session = await create(opKey);
-      }
-    }
+      },
+    }));
     if (!session.url) fail("Stripe n’a pas renvoyé de page de paiement.", 502);
     // The page exists: the operation is over. Written only by the holder of the claim, for an organisation
     // that is still there.
-    if (await writeAsHolder(org.id, token, { checkoutOpKey: null })) return session.url;
+    if (await writeAsHolder(org.id, token, NO_OP)) return session.url;
     // The organisation was deleted meanwhile, or this operation outlived its claim: nothing payable is left.
     await expireSession(session.id);
     fail(LOST_CLAIM, 409);
@@ -536,7 +591,7 @@ export async function stopBillingForDeletion(stale: Organization) {
       cancelRequestedAt: null,
       checkoutSessionId: null,
       checkoutPlan: null,
-      checkoutOpKey: null,
+      ...NO_OP,
     },
   });
   return { cancelled };

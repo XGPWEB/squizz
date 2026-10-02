@@ -2,6 +2,14 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.8] — 2026-10-02
+
+Migration `20261002400000_checkout_op_params` (appliquée par `deploy.sh`). Suite de la revue des corrections 1.10.7 (`REVIEW-1.10.7.md`).
+
+### Corrigé
+- Paiement (abonnement et Pack Événement) : une demande de paiement reprise après une panne renvoie à Stripe exactement la même demande que la première fois. Jusqu’ici, la date d’expiration de la page était recalculée à chaque essai, ce que Stripe refuse pour une demande déjà connue : la nouvelle tentative échouait. Si la page de la première tentative a expiré ou a été payée entre-temps, une nouvelle page est créée.
+- Tests : le faux Stripe applique les règles réelles (même réponse pour une demande déjà connue, refus si elle a changé, durée minimale d’une page de paiement), et les scénarios panne → expiration → nouvelle tentative sont couverts pour le pack et l’abonnement.
+
 ## [1.10.7] — 2026-10-02
 
 Corrections issues de l’audit approfondi du 2 octobre (`AUDIT-2026-10-02-APPROFONDI.md`).

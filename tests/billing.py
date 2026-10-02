@@ -136,6 +136,40 @@ checkout(broke, 'STARTER')
 assert [s['product'] for s in mine() if s['status'] == 'open'] == [STARTER]
 assert len(mock('state')['customers']) == len({s['customer'] for s in mock('state')['sessions'].values()})  # no duplicate customer
 
+# --- Failure, then the page expires, then a retry: the operation is repeated to the letter, not recomputed -----
+# Stripe answers a key it knows with its first answer (the page as it was), and refuses that key with other
+# parameters. The retry a second later must send the same expiry, see that the page is dead, and open a new one.
+name8 = f'Org reprise {secrets.token_hex(3)}'
+again, _, _ = signup(name8)
+rid = org_id(name8)
+pages = lambda: [s for s in mock('state')['sessions'].values() if s.get('organizationId') == rid and s['status'] == 'open']
+sql(f"""CREATE FUNCTION e2e_checkout_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+  IF NEW.id = '{rid}' AND NEW."checkoutSessionId" IS NOT NULL THEN RAISE EXCEPTION 'e2e: simulated persistence failure'; END IF;
+  RETURN NEW; END; $$;
+  CREATE TRIGGER e2e_checkout_failure BEFORE UPDATE ON "Organization" FOR EACH ROW EXECUTE FUNCTION e2e_checkout_failure();""")
+try:
+    checkout(again, 'PRO', expect=500)
+finally:
+    sql('DROP TRIGGER IF EXISTS e2e_checkout_failure ON "Organization"; DROP FUNCTION IF EXISTS e2e_checkout_failure();')
+dead = pages()[0]
+mock('expire', {'session': dead['id']})
+seen = mock('state')
+time.sleep(1.2)
+fresh_page = checkout(again, 'PRO')['url']
+after = mock('state')
+assert fresh_page != dead['url'] and [s['url'] for s in pages()] == [fresh_page], (fresh_page, pages())
+assert after['idempotencyErrors'] == seen['idempotencyErrors'] and after['replays'] == seen['replays'] + 1, (seen['replays'], after['replays'], after['idempotencyErrors'])
+assert sql(f"""SELECT "checkoutSessionId" FROM "Organization" WHERE id = '{rid}'""") == pages()[0]['id']
+assert sql(f"""SELECT ("checkoutOpKey" IS NULL AND "checkoutOpParams" IS NULL)::text FROM "Organization" WHERE id = '{rid}'""") == 'true'
+# Stripe itself fails while creating the page: it remembers that failure for the key, so the retry needs a new one.
+mock('expire', {'session': pages()[0]['id']})
+mock('fail', {'method': 'POST', 'path': '/v1/checkout/sessions', 'status': 500, 'times': 1})
+checkout(again, 'PRO', expect=500)
+mock('fail', {'clear': True})
+assert not pages()
+assert checkout(again, 'PRO')['url'].startswith('https://checkout.mock/') and len(pages()) == 1
+assert mock('state')['idempotencyErrors'] == seen['idempotencyErrors']
+
 # --- The claim: only its holder writes or releases; an operation that outlived it closes what it created ------
 name7 = f'Org reservation {secrets.token_hex(3)}'
 slow, _, _ = signup(name7)
