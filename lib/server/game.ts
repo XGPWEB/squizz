@@ -2,6 +2,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { rankPlayers, type ScoreRow } from "@/lib/game-results";
+import { orgLimits } from "@/lib/plans";
 import type { Quiz } from "@/lib/quizzes";
 import {
   aggregateAnswers,
@@ -124,16 +125,26 @@ export function parseCode(value: unknown): string {
   return code;
 }
 
+/** A game with what decides its organisation's limits today. */
+const findRoom = (code: string) =>
+  prisma.room.findUnique({
+    where: { code },
+    include: { organization: { select: { plan: true, partner: true, eventPassUntil: true } } },
+  });
+
 async function loadRoom(code: string): Promise<Room> {
-  const row = await prisma.room.findUnique({ where: { code } });
-  return toRoom(row);
+  return toRoom(await findRoom(code));
 }
 
-function toRoom(row: Awaited<ReturnType<typeof prisma.room.findUnique>>): Room {
-  if (!row || Date.now() - Number(row.created) > ROOM_TTL)
+function toRoom(found: Awaited<ReturnType<typeof findRoom>>): Room {
+  if (!found || Date.now() - Number(found.created) > ROOM_TTL)
     fail("Cette partie est introuvable ou a expiré.", 404);
+  const { organization, ...row } = found;
   return {
     ...row,
+    // Never more than the organisation's limit today: a game launched under an event pass or a bigger plan
+    // stops taking new players once that is over (those already in keep playing).
+    maxPlayers: Math.min(row.maxPlayers, orgLimits(organization).maxPlayersPerGame),
     quiz: normalizeQuiz(row.quiz as unknown as Quiz),
     phase: row.phase as Room["phase"],
     started: Number(row.started),
@@ -185,7 +196,7 @@ export function invalidate(code: string) {
 }
 
 async function readSnapshot(code: string): Promise<Snapshot> {
-  const room = toRoom(await prisma.room.findUnique({ where: { code } }));
+  const room = toRoom(await findRoom(code));
   const [people, submitted] = await Promise.all([
     prisma.$queryRaw<ScoreRow[]>`
       SELECT p."id", p."name",

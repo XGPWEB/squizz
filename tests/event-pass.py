@@ -2,8 +2,8 @@
 
 Paid once, granted once: Premium limits for 7 days, extended by a second pass, back to the plan afterwards.
 """
-import secrets
-from helpers import client, request, signup, invite, mock, stripe_event, set_plan, sql
+import secrets, time
+from helpers import client, call, request, signup, invite, mock, stripe_event, set_plan, sql
 
 buy = lambda c, expect=200: request(c, 'POST', '/api/billing/checkout', {'pass': True}, expect=expect)
 org = lambda c: request(c, 'GET', '/api/org')['organization']
@@ -52,9 +52,20 @@ assert passes(name) == 2 and days(name) == 14.0
 request(admin, 'GET', '/app/abonnement?paiement=pack', expect=None)  # reloading the page adds nothing
 assert passes(name) == 2 and days(name) == 14.0
 
-# --- Once over, the organisation is back to its own limits ------------------------------------------------------
+# --- Once over, the organisation is back to its own limits, and so is a game launched during the pass ----------
+code = call(admin, 'create', quizId='geo')['code']
+assert call(admin, 'state', code=code)['maxPlayers'] == 80
+early = client()
+call(early, 'join', code=code, name='Avant')
 sql(f"""UPDATE "Organization" SET "eventPassUntil" = (now() AT TIME ZONE 'UTC') - interval '1 minute' WHERE name = '{name}'""")
 assert players(admin) == 5
+time.sleep(0.5)  # the game's shared snapshot is kept for 400 ms
+joined = lambda: len(call(admin, 'state', code=code)['players'])
+assert call(admin, 'state', code=code)['maxPlayers'] == 5 and joined() == 1  # the player already in stays
+for i in range(4):
+    call(client(), 'join', code=code, name=f'Apres {i}')
+call(client(), 'join', code=code, name='En trop', expect=400)
+assert joined() == 5
 
 # --- A plan that already gives as much does not need it; a subscription can still be taken with a pass ---------
 set_plan(name, 'PREMIUM')

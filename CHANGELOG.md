@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.3] — 2026-10-02
+
+### Offres
+- Une partie lancée pendant un Pack Événement (ou sous une offre plus large) n’accepte plus de nouveaux joueurs au-delà de la limite de l’organisation dès que le pack ou l’offre prend fin. Les joueurs déjà entrés continuent la partie.
+
 ## [1.10.2] — 2026-10-02
 
 ### Paiement
