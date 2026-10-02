@@ -39,7 +39,7 @@ test("le pack événement donne les limites Premium pendant sa durée, puis rend
   const now = Date.now();
   const running = { plan: "FREE" as const, partner: false, eventPassUntil: new Date(now + 60_000) };
   const over = { ...running, eventPassUntil: new Date(now - 60_000) };
-  expect(EVENT_PASS).toMatchObject({ price: 29, days: 7, plan: "PREMIUM" });
+  expect(EVENT_PASS).toMatchObject({ price: 29, days: 7, plan: "PREMIUM", stripe: "prod_VMugZ1ibhjTp4K" });
   expect(hasEventPass(running)).toBe(true);
   expect(orgLimits(running).maxPlayersPerGame).toBe(PLANS.PREMIUM.maxPlayersPerGame);
   expect(planBadge(running).label).toBe("Pack Événement");

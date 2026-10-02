@@ -120,8 +120,8 @@ class Handler(BaseHTTPRequestHandler):
             sessions = STATE['sessions']
             if len(parts) == 2 and method == 'POST':
                 item = body['line_items']['0']
-                # A one-off payment (the event pass) sends its own price instead of a product's.
-                product = item['price'].removeprefix('price_') if 'price' in item else None
+                # A one-off payment (the event pass) sends its own price, filed under its product.
+                product = item['price'].removeprefix('price_') if 'price' in item else item.get('price_data', {}).get('product')
                 amount = int(item.get('price_data', {}).get('unit_amount', 0))
                 s = {'id': new_id('cs'), 'object': 'checkout.session', 'status': 'open', 'mode': body.get('mode'),
                      'customer': body.get('customer'), 'client_reference_id': body.get('client_reference_id'),

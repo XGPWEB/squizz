@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.2] — 2026-10-02
+
+### Paiement
+- Le Pack Événement est vendu sous son produit Stripe (`prod_VMugZ1ibhjTp4K`) : les ventes apparaissent sous ce produit dans Stripe. Le montant payé reste celui du site (29 €) et le pack s’arrête toujours seul au bout de 7 jours.
+
 ## [1.10.1] — 2026-10-02
 
 ### Référencement

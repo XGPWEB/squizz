@@ -318,9 +318,8 @@ export async function buyEventPass(org: Organization, email: string) {
   const open = (await stripe().checkout.sessions.list({ customer, status: "open", limit: 100 })).data;
   const reusable = open.find((s) => isEventPass(s) && s.url);
   if (reusable) return reusable.url!;
-  const limits = PLANS[EVENT_PASS.plan];
-  const description = `${EVENT_PASS.days} jours, jusqu’à ${limits.maxPlayersPerGame} joueurs par partie, sans abonnement`;
-  // A price configured in Stripe (STRIPE_PRICE_EVENT_PASS), else the price of lib/plans.ts sent with the page.
+  // A price configured in Stripe (STRIPE_PRICE_EVENT_PASS), else the price of lib/plans.ts sent with the page,
+  // filed under the Stripe product of the pass: what is charged is always what the site announces.
   const configured = process.env.STRIPE_PRICE_EVENT_PASS;
   const session = await stripe().checkout.sessions.create({
     mode: "payment",
@@ -334,7 +333,7 @@ export async function buyEventPass(org: Organization, email: string) {
             price_data: {
               currency: "eur",
               unit_amount: EVENT_PASS.price * 100,
-              product_data: { name: `SQuizz — ${EVENT_PASS.label}`, description },
+              product: EVENT_PASS.stripe,
             },
           },
     ],

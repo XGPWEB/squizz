@@ -25,6 +25,7 @@ url = buy(admin)['url']
 assert buy(admin)['url'] == url and len(opened()) == 1
 session = opened()[0]
 assert session['mode'] == 'payment' and session['amount_total'] == 2900 and session['metadata']['kind'] == 'event-pass'
+assert session['product'] == 'prod_VMugZ1ibhjTp4K'
 stripe_event('checkout.session.completed', session)  # reported, but not paid
 assert players(admin) == 5 and passes(name) == 0
 # A forged payment report is refused.

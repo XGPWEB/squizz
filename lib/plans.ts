@@ -80,9 +80,16 @@ export const planLimits = (plan: Plan) => PLANS[plan];
 
 /**
  * The event pass: one payment, no subscription. For `days` days the organisation gets the limits of `plan`,
- * then goes back to its own plan (its quizzes are kept). Paying again adds `days` more.
+ * then goes back to its own plan (its quizzes are kept). Paying again adds `days` more. `stripe` is the
+ * Stripe product the payment is filed under (not secret); the amount charged is always `price`.
  */
-export const EVENT_PASS = { label: "Pack Événement", price: 29, days: 7, plan: "PREMIUM" } as const;
+export const EVENT_PASS = {
+  label: "Pack Événement",
+  price: 29,
+  days: 7,
+  plan: "PREMIUM",
+  stripe: "prod_VMugZ1ibhjTp4K",
+} as const;
 
 /** What decides an organisation's limits. Dates may arrive as text in the browser. */
 type OrgPlan = { plan: Plan; partner: boolean; eventPassUntil?: Date | string | null };
