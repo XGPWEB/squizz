@@ -214,9 +214,18 @@ export function QuestionFields({
               )}
             </section>
           )}
-          {q.type === "text" && (
+          {q.type === "blindtest" && (
+            <p className="info-box">
+              Ajoutez l’extrait plus bas : un fichier audio (MP3, M4A, OGG) ou un lien YouTube. Il est joué
+              sur l’écran de l’animateur seulement, sans image ni titre ; les joueurs écrivent leur réponse
+              sur leur téléphone. La diffusion de musique en public relève de vos droits (SACEM).
+            </p>
+          )}
+          {["text", "blindtest"].includes(q.type) && (
             <label className="stack">
-              Réponses acceptées (une par ligne)
+              {q.type === "blindtest"
+                ? "Réponses acceptées : titre, artiste, variantes (une par ligne)"
+                : "Réponses acceptées (une par ligne)"}
               <textarea
                 value={q.accepted.join("\n")}
                 onChange={(e) => patch({ accepted: e.target.value.split("\n") })}

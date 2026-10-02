@@ -995,3 +995,69 @@ fieldset {
   font-size: 15px;
   text-align: center;
 }
+/* Sound: an audio extract, and the blind test player that hides what is playing. */
+.question-media audio {
+  display: block;
+  width: 100%;
+}
+.mystery-extract {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: min(100%, 560px);
+  padding: 26px 20px;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--ink);
+  color: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 6px 6px 0 var(--pink);
+  text-align: center;
+}
+.mystery-extract > svg {
+  color: var(--acid);
+}
+.mystery-extract.playing > svg {
+  animation: mystery-beat 0.9s ease-in-out infinite;
+}
+.mystery-extract strong {
+  font:
+    400 26px/1.1 Anton,
+    sans-serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.mystery-extract audio {
+  max-width: 460px;
+}
+.mystery-extract p {
+  margin: 0;
+  max-width: 460px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+/* The YouTube player keeps a real size (it stops when hidden) but sits out of sight, under the cover. */
+.question-media .mystery-extract iframe {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 0;
+  opacity: 0.01;
+  pointer-events: none;
+}
+@keyframes mystery-beat {
+  50% {
+    transform: scale(1.25) rotate(-8deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mystery-extract.playing > svg {
+    animation: none;
+  }
+}

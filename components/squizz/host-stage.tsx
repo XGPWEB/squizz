@@ -251,6 +251,7 @@ function Question({ game, busy, run, settle, remaining }: Props) {
             <QuestionPlay
               question={q}
               revealed={game.revealed}
+              autoPlay
               disabled={busy || game.revealed || remaining === 0 || !hostPlays}
               submitted={game.myAnswer?.answer ?? null}
               onSubmit={(answer) =>
@@ -266,7 +267,7 @@ function Question({ game, busy, run, settle, remaining }: Props) {
           </div>
         ) : (
           <div className="host-answers">
-            <MediaView media={q.media} />
+            <MediaView media={q.media} masked={q.type === "blindtest" && !game.revealed} autoPlay />
             <p className="host-phones">
               <Smartphone aria-hidden />
               Répondez sur votre téléphone !

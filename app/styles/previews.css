@@ -494,3 +494,25 @@
   line-height: 1.35;
   color: #55514b;
 }
+/* Blind test: a sound wave above the typed answer. */
+.type-grid .pv-blind {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.pv-sound {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
+  background: var(--ink);
+  color: var(--acid);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--pink);
+}
+.pv-sound i {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--acid);
+}

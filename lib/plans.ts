@@ -78,16 +78,35 @@ export const PLAN_KEYS = ["FREE", "STARTER", "PRO", "PREMIUM"] as const satisfie
 
 export const planLimits = (plan: Plan) => PLANS[plan];
 
-/** Partner organisations get Premium for free, whatever plan they are billed for. */
-export const effectivePlan = (org: { plan: Plan; partner: boolean }): Plan =>
-  org.partner ? "PREMIUM" : org.plan;
+/**
+ * The event pass: one payment, no subscription. For `days` days the organisation gets the limits of `plan`,
+ * then goes back to its own plan (its quizzes are kept). Paying again adds `days` more.
+ */
+export const EVENT_PASS = { label: "Pack Événement", price: 29, days: 7, plan: "PREMIUM" } as const;
+
+/** What decides an organisation's limits. Dates may arrive as text in the browser. */
+type OrgPlan = { plan: Plan; partner: boolean; eventPassUntil?: Date | string | null };
+
+export const hasEventPass = (org: OrgPlan, now = Date.now()) =>
+  !!org.eventPassUntil && new Date(org.eventPassUntil).getTime() > now;
+/** The pass adds nothing to a plan that already gives as much. */
+export const passIsUseful = (plan: Plan) => PLAN_KEYS.indexOf(plan) < PLAN_KEYS.indexOf(EVENT_PASS.plan);
+
+/**
+ * Partner organisations get Premium for free, whatever plan they are billed for; a running event pass lifts
+ * a smaller plan to the pass's plan.
+ */
+export const effectivePlan = (org: OrgPlan): Plan =>
+  org.partner ? "PREMIUM" : hasEventPass(org) && passIsUseful(org.plan) ? EVENT_PASS.plan : org.plan;
 /** The limits that actually apply to an organisation: use this for every check. */
-export const orgLimits = (org: { plan: Plan; partner: boolean }) => PLANS[effectivePlan(org)];
+export const orgLimits = (org: OrgPlan) => PLANS[effectivePlan(org)];
 /** Badge shown in the app bar and the super-admin. */
-export const planBadge = (org: { plan: Plan; partner: boolean }) =>
+export const planBadge = (org: OrgPlan) =>
   org.partner
     ? { label: "Partenaire", className: "partner" }
-    : { label: PLANS[org.plan].label, className: `plan-${org.plan.toLowerCase()}` };
+    : effectivePlan(org) !== org.plan
+      ? { label: EVENT_PASS.label, className: `plan-${EVENT_PASS.plan.toLowerCase()}` }
+      : { label: PLANS[org.plan].label, className: `plan-${org.plan.toLowerCase()}` };
 export const isPaid = (plan: Plan) => plan !== "FREE";
 
 /** « 15 € / mois », « 0 € ». */

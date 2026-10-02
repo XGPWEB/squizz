@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { Faq } from "@/components/site/seo-sections";
-import { PLAN_KEYS, PLANS, sizeLabel, type PlanLimits } from "@/lib/plans";
+import { EVENT_PASS, PLAN_KEYS, PLANS, sizeLabel, type PlanLimits } from "@/lib/plans";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/tarifs" },
   title: "Tarifs",
   description:
-    "SQuizz gratuit, Essentiel à 15 € / mois, Pro à 30 € / mois ou Premium à 310 € / an : sans engagement, résiliable à tout moment.",
+    "SQuizz gratuit, Essentiel à 15 € / mois, Pro à 30 € / mois, Premium à 310 € / an, ou Pack Événement à 29 € pour 7 jours sans abonnement.",
 };
 
 const euros = (n: number) => n.toLocaleString("fr-FR", { maximumFractionDigits: 2 });
@@ -31,6 +31,10 @@ function features(p: PlanLimits) {
 }
 
 const PRICING_FAQ = [
+  {
+    q: "J’organise un seul événement : dois-je m’abonner ?",
+    a: `Non. Le ${EVENT_PASS.label} coûte ${EVENT_PASS.price} € en une fois : pendant ${EVENT_PASS.days} jours à partir du paiement, votre espace accueille jusqu’à ${PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie, avec les limites de l’offre Premium. Rien n’est renouvelé ; ensuite votre espace retrouve son offre habituelle et vos quiz sont conservés.`,
+  },
   {
     q: "Suis-je engagé ?",
     a: "Non. Toutes les offres sont sans engagement : vous arrêtez votre abonnement à tout moment, en un clic depuis la page « Abonnement » de votre espace, ou par e-mail à contact@pressweb.fr.",
@@ -113,6 +117,25 @@ export default function PricingPage() {
           );
         })}
       </div>
+      <section className="event-pass-band" data-reveal="up" aria-labelledby="event-pass-title">
+        <div>
+          <p className="eyebrow">UN SEUL ÉVÉNEMENT ?</p>
+          <h2 id="event-pass-title">
+            {EVENT_PASS.label} · {EVENT_PASS.price} € <small>une seule fois</small>
+          </h2>
+          <p>
+            Mariage, séminaire, soirée quiz : {EVENT_PASS.days} jours avec jusqu’à{" "}
+            {PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie et toutes les limites de l’offre
+            Premium. Sans abonnement, rien à résilier.
+          </p>
+        </div>
+        <Link
+          className="button"
+          href={`/connexion?suite=${encodeURIComponent("/app/abonnement?offre=EVENEMENT")}`}
+        >
+          Prendre le pack
+        </Link>
+      </section>
       <section className="price-faq">
         <h2>Abonnement : vos questions</h2>
         <Faq items={PRICING_FAQ} />

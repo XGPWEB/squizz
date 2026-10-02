@@ -3,11 +3,12 @@ import { randomUUID } from "node:crypto";
 import Stripe from "stripe";
 import type { Organization, Plan, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { PLAN_KEYS, PLANS } from "@/lib/plans";
+import { EVENT_PASS, PLAN_KEYS, PLANS, passIsUseful } from "@/lib/plans";
 import { CONTACT_EMAIL } from "@/lib/company-info";
 import { fail, HttpError } from "./http";
 import { appUrl, sendMail } from "./mail";
-import { billingAlertEmail, organizationUpdateEmail } from "./email-templates";
+import { billingAlertEmail, eventPassEmail, organizationUpdateEmail } from "./email-templates";
+import { withOrgLock } from "./org-lock";
 
 /**
  * Stripe billing. Online payment is on only when the secret key and the webhook secret are set (in
@@ -298,6 +299,125 @@ export async function subscribe(org: Organization, email: string, plan: Plan) {
   }
 }
 
+const EVENT_PASS_KIND = "event-pass";
+const isEventPass = (s: Stripe.Checkout.Session) =>
+  s.mode === "payment" && s.metadata?.kind === EVENT_PASS_KIND;
+
+/**
+ * Sells the event pass: one payment on a Stripe Checkout page, no subscription. Returns the page to open; a
+ * page still open for the pass is reused, so clicking twice never shows two of them. The pass itself is
+ * granted when Stripe reports the payment (see applyEventPass).
+ */
+export async function buyEventPass(org: Organization, email: string) {
+  if (org.partner) fail("Votre organisation est partenaire : l’offre Premium vous est déjà offerte.");
+  if (!passIsUseful(org.plan))
+    fail(`Votre offre ${PLANS[org.plan].label} donne déjà tout ce qu’apporte le ${EVENT_PASS.label}.`);
+  const site = appUrl();
+  const customer = await customerFor(org, email);
+  const open = (await stripe().checkout.sessions.list({ customer, status: "open", limit: 100 })).data;
+  const reusable = open.find((s) => isEventPass(s) && s.url);
+  if (reusable) return reusable.url!;
+  const limits = PLANS[EVENT_PASS.plan];
+  const description = `${EVENT_PASS.days} jours, jusqu’à ${limits.maxPlayersPerGame} joueurs par partie, sans abonnement`;
+  // A price configured in Stripe (STRIPE_PRICE_EVENT_PASS), else the price of lib/plans.ts sent with the page.
+  const configured = process.env.STRIPE_PRICE_EVENT_PASS;
+  const session = await stripe().checkout.sessions.create({
+    mode: "payment",
+    customer,
+    client_reference_id: org.id,
+    line_items: [
+      configured
+        ? { price: configured, quantity: 1 }
+        : {
+            quantity: 1,
+            price_data: {
+              currency: "eur",
+              unit_amount: EVENT_PASS.price * 100,
+              product_data: { name: `SQuizz — ${EVENT_PASS.label}`, description },
+            },
+          },
+    ],
+    metadata: { organizationId: org.id, kind: EVENT_PASS_KIND },
+    payment_intent_data: { description: `SQuizz — ${EVENT_PASS.label} (${org.name})` },
+    invoice_creation: { enabled: true },
+    locale: "fr",
+    expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
+    success_url: `${site}/app/abonnement?paiement=pack`,
+    cancel_url: `${site}/app/abonnement?paiement=annule`,
+    custom_text: {
+      submit: {
+        message: `En payant, vous acceptez les CGU de SQuizz (www.squizz.fun/cgu) et demandez l’activation immédiate du pack pour ${EVENT_PASS.days} jours. Paiement unique, sans abonnement ni renouvellement.`,
+      },
+    },
+  });
+  if (!session.url) fail("Stripe n’a pas renvoyé de page de paiement.", 502);
+  return session.url;
+}
+
+/**
+ * Grants a paid event pass: `EVENT_PASS.days` days from now, or added after a pass still running. Safe to
+ * call again for the same payment (webhook delivered twice, page reloaded): the session is recorded once.
+ */
+export async function applyEventPass(session: Stripe.Checkout.Session) {
+  if (!isEventPass(session) || session.payment_status !== "paid") return;
+  const organizationId = session.metadata?.organizationId ?? session.client_reference_id;
+  const granted = organizationId
+    ? await withOrgLock(organizationId, async (tx) => {
+        const org = await tx.organization.findUnique({ where: { id: organizationId } });
+        if (!org) return null;
+        if (await tx.eventPass.findUnique({ where: { sessionId: session.id } })) return "known" as const;
+        const startsAt = new Date(Math.max(Date.now(), org.eventPassUntil?.getTime() ?? 0));
+        const endsAt = new Date(startsAt.getTime() + EVENT_PASS.days * 24 * 60 * 60 * 1000);
+        await tx.eventPass.create({
+          data: {
+            sessionId: session.id,
+            organizationId,
+            startsAt,
+            endsAt,
+            amount: session.amount_total ?? EVENT_PASS.price * 100,
+          },
+        });
+        await tx.organization.update({ where: { id: organizationId }, data: { eventPassUntil: endsAt } });
+        return { name: org.name, endsAt };
+      })
+    : null;
+  if (granted === "known") return;
+  if (!granted) {
+    // Paid for an organisation that no longer exists: Pressweb refunds by hand.
+    console.error(`Stripe : pack événement ${session.id} payé sans organisation`);
+    void sendMail(
+      CONTACT_EMAIL,
+      billingAlertEmail({
+        subscriptionId: session.id,
+        reason: "pack événement payé, organisation introuvable",
+      }),
+    );
+    return;
+  }
+  const admins = await prisma.user.findMany({
+    where: { organizationId: organizationId!, role: "ORG_ADMIN", active: true },
+  });
+  for (const a of admins)
+    void sendMail(
+      a.email,
+      eventPassEmail({ name: a.name, organization: granted.name, until: granted.endsAt }),
+    );
+}
+
+/**
+ * Catches up on event passes paid but not granted yet (webhook late or lost): called when the buyer comes
+ * back from the payment page, so the pass is there as soon as the page shows.
+ */
+export async function reconcileEventPasses(org: Organization) {
+  if (!billingEnabled() || !org.stripeCustomerId) return;
+  const done = await stripe().checkout.sessions.list({
+    customer: org.stripeCustomerId,
+    status: "complete",
+    limit: 20,
+  });
+  for (const s of done.data) if (s.metadata?.organizationId === org.id) await applyEventPass(s);
+}
+
 /**
  * Stops everything Stripe could still bill for an organisation about to be deleted: open Checkout pages are
  * expired and every subscription of the customer that is not over is cancelled at once. Throws (and the
@@ -478,8 +598,13 @@ export async function handleWebhook(payload: string, signature: string | null) {
     fail("Signature Stripe invalide.", 400);
   }
   switch (event.type) {
+    // A payment by a slower means (bank debit) succeeds after the page is completed.
+    case "checkout.session.async_payment_succeeded":
+      await applyEventPass(event.data.object);
+      break;
     case "checkout.session.completed": {
       const session = event.data.object;
+      await applyEventPass(session);
       if (session.mode === "subscription" && session.subscription) {
         const id = typeof session.subscription === "string" ? session.subscription : session.subscription.id;
         await syncSubscription(await stripe().subscriptions.retrieve(id));

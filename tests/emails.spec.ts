@@ -17,6 +17,11 @@ describe("e-mails SQuizz", async () => {
       link: "https://www.squizz.fun/invitation/abc",
       days: 7,
     }),
+    "pack-evenement": t.eventPassEmail({
+      name: "Xavier",
+      organization: "Pressweb",
+      until: new Date("2026-10-09T12:30:00Z"),
+    }),
     "membre-bienvenue": t.memberWelcomeEmail({ name: "Léa", organization: "Pressweb", role: "HOST" }),
     "membre-arrive": t.memberJoinedEmail({
       inviter: "Xavier",

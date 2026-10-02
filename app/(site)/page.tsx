@@ -8,9 +8,9 @@ import { Marquee } from "@/components/site/marquee";
 import { JsonLd } from "@/components/site/json-ld";
 import { Advantages, Faq } from "@/components/site/seo-sections";
 import { faqLd, softwareLd } from "@/lib/seo";
-import { PLANS } from "@/lib/plans";
+import { EVENT_PASS, PLANS } from "@/lib/plans";
 
-const featured = ["quiz", "truefalse", "slider", "puzzle", "wordcloud", "pin"] as const;
+const featured = ["quiz", "truefalse", "blindtest", "puzzle", "wordcloud", "pin"] as const;
 
 export default function HomePage() {
   return (
@@ -64,6 +64,7 @@ export default function HomePage() {
         items={[
           "Quiz",
           "Vrai ou faux",
+          "Blind test",
           "Curseur",
           "Puzzle",
           "Sondage",
@@ -88,7 +89,7 @@ export default function HomePage() {
               <Sparkles />
             </span>
             <h3>Préparez</h3>
-            <p>Choisissez parmi 13 types de questions et 6 diapos, ajoutez vos images et vidéos.</p>
+            <p>Choisissez parmi 14 types de questions et 6 diapos, ajoutez vos images et vidéos.</p>
           </li>
           <li>
             <span className="step-icon">
@@ -128,7 +129,8 @@ export default function HomePage() {
           })}
         </div>
         <p className="feature-more">
-          Et aussi : réponse libre, sondage, échelle, NPS, place le pin’s, question ouverte, brainstorming…
+          Et aussi : réponse libre, curseur, sondage, échelle, NPS, place le pin’s, question ouverte,
+          brainstorming…
         </p>
         <div className="type-grid showcase slides-showcase" data-stagger="up">
           {slideLayouts.slice(0, 3).map((l) => (
@@ -173,11 +175,12 @@ export default function HomePage() {
       <Marquee
         tone="acid"
         items={[
-          "Jusqu’à 100 joueurs avec Pro",
+          `Jusqu’à ${PLANS.PREMIUM.maxPlayersPerGame} joueurs avec Premium`,
           "Sans application",
           "Classement en direct",
           "QR code",
           "Gratuit pour démarrer",
+          `${EVENT_PASS.label} : ${EVENT_PASS.price} € sans abonnement`,
         ]}
       />
 

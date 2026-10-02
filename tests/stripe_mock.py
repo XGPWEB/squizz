@@ -20,8 +20,10 @@ STATE = {}
 
 
 def reset():
+    # Ids keep counting across resets: the test database outlives them, and an id is never given twice.
+    n = STATE.get('n', 0)
     STATE.clear()
-    STATE.update(customers={}, sessions={}, subscriptions={}, calls=[], failures=[], delays=[], idempotent={}, n=0)
+    STATE.update(customers={}, sessions={}, subscriptions={}, calls=[], failures=[], delays=[], idempotent={}, n=n)
 
 
 reset()
@@ -117,10 +119,14 @@ class Handler(BaseHTTPRequestHandler):
         if parts[:2] == ['checkout', 'sessions']:
             sessions = STATE['sessions']
             if len(parts) == 2 and method == 'POST':
-                product = body['line_items']['0']['price'].removeprefix('price_')
+                item = body['line_items']['0']
+                # A one-off payment (the event pass) sends its own price instead of a product's.
+                product = item['price'].removeprefix('price_') if 'price' in item else None
+                amount = int(item.get('price_data', {}).get('unit_amount', 0))
                 s = {'id': new_id('cs'), 'object': 'checkout.session', 'status': 'open', 'mode': body.get('mode'),
                      'customer': body.get('customer'), 'client_reference_id': body.get('client_reference_id'),
                      'metadata': body.get('metadata', {}), 'subscription': None, 'product': product,
+                     'payment_status': 'unpaid', 'amount_total': amount,
                      'organizationId': body.get('subscription_data', {}).get('metadata', {}).get('organizationId')}
                 s['url'] = f"https://checkout.mock/pay/{s['id']}"
                 sessions[s['id']] = s
@@ -166,8 +172,11 @@ class Handler(BaseHTTPRequestHandler):
                 s = STATE['sessions'][body['session']]
                 if s['status'] != 'open':
                     return self.reply(400, {'error': 'session not open'})
+                s['status'], s['payment_status'] = 'complete', 'paid'
+                if s['mode'] == 'payment':
+                    return self.reply(200, {'session': s})
                 sub = subscription(s['customer'], s['product'], s['organizationId'])
-                s['status'], s['subscription'] = 'complete', sub['id']
+                s['subscription'] = sub['id']
                 return self.reply(200, {'session': s, 'subscription': sub})
             if path == '/_mock/expire':
                 STATE['sessions'][body['session']]['status'] = 'expired'

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ArrowLeft, Check, Copy, Eye, KeyRound } from "lucide-react";
 import { postJson } from "@/lib/client/api";
 import { useResource } from "@/lib/client/use-resource";
-import { PLANS } from "@/lib/plans";
+import { EVENT_PASS, PLANS, hasEventPass } from "@/lib/plans";
 import type { Plan } from "@prisma/client";
 
 type Role = "ORG_ADMIN" | "HOST";
@@ -29,6 +29,7 @@ type Detail = {
   partnerSince: string | null;
   subscriptionStatus: string | null;
   currentPeriodEnd: string | null;
+  eventPassUntil: string | null;
   stripeCustomerId: string | null;
   status: "ACTIVE" | "SUSPENDED";
   createdAt: string;
@@ -83,8 +84,9 @@ export function OrganizationDetail({ id }: { id: string }) {
             Offre {PLANS[org.plan].label}
             {org.partner && ` · partenaire (Premium offert depuis le ${date(org.partnerSince!)})`}
             {org.cancelRequestedAt &&
-              ` (arrêt demandé le ${new Date(org.cancelRequestedAt).toLocaleDateString("fr-FR")})`}{" "}
-            · {org.status === "ACTIVE" ? "active" : "suspendue"} · {org.mediaCount} médias (
+              ` (arrêt demandé le ${new Date(org.cancelRequestedAt).toLocaleDateString("fr-FR")})`}
+            {hasEventPass(org) && ` · ${EVENT_PASS.label} jusqu’au ${date(org.eventPassUntil!)}`} ·{" "}
+            {org.status === "ACTIVE" ? "active" : "suspendue"} · {org.mediaCount} médias (
             {Math.round(org.mediaBytes / 1024 / 1024)} Mo)
           </p>
         </div>

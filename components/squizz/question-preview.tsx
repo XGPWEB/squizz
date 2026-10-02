@@ -12,7 +12,7 @@ export function QuestionPreview({ question, index = 0 }: { question: Question; i
   const [view, setView] = useState<"phone" | "screen">("phone"),
     [revealed, setRevealed] = useState(false),
     [answer, setAnswer] = useState<AnswerPayload | null>(null);
-  const pq = publicQuestion(question, revealed);
+  const pq = publicQuestion(question, revealed, index, view === "screen");
   const slide = question.type === "slide";
   // Switching view starts the preview afresh (the component keeps its own draft answer).
   const key = view;

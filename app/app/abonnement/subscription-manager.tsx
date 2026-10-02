@@ -2,10 +2,19 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Check, CreditCard } from "lucide-react";
+import { Check, CreditCard, Ticket } from "lucide-react";
 import type { Plan } from "@prisma/client";
 import { postJson } from "@/lib/client/api";
-import { PLAN_KEYS, PLANS, limitsSummary, planBadge, priceLabel } from "@/lib/plans";
+import {
+  EVENT_PASS,
+  PLAN_KEYS,
+  PLANS,
+  hasEventPass,
+  limitsSummary,
+  passIsUseful,
+  planBadge,
+  priceLabel,
+} from "@/lib/plans";
 
 type Org = {
   name: string;
@@ -14,13 +23,17 @@ type Org = {
   subscriptionStatus: string | null;
   currentPeriodEnd: string | null;
   cancelRequestedAt: string | null;
+  eventPassUntil: string | null;
   hasCustomer: boolean;
 };
 
 const date = (d: string) => new Date(d).toLocaleDateString("fr-FR", { dateStyle: "long" });
+const dateTime = (d: string) =>
+  new Date(d).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
 
 const notices: Record<string, string> = {
   ok: "Paiement reçu, merci ! Votre offre s’active dans quelques secondes (rechargez la page si besoin).",
+  pack: `Paiement reçu, merci ! Votre ${EVENT_PASS.label} est activé (rechargez la page s’il n’apparaît pas encore).`,
   change: "Votre offre a été changée. La différence de prix est calculée au prorata.",
   annule: "Paiement annulé : rien n’a été débité.",
 };
@@ -33,7 +46,7 @@ export function SubscriptionManager({
 }: {
   org: Org;
   online: boolean;
-  wanted: Plan | null;
+  wanted: Plan | "EVENEMENT" | null;
   notice: string | null;
 }) {
   const router = useRouter();
@@ -43,6 +56,8 @@ export function SubscriptionManager({
   const current = PLANS[org.plan];
   const paid = org.plan !== "FREE" && !org.partner;
   const badge = planBadge(org);
+  const pass = PLANS[EVENT_PASS.plan];
+  const passActive = hasEventPass(org);
 
   async function run(task: () => Promise<void>, done?: string) {
     if (busy) return;
@@ -174,6 +189,13 @@ export function SubscriptionManager({
             </p>
           </>
         )}
+        {passActive && org.eventPassUntil && (
+          <p className="info-box">
+            <strong>{EVENT_PASS.label} actif</strong> jusqu’au {dateTime(org.eventPassUntil)} :{" "}
+            {limitsSummary(pass)}. Ensuite, votre espace retrouve son offre habituelle et vos quiz sont
+            conservés.
+          </p>
+        )}
         {online && org.hasCustomer && (
           <button className="button secondary" disabled={busy} onClick={() => open("/api/billing/portal")}>
             <CreditCard size={18} /> Factures et moyen de paiement
@@ -212,6 +234,35 @@ export function SubscriptionManager({
             );
           })}
         </div>
+      )}
+      {!org.partner && passIsUseful(org.plan) && (
+        <section className={`panel event-pass${wanted === "EVENEMENT" ? " wanted" : ""}`}>
+          <div>
+            <p className="eyebrow">UN SEUL ÉVÉNEMENT ?</p>
+            <h2>
+              <Ticket size={22} aria-hidden /> {EVENT_PASS.label} · {EVENT_PASS.price} €
+            </h2>
+            <p className="hint">
+              Paiement unique, sans abonnement : pendant {EVENT_PASS.days} jours, {limitsSummary(pass)}.
+              {passActive ? ` Un nouveau pack ajoute ${EVENT_PASS.days} jours au pack en cours.` : ""}
+            </p>
+          </div>
+          <button
+            className={`button${wanted === "EVENEMENT" ? "" : " secondary"}`}
+            disabled={busy}
+            onClick={() =>
+              online
+                ? open("/api/billing/checkout", { pass: true })
+                : router.push("/?offre=EVENEMENT#contact")
+            }
+          >
+            {online
+              ? passActive
+                ? `Ajouter ${EVENT_PASS.days} jours`
+                : "Acheter le pack"
+              : "Nous contacter"}
+          </button>
+        </section>
       )}
       <p className="hint center">
         Paiement sécurisé par Stripe · prix nets, TVA non applicable (art. 293 B du CGI) ·{" "}

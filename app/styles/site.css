@@ -1212,3 +1212,44 @@ label.cookie-service {
     padding: 14px;
   }
 }
+/* Pricing page: the one-off event pass, under the subscriptions. */
+.event-pass-band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 32px;
+  max-width: 1128px;
+  margin: 0 auto 60px;
+  padding: 28px 32px;
+  background: var(--acid);
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  box-shadow: 7px 7px 0 var(--pink);
+}
+.event-pass-band > div {
+  flex: 1 1 420px;
+}
+.event-pass-band h2 {
+  margin: 0 0 8px;
+  font-size: 34px;
+}
+.event-pass-band h2 small {
+  font: 700 13px monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.event-pass-band p {
+  margin: 0;
+  line-height: 1.5;
+}
+@media (max-width: 1176px) {
+  .event-pass-band {
+    margin-inline: 24px;
+  }
+}
+@media (max-width: 560px) {
+  .event-pass-band {
+    padding: 22px 20px;
+  }
+}

@@ -1,4 +1,4 @@
-import { Check, ImageIcon, MapPin, Star } from "lucide-react";
+import { Check, ImageIcon, MapPin, Music, Star } from "lucide-react";
 import type { QuestionType, SlideLayout } from "@/lib/question";
 
 /**
@@ -82,6 +82,21 @@ const typePreviews: Record<QuestionType, [string, React.ReactNode]> = {
     <span key="t" className="pv-input">
       Au
       <i />
+    </span>,
+  ],
+  blindtest: [
+    "Quel est ce titre ?",
+    <span key="t" className="pv-blind">
+      <span className="pv-sound">
+        <Music size={16} />
+        {[9, 16, 7, 13, 18, 10, 15, 6].map((h, i) => (
+          <i key={i} style={{ height: h }} />
+        ))}
+      </span>
+      <span className="pv-input">
+        La Bohème
+        <i />
+      </span>
     </span>,
   ],
   slider: [

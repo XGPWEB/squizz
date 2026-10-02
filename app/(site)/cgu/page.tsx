@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Legal, Mail } from "@/components/site/legal";
 import { COMPANY_INFO } from "@/lib/company-info";
-import { PLAN_KEYS, PLANS, priceLabel } from "@/lib/plans";
+import { EVENT_PASS, PLAN_KEYS, PLANS, priceLabel } from "@/lib/plans";
 
 export const metadata: Metadata = {
   title: "Conditions générales d’utilisation et de vente",
@@ -35,7 +35,7 @@ export default function CGUPage() {
       </p>
       <ul>
         <li>
-          La création de quiz, sondages et diapositives (13 types de questions et 6 mises en page de diapo)
+          La création de quiz, sondages et diapositives (14 types de questions et 6 mises en page de diapo)
         </li>
         <li>L’animation de parties en direct, rejointes par les participants via un code ou un QR code</li>
         <li>Le classement en temps réel et le podium final</li>
@@ -89,6 +89,15 @@ export default function CGUPage() {
         reconduire.
       </p>
       <p>
+        <strong>{EVENT_PASS.label}.</strong> Le Client peut aussi acheter, sans abonnement, un{" "}
+        {EVENT_PASS.label} au prix de {EVENT_PASS.price} € : un paiement unique par carte bancaire via Stripe
+        qui donne à l’Organisation les limites de l’offre {PLANS[EVENT_PASS.plan].label} pendant{" "}
+        {EVENT_PASS.days} jours à compter du paiement. Il n’est pas reconduit ; un nouvel achat pendant un
+        pack en cours prolonge celui-ci de {EVENT_PASS.days} jours. À son terme, l’Organisation retrouve son
+        offre habituelle et ses quiz et médias sont conservés. Le pack déjà activé n’est pas remboursé prorata
+        temporis, sauf exercice du droit de rétractation prévu à l’article 4.
+      </p>
+      <p>
         Le Client peut changer d’offre à tout moment ; la différence de prix est calculée au prorata de la
         période restante. Les Organisations désignées partenaires par l’Éditeur bénéficient gratuitement de
         l’offre Premium, tant que dure le partenariat. L’Éditeur peut faire évoluer le contenu, les limites et
@@ -134,10 +143,11 @@ export default function CGUPage() {
 
       <h2>5. Contenus publiés</h2>
       <p>
-        Le Client est seul responsable des quiz, textes, images et vidéos qu’il crée ou importe, ainsi que de
-        leur affichage lors des parties. Il garantit disposer des droits nécessaires sur ces contenus et
-        s’interdit toute publication illicite. Il veille également à ce que les pseudos choisis par les
-        Joueurs lors de ses parties restent appropriés.
+        Le Client est seul responsable des quiz, textes, images, vidéos et extraits sonores qu’il crée ou
+        importe (y compris la musique des questions « Blind test », dont la diffusion en public peut exiger
+        une autorisation, par exemple de la SACEM), ainsi que de leur affichage lors des parties. Il garantit
+        disposer des droits nécessaires sur ces contenus et s’interdit toute publication illicite. Il veille
+        également à ce que les pseudos choisis par les Joueurs lors de ses parties restent appropriés.
       </p>
 
       <h2>6. Disponibilité et maintenance</h2>

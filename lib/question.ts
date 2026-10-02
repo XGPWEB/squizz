@@ -18,6 +18,12 @@ export const questionTypes = [
     hint: "Les participants doivent saisir une courte réponse correcte.",
   },
   {
+    id: "blindtest",
+    label: "Blind test",
+    group: "Tester les connaissances",
+    hint: "Fais deviner un titre ou un artiste à partir d’un extrait musical.",
+  },
+  {
     id: "slider",
     label: "Curseur",
     group: "Tester les connaissances",
@@ -114,7 +120,11 @@ export type SlideLayout = (typeof slideLayouts)[number]["id"];
 export const formatValue = (value: number, unit = "") =>
   `${value.toLocaleString("fr-FR", { maximumFractionDigits: 6 })}${unit ? ` ${unit}` : ""}`;
 export const slideLayoutLabel = (layout: SlideLayout) => slideLayouts.find((l) => l.id === layout)?.label;
-export type Media = { kind: "image" | "video" | "youtube" | "link"; url: string; caption: string };
+export type Media = { kind: "image" | "video" | "audio" | "youtube" | "link"; url: string; caption: string };
+/** What a blind test plays: an audio file, or a YouTube video whose picture stays hidden. */
+export const isSoundtrack = (m: Media) => m.kind === "audio" || m.kind === "youtube";
+/** Question types answered by typing a short text checked against the accepted answers. */
+const typedAnswer = (type: QuestionType) => type === "text" || type === "blindtest";
 export type Question = {
   type: QuestionType;
   text: string;
@@ -154,7 +164,7 @@ export type AnswerPayload = {
 };
 export const durations = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240];
 export const isScored = (type: QuestionType) =>
-  ["quiz", "truefalse", "text", "slider", "pin", "puzzle"].includes(type);
+  ["quiz", "truefalse", "text", "blindtest", "slider", "pin", "puzzle"].includes(type);
 export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "classic"): Question {
   return {
     type,
@@ -209,6 +219,18 @@ export function youtubeId(raw: string): string | null {
     return null;
   }
 }
+/** Where a YouTube link asks to start, in seconds (`t=43`, `t=1m05s`, `start=43`); 0 when it does not say. */
+export function youtubeStart(raw: string): number {
+  try {
+    const u = new URL(raw);
+    const t = u.searchParams.get("t") ?? u.searchParams.get("start") ?? "";
+    const parts = t.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/);
+    if (!t || !parts) return 0;
+    return Math.min(Number(parts[1] ?? 0) * 3600 + Number(parts[2] ?? 0) * 60 + Number(parts[3] ?? 0), 86400);
+  } catch {
+    return 0;
+  }
+}
 export function safeMediaUrl(url: string) {
   if (/^\/api\/media\/[a-f0-9-]{36}$/.test(url)) return true;
   // Illustrations of the SQuizz Originals, served by the site itself.
@@ -253,7 +275,7 @@ export function validateQuestion(raw: unknown): Question {
   for (const m of q.media) {
     check(
       m &&
-        ["image", "video", "youtube", "link"].includes(m.kind) &&
+        ["image", "video", "audio", "youtube", "link"].includes(m.kind) &&
         typeof m.url === "string" &&
         m.url.length <= 2000 &&
         safeMediaUrl(m.url),
@@ -297,7 +319,7 @@ export function validateQuestion(raw: unknown): Question {
         "Ordre du puzzle invalide.",
       );
   }
-  if (q.type === "text")
+  if (typedAnswer(q.type))
     check(
       Array.isArray(q.accepted) &&
         q.accepted.length >= 1 &&
@@ -344,6 +366,11 @@ export function validateQuestion(raw: unknown): Question {
     [q.minLabel, q.maxLabel].every((l) => typeof l === "string" && l.length <= 40),
     "Libellés d’échelle limités à 40 caractères.",
   );
+  if (q.type === "blindtest")
+    check(
+      q.media.some(isSoundtrack),
+      "Ajoutez l’extrait à faire deviner : un fichier audio ou un lien YouTube.",
+    );
   if (["pin", "pinpoll"].includes(q.type)) {
     check(
       q.media.some((m) => m.kind === "image"),
@@ -408,7 +435,7 @@ export function evaluateAnswer(
             q.correctAnswers.every((i) => a.choices!.includes(i)),
     };
   }
-  if (["text", "open", "wordcloud"].includes(q.type)) {
+  if (typedAnswer(q.type) || ["open", "wordcloud"].includes(q.type)) {
     if (
       typeof a.text !== "string" ||
       !a.text.trim() ||
@@ -417,7 +444,9 @@ export function evaluateAnswer(
       return fail();
     return {
       payload: { text: a.text.trim() },
-      correct: q.type === "text" ? q.accepted.some((t) => normalizeText(t) === normalizeText(a.text!)) : null,
+      correct: typedAnswer(q.type)
+        ? q.accepted.some((t) => normalizeText(t) === normalizeText(a.text!))
+        : null,
     };
   }
   if (["slider", "scale", "nps"].includes(q.type)) {
@@ -468,8 +497,13 @@ export function evaluateAnswer(
   }
   return fail();
 }
-export function publicQuestion(q: Question, revealed: boolean, index = 0) {
+/**
+ * What a visitor may see of a question. The extract of a blind test plays on the host's screen only:
+ * until the reveal, players receive no media (a link or a caption would give the answer away).
+ */
+export function publicQuestion(q: Question, revealed: boolean, index = 0, host = true) {
   const { correct, correctAnswers, accepted, target, tolerance, pin, order, explanation, ...visible } = q;
+  if (q.type === "blindtest" && !revealed && !host) visible.media = [];
   // Games store puzzle options already shuffled, never in the solution order (see shufflePuzzles),
   // so the stored order is shown as is: nothing in it points to the answer.
   void index;

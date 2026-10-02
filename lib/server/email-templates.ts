@@ -1,7 +1,7 @@
 import "server-only";
 import { COMPANY_INFO } from "@/lib/company-info";
 import type { Plan } from "@prisma/client";
-import { PLANS, isPaid, limitsSummary, priceLabel } from "@/lib/plans";
+import { EVENT_PASS, PLANS, isPaid, limitsSummary, priceLabel } from "@/lib/plans";
 import { appUrl } from "./mail";
 
 /**
@@ -177,7 +177,7 @@ export function welcomeEmail(o: { name: string; organization: string }): Email {
   const site = appUrl();
   return {
     subject: `Bienvenue sur SQuizz, ${o.name} !`,
-    text: `Bonjour ${o.name},\n\nVotre espace « ${o.organization} » est prêt sur SQuizz.\n\n1. Créez votre premier quiz (13 types de questions, images, vidéos).\n2. Lancez une partie : un code et un QR code s’affichent à l’écran.\n3. Vos participants jouent depuis leur téléphone, sans application.\n\nCommencer : ${site}/app\n\nUne question ? Répondez simplement à cet email.`,
+    text: `Bonjour ${o.name},\n\nVotre espace « ${o.organization} » est prêt sur SQuizz.\n\n1. Créez votre premier quiz (14 types de questions, images, vidéos).\n2. Lancez une partie : un code et un QR code s’affichent à l’écran.\n3. Vos participants jouent depuis leur téléphone, sans application.\n\nCommencer : ${site}/app\n\nUne question ? Répondez simplement à cet email.`,
     html: layout({
       preheader: `Votre espace ${o.organization} est prêt : créez votre premier quiz.`,
       eyebrow: "Bienvenue",
@@ -185,7 +185,7 @@ export function welcomeEmail(o: { name: string; organization: string }): Email {
       highlight: o.name,
       body: `<p style="margin:0">Votre espace <strong>${esc(o.organization)}</strong> est prêt. Trois étapes et c’est parti :</p>
              ${steps([
-               "<strong>Créez votre premier quiz</strong> : 13 types de questions, images, vidéos et diapos.",
+               "<strong>Créez votre premier quiz</strong> : 14 types de questions, images, vidéos et diapos.",
                "<strong>Lancez une partie</strong> : un code et un QR code s’affichent sur votre écran.",
                "<strong>Faites jouer la salle</strong> : chacun répond depuis son téléphone, sans application.",
              ])}`,
@@ -440,6 +440,29 @@ export function verifyEmail(o: { name: string; link: string; hours: number }): E
       body: `<p style="margin:0 0 12px">Bonjour ${esc(o.name)},</p><p style="margin:0">Merci pour votre inscription ! Pour activer votre espace SQuizz, confirmez que cette adresse e-mail est bien la vôtre.</p>`,
       cta: { label: "Confirmer mon adresse", url: o.link, intro: "Un clic et c’est parti." },
       note: `Ce lien est valable ${o.hours} heures et ne sert qu’une fois. Si vous n’avez pas créé de compte SQuizz, ignorez cet email : aucun compte ne sera activé.`,
+    }),
+  };
+}
+
+/** Confirms a paid event pass to the organisation's administrators. */
+export function eventPassEmail(o: { name: string; organization: string; until: Date }): Email {
+  const site = appUrl();
+  const until = o.until.toLocaleString("fr-FR", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "Europe/Paris",
+  });
+  const detail = limitsSummary(PLANS[EVENT_PASS.plan]);
+  return {
+    subject: `Votre ${EVENT_PASS.label} est activé pour ${o.organization}`,
+    text: `Bonjour ${o.name},\n\nLe ${EVENT_PASS.label} est activé pour l’espace « ${o.organization} » jusqu’au ${until} : ${detail}.\n\nPaiement unique, sans abonnement : rien ne sera renouvelé. Après cette date, votre espace retrouve son offre habituelle et vos quiz sont conservés.\n\n${site}/app`,
+    html: layout({
+      preheader: `${EVENT_PASS.label} activé jusqu’au ${until}.`,
+      eyebrow: "Votre offre",
+      title: "Votre pack est prêt !",
+      highlight: "prêt",
+      body: `<p style="margin:0 0 12px">Bonjour ${esc(o.name)},</p><p style="margin:0 0 12px">Le <strong>${EVENT_PASS.label}</strong> est activé pour l’espace <strong>${esc(o.organization)}</strong> jusqu’au <strong>${until}</strong> : ${detail}.</p><p style="margin:0">Paiement unique, sans abonnement : rien ne sera renouvelé. Après cette date, votre espace retrouve son offre habituelle et vos quiz sont conservés.</p>`,
+      cta: { label: "Préparer mon événement", url: `${site}/app` },
     }),
   };
 }

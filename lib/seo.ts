@@ -1,5 +1,5 @@
 import { COMPANY_INFO } from "@/lib/company-info";
-import { PLAN_KEYS, PLANS, limitsSummary, priceLabel } from "@/lib/plans";
+import { EVENT_PASS, PLAN_KEYS, PLANS, limitsSummary, priceLabel } from "@/lib/plans";
 
 /**
  * Facts about SQuizz shared by the visible pages, the structured data (JSON-LD) and /llms.txt, so
@@ -51,6 +51,7 @@ export const QUESTION_TYPES = [
   "Quiz (choix multiples)",
   "Vrai ou faux",
   "Réponse libre",
+  "Blind test (extrait musical à deviner)",
   "Curseur",
   "Réponse par pin’s sur une image",
   "Puzzle (remettre dans l’ordre)",
@@ -95,6 +96,14 @@ export const FAQ: { q: string; a: string }[] = [
     a:
       "Sur un serveur situé à Francfort (Allemagne, Union européenne). Les parties, pseudos et réponses sont supprimés automatiquement " +
       "24 heures après la partie. SQuizz respecte le RGPD : chaque utilisateur peut exporter ou supprimer son compte.",
+  },
+  {
+    q: "Peut-on utiliser SQuizz pour un seul événement, sans abonnement ?",
+    a: `Oui. Le ${EVENT_PASS.label} coûte ${EVENT_PASS.price} € en une seule fois : pendant ${EVENT_PASS.days} jours, jusqu’à ${PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie, sans abonnement ni renouvellement.`,
+  },
+  {
+    q: "Peut-on faire un blind test avec SQuizz ?",
+    a: "Oui. Le type de question « Blind test » joue un extrait (fichier audio ou lien YouTube, image masquée) sur l’écran de l’animateur ; les joueurs écrivent le titre ou l’artiste sur leur téléphone. Les droits de diffusion de la musique restent à la charge de l’organisateur.",
   },
   {
     q: "Pour qui est fait SQuizz ?",

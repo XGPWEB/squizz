@@ -2,16 +2,34 @@
 import { MEDIA_LIMITS, formatSize, limitFor } from "@/lib/media-limits";
 import { compressImage } from "@/lib/client/compress-image";
 import { useState, type KeyboardEvent } from "react";
-import { ExternalLink, Play, Upload, X } from "lucide-react";
+import { ExternalLink, Music, Play, Square, Upload, X } from "lucide-react";
 import { saveConsent, useConsent } from "@/components/site/cookie-consent";
-import { youtubeId, safeMediaUrl, type Media } from "@/lib/question";
+import { youtubeId, youtubeStart, safeMediaUrl, isSoundtrack, type Media } from "@/lib/question";
 import { Choice } from "./settings";
-export function MediaView({ media }: { media: Media[] }) {
+/**
+ * The media of a question. `masked` is the blind test before the reveal: only the extract is kept, played
+ * without its picture or caption, which would give the answer away.
+ */
+export function MediaView({
+  media,
+  masked = false,
+  autoPlay = false,
+}: {
+  media: Media[];
+  masked?: boolean;
+  autoPlay?: boolean;
+}) {
   return (
     <div className="question-media">
-      {media.map((m, i) => {
+      {(masked ? media.filter(isSoundtrack).slice(0, 1) : media).map((m, i) => {
         if (!safeMediaUrl(m.url)) return null;
         const id = m.kind === "youtube" ? youtubeId(m.url) : null;
+        if (masked)
+          return (
+            <figure key={`${i}-${m.url}`}>
+              <MysteryExtract media={m} autoPlay={autoPlay} />
+            </figure>
+          );
         return (
           <figure key={`${i}-${m.url}`}>
             {m.kind === "image" ? (
@@ -24,6 +42,8 @@ export function MediaView({ media }: { media: Media[] }) {
                 playsInline
                 aria-label={m.caption || "Vidéo de la question"}
               />
+            ) : m.kind === "audio" ? (
+              <audio src={m.url} controls preload="metadata" aria-label={m.caption || "Extrait audio"} />
             ) : id ? (
               <YouTubeVideo id={id} title={m.caption || "Vidéo YouTube"} />
             ) : m.kind === "link" ? (
@@ -37,6 +57,47 @@ export function MediaView({ media }: { media: Media[] }) {
           </figure>
         );
       })}
+    </div>
+  );
+}
+/**
+ * The extract of a blind test on the host's screen: an audio file plays as soon as the question appears;
+ * a YouTube video plays behind a cover once the host starts it (which is also their agreement to load it).
+ */
+function MysteryExtract({ media, autoPlay }: { media: Media; autoPlay: boolean }) {
+  const { consent } = useConsent();
+  const [playing, setPlaying] = useState(false);
+  const id = media.kind === "youtube" ? youtubeId(media.url) : null;
+  if (media.kind === "audio")
+    return (
+      <div className="mystery-extract">
+        <Music size={34} aria-hidden />
+        <strong>Extrait mystère</strong>
+        <audio src={media.url} controls autoPlay={autoPlay} preload="auto" aria-label="Extrait à deviner" />
+      </div>
+    );
+  if (!id) return null;
+  return (
+    <div className={`mystery-extract ${playing ? "playing" : ""}`}>
+      <Music size={34} aria-hidden />
+      <strong>{playing ? "Extrait en cours…" : "Extrait mystère"}</strong>
+      {playing && (
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&controls=0&start=${youtubeStart(media.url)}`}
+          title="Extrait à deviner"
+          allow="autoplay; encrypted-media"
+          referrerPolicy="strict-origin-when-cross-origin"
+          tabIndex={-1}
+          aria-hidden
+        />
+      )}
+      <button type="button" className="button small" onClick={() => setPlaying((p) => !p)}>
+        {playing ? <Square size={16} /> : <Play size={16} />}
+        {playing ? "Arrêter l’extrait" : "Lancer l’extrait"}
+      </button>
+      {!playing && !consent?.services.youtube && (
+        <p>L’extrait vient de YouTube (Google), qui reçoit votre adresse IP et peut déposer ses cookies.</p>
+      )}
     </div>
   );
 }
@@ -167,6 +228,8 @@ export function MediaEditor({
     onBusy(true);
     try {
       const image = file.type.startsWith("image/");
+      if (file.type.startsWith("audio/") && file.size > MEDIA_LIMITS.audio)
+        throw new Error(`Fichier audio trop lourd : ${formatSize(MEDIA_LIMITS.audio)} maximum.`);
       if (file.size > (image ? MEDIA_LIMITS.source : MEDIA_LIMITS.video))
         throw new Error(
           image
@@ -207,11 +270,12 @@ export function MediaEditor({
   }
   return (
     <section className="media-editor">
-      <h3>Photos, vidéos & liens</h3>
+      <h3>Photos, vidéos, sons & liens</h3>
       <p className="hint">
         Photos JPG, PNG ou WebP : optimisées automatiquement ({MEDIA_LIMITS.maxSide} px,{" "}
         {formatSize(MEDIA_LIMITS.image)} maximum). GIF : {formatSize(MEDIA_LIMITS.gif)}. Vidéos MP4 ou WebM :{" "}
-        {formatSize(MEDIA_LIMITS.video)}. Jusqu’à 4 médias.
+        {formatSize(MEDIA_LIMITS.video)}. Sons MP3, M4A ou OGG : {formatSize(MEDIA_LIMITS.audio)}. Jusqu’à 4
+        médias.
       </p>
       {media.map((m, i) => (
         <div className="media-edit-row" key={i}>
@@ -222,6 +286,7 @@ export function MediaEditor({
               options={[
                 ["image", "Photo par lien"],
                 ["video", "Vidéo par lien"],
+                ["audio", "Son par lien"],
                 ["youtube", "YouTube"],
                 ["link", "Lien web"],
               ]}
@@ -263,10 +328,10 @@ export function MediaEditor({
       <div className="row">
         <label className={`button secondary small upload-button ${media.length >= 4 ? "disabled" : ""}`}>
           <Upload size={17} />
-          {uploading ? "Optimisation et import…" : "Importer une photo ou vidéo"}
+          {uploading ? "Optimisation et import…" : "Importer une photo, une vidéo ou un son"}
           <input
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
+            accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,audio/mpeg,audio/mp4,audio/x-m4a,audio/ogg,.mp3,.m4a,.ogg"
             disabled={uploading || media.length >= 4}
             onChange={(e) => {
               const f = e.target.files?.[0];

@@ -57,7 +57,8 @@ export function Footer() {
       </div>
       <div className="footer-bottom">
         <span>
-          © {new Date().getFullYear()} SQuizz · v{APP_VERSION} · <CookieSettingsLink className="footer-cookie-link" />
+          © {new Date().getFullYear()} SQuizz · v{APP_VERSION} ·{" "}
+          <CookieSettingsLink className="footer-cookie-link" />
         </span>
         <span>
           Site conçu par <a href="https://www.pressweb.fr/">Pressweb</a>

@@ -7,6 +7,8 @@ export const MEDIA_LIMITS = {
   /** Animated GIFs are sent as they are: re-encoding would lose the animation. */
   gif: 5 * MB,
   video: 20 * MB,
+  /** A music extract for a blind test: a whole song in MP3 fits. */
+  audio: 10 * MB,
   /** Largest photo accepted from the device before optimisation. */
   source: 30 * MB,
   /** Longest side of an optimised photo, in pixels: sharp on a projector, light on a phone. */
@@ -18,7 +20,9 @@ export const limitFor = (type: string) =>
     ? MEDIA_LIMITS.gif
     : type.startsWith("image/")
       ? MEDIA_LIMITS.image
-      : MEDIA_LIMITS.video;
+      : type.startsWith("audio/")
+        ? MEDIA_LIMITS.audio
+        : MEDIA_LIMITS.video;
 
 export const formatSize = (bytes: number) =>
   bytes >= MB

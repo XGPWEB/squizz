@@ -358,7 +358,9 @@ export function gameState(g: GameContext) {
     revealed,
     maxPlayers: room.maxPlayers,
     question:
-      room.phase === "lobby" || startsIn > 0 ? null : publicQuestion(question, revealed, room.question),
+      room.phase === "lobby" || startsIn > 0
+        ? null
+        : publicQuestion(question, revealed, room.question, g.host),
     players,
     personal:
       personal && revealed

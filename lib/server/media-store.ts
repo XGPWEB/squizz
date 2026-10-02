@@ -14,7 +14,22 @@ export const mediaDir = () => path.resolve(/*turbopackIgnore: true*/ process.env
 export const mediaPath = (id: string) => path.join(/*turbopackIgnore: true*/ mediaDir(), id);
 export const isMediaId = (id: string) => /^[a-f0-9-]{36}$/.test(id);
 
-export const MEDIA_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm"];
+export const MEDIA_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "video/mp4",
+  "video/webm",
+  "audio/mpeg",
+  "audio/mp4",
+  "audio/ogg",
+];
+/** Browsers name the same audio formats differently (an M4A is "audio/x-m4a" in Chrome and Safari). */
+export const mediaType = (type: string) =>
+  ({ "audio/mp3": "audio/mpeg", "audio/x-m4a": "audio/mp4", "audio/m4a": "audio/mp4" })[type] ?? type;
+export const mediaKind = (type: string) =>
+  type.startsWith("image/") ? "image" : type.startsWith("audio/") ? "audio" : "video";
 
 /** Checks the file's first bytes so a renamed file cannot pass as another format. */
 export function matchesSignature(type: string, b: Uint8Array) {
@@ -23,7 +38,10 @@ export function matchesSignature(type: string, b: Uint8Array) {
   if (type === "image/png") return b[0] === 137 && ascii(1, 4) === "PNG";
   if (type === "image/webp") return ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP";
   if (type === "image/gif") return ["GIF87a", "GIF89a"].includes(ascii(0, 6));
-  if (type === "video/mp4") return ascii(4, 8) === "ftyp";
+  if (type === "video/mp4" || type === "audio/mp4") return ascii(4, 8) === "ftyp";
+  // An MP3 starts with an ID3 tag or directly with an audio frame (11 sync bits).
+  if (type === "audio/mpeg") return ascii(0, 3) === "ID3" || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0);
+  if (type === "audio/ogg") return ascii(0, 4) === "OggS";
   if (type === "video/webm") return b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3;
   return false;
 }
@@ -33,7 +51,7 @@ type Member = SessionUser & { organizationId: string; organization: Parameters<t
 /** Format, size and real content of a file, without storing anything: throws the French reason. */
 export function checkMedia(bytes: Uint8Array, type: string) {
   if (!MEDIA_TYPES.includes(type) || bytes.length === 0)
-    fail("Formats acceptés : JPG, PNG, WebP, GIF, MP4 ou WebM.");
+    fail("Formats acceptés : JPG, PNG, WebP, GIF, MP4, WebM, ou MP3, M4A et OGG pour le son.");
   if (bytes.length > limitFor(type))
     fail(`Fichier trop lourd : ${formatSize(limitFor(type))} maximum pour ce format.`, 413);
   if (!matchesSignature(type, bytes.slice(0, 32)))

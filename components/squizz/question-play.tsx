@@ -19,12 +19,15 @@ export function QuestionPlay({
   submitted,
   revealed,
   onSubmit,
+  autoPlay = false,
 }: {
   question: PublicQuestion;
   disabled: boolean;
   submitted: AnswerPayload | null;
   revealed: boolean;
   onSubmit: (answer: AnswerPayload) => void;
+  /** On the host's screen, the extract of a blind test starts with the question. */
+  autoPlay?: boolean;
 }) {
   const [choices, setChoices] = useState<number[]>([]),
     [text, setText] = useState(""),
@@ -41,7 +44,11 @@ export function QuestionPlay({
   if (q.type === "slide") return <SlideView slide={q} />;
   return (
     <>
-      <MediaView media={pinMedia ? q.media.filter((m) => m !== pinMedia) : q.media} />
+      <MediaView
+        media={pinMedia ? q.media.filter((m) => m !== pinMedia) : q.media}
+        masked={q.type === "blindtest" && !revealed}
+        autoPlay={autoPlay}
+      />
 
       {["quiz", "truefalse", "poll"].includes(q.type) && (
         <>
@@ -78,7 +85,7 @@ export function QuestionPlay({
           )}
         </>
       )}
-      {["text", "open", "wordcloud"].includes(q.type) && (
+      {["text", "blindtest", "open", "wordcloud"].includes(q.type) && (
         <form
           method="post"
           className="response-form"
@@ -92,7 +99,9 @@ export function QuestionPlay({
               ? "Ton mot ou ta courte expression"
               : q.type === "open"
                 ? "Ton avis"
-                : "Ta réponse"}
+                : q.type === "blindtest"
+                  ? "Le titre ou l’artiste"
+                  : "Ta réponse"}
             {q.type === "open" ? (
               <textarea
                 rows={4}
@@ -380,7 +389,7 @@ export function QuestionResults({
           <strong>{q.correctAnswers?.map((i) => q.options[i]).join(" · ")}</strong>
         </p>
       )}
-      {q.type === "text" && (
+      {["text", "blindtest"].includes(q.type) && (
         <p className="info-box">
           Réponse{(q.accepted?.length ?? 0) > 1 ? "s" : ""} acceptée{(q.accepted?.length ?? 0) > 1 ? "s" : ""}{" "}
           : <strong>{q.accepted?.join(" · ")}</strong>
@@ -502,7 +511,7 @@ export function QuestionResults({
           {q.type === "wordcloud" && (
             <WordCloud words={a.texts} title={q.text} responses={a.responses} canDownload={host} />
           )}
-          {["open", "brainstorm", "text"].includes(q.type) && (
+          {["open", "brainstorm", "text", "blindtest"].includes(q.type) && (
             <div className="idea-board">
               {a.texts.map((t, i) => (
                 <article key={i}>

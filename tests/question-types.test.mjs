@@ -6,6 +6,7 @@ import {
   publicQuestion,
   aggregateAnswers,
   youtubeId,
+  youtubeStart,
 } from "../lib/question.ts";
 const make = (type, extra = {}) => validateQuestion({ ...newQuestion(type), text: "Test", ...extra });
 const quiz = make("quiz", { options: ["A", "B", "C", "D"], multiple: true, correctAnswers: [0, 2] });
@@ -17,6 +18,26 @@ const tf = make("truefalse", { correctAnswers: [1] });
 assert(evaluateAnswer(tf, { choices: [1] }).correct);
 const text = make("text", { accepted: ["Éléphant", "elephant africain"] });
 assert(evaluateAnswer(text, { text: "  ELEPHANT  " }).correct);
+const extract = {
+  kind: "audio",
+  url: "/api/media/11111111-2222-3333-4444-555555555555",
+  caption: "La Bohème",
+};
+const blind = make("blindtest", { accepted: ["La Bohème", "Aznavour"], media: [extract] });
+assert(evaluateAnswer(blind, { text: " la boheme " }).correct);
+assert(evaluateAnswer(blind, { text: "AZNAVOUR" }).correct);
+assert(!evaluateAnswer(blind, { text: "Brel" }).correct);
+// The extract is required, and players never receive it (its link or caption) before the reveal.
+assert.throws(() => make("blindtest", { accepted: ["x"] }), /extrait/);
+assert.throws(() =>
+  make("blindtest", { accepted: ["x"], media: [{ kind: "image", url: "https://a.fr/a.png", caption: "" }] }),
+);
+assert.equal(publicQuestion(blind, false, 0, false).media.length, 0);
+assert.equal(publicQuestion(blind, false, 0, true).media.length, 1);
+assert.equal(publicQuestion(blind, true, 0, false).media.length, 1);
+assert.equal(youtubeStart("https://youtu.be/dQw4w9WgXcQ?t=43"), 43);
+assert.equal(youtubeStart("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=1m05s"), 65);
+assert.equal(youtubeStart("https://www.youtube.com/watch?v=dQw4w9WgXcQ"), 0);
 const slider = make("slider", { target: 50, tolerance: 2 });
 assert(evaluateAnswer(slider, { value: 52 }).correct);
 assert(!evaluateAnswer(slider, { value: 53 }).correct);
@@ -29,7 +50,7 @@ assert.throws(() => evaluateAnswer(pin, { x: 2, y: 0.5 }));
 const puzzle = make("puzzle", { options: ["A", "B", "C"], order: [1, 0, 2] });
 assert(evaluateAnswer(puzzle, { order: [1, 0, 2] }).correct);
 assert.throws(() => evaluateAnswer(puzzle, { order: [1, 1, 2] }));
-for (const q of [quiz, tf, text, slider, pin, puzzle]) {
+for (const q of [quiz, tf, text, blind, slider, pin, puzzle]) {
   const visible = publicQuestion(q, false);
   for (const field of ["correct", "correctAnswers", "accepted", "target", "tolerance", "pin", "order"])
     assert(!(field in visible), `${q.type} leaked ${field}`);

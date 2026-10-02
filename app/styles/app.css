@@ -711,3 +711,29 @@ main:focus {
 .app-footer {
   color: #55514b;
 }
+/* Event pass on the subscription page: one payment, shown apart from the subscriptions. */
+.panel.event-pass {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 28px;
+  background: var(--acid);
+  box-shadow: 7px 7px 0 var(--pink);
+}
+.panel.event-pass.wanted {
+  outline: 4px solid var(--pink);
+  outline-offset: 4px;
+}
+.panel.event-pass > div {
+  flex: 1 1 340px;
+}
+.panel.event-pass h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+.panel.event-pass p {
+  margin: 0;
+}

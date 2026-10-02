@@ -2,6 +2,24 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.9.0] — 2026-10-02
+
+Migration `20261002200000_event_pass` (appliquée par `deploy.sh`).
+
+### Blind test
+- Nouveau type de question « Blind test » : un extrait (fichier MP3, M4A ou OGG jusqu’à 10 Mo, ou lien YouTube dont l’image reste masquée) est joué sur l’écran de l’animateur ; les joueurs écrivent le titre ou l’artiste sur leur téléphone. Jusqu’à 10 réponses acceptées, accents et majuscules ignorés.
+- L’extrait, son lien et sa légende ne sont jamais envoyés aux joueurs avant la correction ; ils apparaissent ensuite avec la bonne réponse. Un lien YouTube peut indiquer où commencer (`t=43`).
+- Les sons s’ajoutent aussi aux autres questions et aux diapos (import ou lien), et suivent l’export / import des quiz.
+
+### Pack Événement
+- Paiement unique de 29 €, sans abonnement : pendant 7 jours, l’espace a les limites de l’offre Premium (80 joueurs par partie). Rien n’est renouvelé ; ensuite l’espace retrouve son offre et ses quiz sont conservés. Un second pack ajoute 7 jours.
+- Achat depuis la page « Abonnement » (administrateurs), présenté sur la page Tarifs ; e-mail de confirmation, badge « Pack Événement » dans l’espace, date de fin visible dans le super-admin.
+- Un paiement n’est compté qu’une fois, même si Stripe le signale plusieurs fois ; si le signalement tarde, le pack est activé au retour de la page de paiement. Facture émise par Stripe.
+- CGU complétées (pack, extraits sonores et droits de diffusion).
+
+### Corrections
+- Page d’accueil : le bandeau annonçait « jusqu’à 100 joueurs avec Pro » ; il reprend maintenant le vrai plafond (80 joueurs avec Premium).
+
 ## [1.8.6] — 2026-10-01
 
 ### Version affichée
