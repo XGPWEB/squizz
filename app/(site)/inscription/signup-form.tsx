@@ -4,7 +4,19 @@ import { AuthForm } from "@/components/auth/auth-form";
 import { postJson } from "@/lib/client/api";
 import { PasswordInput } from "@/components/site/password-input";
 import { VerifyPending } from "@/components/auth/verify-pending";
+import { EVENT_PASS, PLAN_KEYS, PLANS, isPaid, priceLabel } from "@/lib/plans";
 import { useState } from "react";
+
+/** The line above the title: the offer chosen on /tarifs (kept in `next`), else the free plan's promise. */
+function eyebrowFor(next: string) {
+  const offer = new URLSearchParams(next.split("?")[1]).get("offre");
+  const plan = PLAN_KEYS.find((k) => k === offer && isPaid(k));
+  const chosen =
+    offer === "EVENEMENT"
+      ? `${EVENT_PASS.label} · ${EVENT_PASS.price} € une seule fois`
+      : plan && `Offre ${PLANS[plan].label} · ${priceLabel(PLANS[plan])}`;
+  return chosen ? `${chosen} · paiement après l’inscription`.toUpperCase() : "GRATUIT, SANS CARTE BANCAIRE";
+}
 
 export function SignupForm({ next }: { next: string }) {
   const [pending, setPending] = useState<{ email: string; devLink?: string } | null>(null);
@@ -21,7 +33,7 @@ export function SignupForm({ next }: { next: string }) {
     );
   return (
     <AuthForm
-      eyebrow="GRATUIT, SANS CARTE BANCAIRE"
+      eyebrow={eyebrowFor(next)}
       title="Créez l’espace de votre équipe."
       submit="Créer mon espace"
       onSubmit={async (data) => {

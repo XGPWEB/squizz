@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.6] — 2026-10-02
+
+### Site
+- Page « Créer un espace » : quand on arrive depuis un bouton d’offre de la page Tarifs, la ligne au-dessus du titre rappelle l’offre choisie et son prix (« OFFRE PRO · 30 € / MOIS · PAIEMENT APRÈS L’INSCRIPTION ») au lieu de « GRATUIT, SANS CARTE BANCAIRE ».
+
 ## [1.10.5] — 2026-10-02
 
 ### Site
