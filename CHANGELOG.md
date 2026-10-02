@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.1] — 2026-10-02
+
+### Référencement
+- Les pages de connexion et d’inscription ouvertes depuis un bouton d’offre (« Choisir Pro », « Prendre le pack »…) ne sont plus explorées par les moteurs de recherche : liens marqués `nofollow` et adresses `?suite=` exclues dans `robots.txt`.
+
 ## [1.10.0] — 2026-10-02
 
 Migration `20261002300000_monitoring` (appliquée par `deploy.sh`). Scripts du serveur à mettre à jour avec `bash deploy.sh --setup`.

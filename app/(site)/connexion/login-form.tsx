@@ -39,7 +39,10 @@ export function LoginForm({ suspended, email, next }: { suspended: boolean; emai
           <Link href="/mot-de-passe-oublie">Mot de passe oublié ?</Link>
           <span>
             Pas encore de compte ?{" "}
-            <Link href={next === "/app" ? "/inscription" : `/inscription?suite=${encodeURIComponent(next)}`}>
+            <Link
+              href={next === "/app" ? "/inscription" : `/inscription?suite=${encodeURIComponent(next)}`}
+              rel={next === "/app" ? undefined : "nofollow"}
+            >
               Créer un espace
             </Link>
           </span>

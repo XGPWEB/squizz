@@ -9,7 +9,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/app", "/partie", "/api", "/invitation", "/reinitialiser"],
+      // « ?suite= » : the sign-in and sign-up pages reached from an offer button, the same page each time.
+      disallow: ["/app", "/partie", "/api", "/invitation", "/reinitialiser", "/*?suite="],
     },
     sitemap: `${SITE}/sitemap.xml`,
     host: SITE,

@@ -40,7 +40,10 @@ export function SignupForm({ next }: { next: string }) {
       footer={
         <span>
           Déjà un compte ?{" "}
-          <Link href={next === "/app" ? "/connexion" : `/connexion?suite=${encodeURIComponent(next)}`}>
+          <Link
+            href={next === "/app" ? "/connexion" : `/connexion?suite=${encodeURIComponent(next)}`}
+            rel={next === "/app" ? undefined : "nofollow"}
+          >
             Se connecter
           </Link>
         </span>

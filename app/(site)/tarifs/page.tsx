@@ -109,6 +109,8 @@ export default function PricingPage() {
                 <Link
                   className={`button${featured ? "" : " secondary"}`}
                   href={`/connexion?suite=${encodeURIComponent(`/app/abonnement?offre=${key}`)}`}
+                  // A sign-in page per offer is of no use to search engines (see app/robots.ts).
+                  rel="nofollow"
                 >
                   Choisir {p.label.split(" ")[0]}
                 </Link>
@@ -132,6 +134,7 @@ export default function PricingPage() {
         <Link
           className="button"
           href={`/connexion?suite=${encodeURIComponent("/app/abonnement?offre=EVENEMENT")}`}
+          rel="nofollow"
         >
           Prendre le pack
         </Link>
