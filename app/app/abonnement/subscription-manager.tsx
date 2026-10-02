@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, CreditCard, Ticket } from "lucide-react";
 import type { Plan } from "@prisma/client";
 import { postJson } from "@/lib/client/api";
@@ -31,6 +31,8 @@ const date = (d: string) => new Date(d).toLocaleDateString("fr-FR", { dateStyle:
 const dateTime = (d: string) =>
   new Date(d).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" });
 
+const OPENING_PAYMENT = "Ouverture de la page de paiement de l’offre que vous avez choisie…";
+
 const notices: Record<string, string> = {
   ok: "Paiement reçu, merci ! Votre offre s’active dans quelques secondes (rechargez la page si besoin).",
   pack: `Paiement reçu, merci ! Votre ${EVENT_PASS.label} est activé (rechargez la page s’il n’apparaît pas encore).`,
@@ -52,17 +54,22 @@ export function SubscriptionManager({
   org,
   online,
   wanted,
+  payNow,
   notice,
 }: {
   org: Org;
   online: boolean;
   wanted: Plan | "EVENEMENT" | null;
+  /** First visit after choosing `wanted` on the pricing page before signing up: go straight to its payment. */
+  payNow: boolean;
   notice: string | null;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [message, setMessage] = useState(notice ? (notices[notice] ?? "") : alreadyCovered(org, wanted));
+    [message, setMessage] = useState(
+      notice ? (notices[notice] ?? "") : payNow ? OPENING_PAYMENT : alreadyCovered(org, wanted),
+    );
   const current = PLANS[org.plan];
   const paid = org.plan !== "FREE" && !org.partner;
   const badge = planBadge(org);
@@ -79,6 +86,7 @@ export function SubscriptionManager({
       if (done) setMessage(done);
       router.refresh();
     } catch (e) {
+      setMessage("");
       setError((e as Error).message);
       // The message is at the top of the page, the button that failed may be far below.
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -101,8 +109,9 @@ export function SubscriptionManager({
     window.addEventListener("pageshow", back);
     return () => window.removeEventListener("pageshow", back);
   }, [router]);
-  const open = (path: string, body?: object) =>
+  const open = (path: string, body?: object, note?: string) =>
     run(async () => {
+      if (note) setMessage(note);
       const { url } = await postJson<{ url: string }>(path, body);
       window.location.assign(url);
       // Leaving for Stripe: nothing more may happen on this page, so this never ends (no refresh, buttons
@@ -110,6 +119,20 @@ export function SubscriptionManager({
       // the current page, and that reload cancels the departure: the payment page never opened.
       await new Promise<never>(() => {});
     });
+
+  // The offer chosen before signing up: its payment page opens by itself, once (a remount does not ask again;
+  // the request makes the server forget the choice, so coming back here is an ordinary visit).
+  const paying = useRef(false);
+  useEffect(() => {
+    if (!payNow || !wanted || paying.current) return;
+    paying.current = true;
+    open(
+      "/api/billing/checkout",
+      wanted === "EVENEMENT" ? { pass: true } : { plan: wanted },
+      OPENING_PAYMENT,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, []);
 
   function choose(plan: Plan) {
     const p = PLANS[plan];

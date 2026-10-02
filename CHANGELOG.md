@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.11] — 2026-10-02
+
+### Offres
+- Après avoir choisi une offre sur la page Tarifs puis créé son compte, la première connexion envoie directement vers la page de paiement Stripe de cette offre (abonnement ou Pack Événement). Cela n’arrive qu’une fois : en revenant de Stripe (paiement annulé, bouton « précédent »), on retrouve la page Abonnement normale. Si l’offre ne peut pas être achetée telle quelle (organisation partenaire, paiement en ligne indisponible), la page Abonnement s’affiche avec l’offre mise en avant, comme avant.
+
 ## [1.10.10] — 2026-10-02
 
 ### Corrigé

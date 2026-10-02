@@ -26,14 +26,28 @@ request(client(), 'POST', '/api/account/verify', {'token': 'x' * 43}, expect=404
 assert verify(second)['email'] == email
 assert verify(second).get('already') is True  # single use: a second click changes nothing
 # The offer chosen on the pricing page is kept with the organisation: a plain sign-in (no link followed, the
-# « Connexion » button, another device) opens the space on that offer, once.
+# « Connexion » button, another device) opens the space on that offer and goes straight to its payment page,
+# once: the payment request makes the server forget the choice.
 wanted = lambda: sql(f"""SELECT COALESCE(o."wantedOffer", '') FROM "Organization" o JOIN "User" u ON u."organizationId" = o.id WHERE u.email = '{email}'""")
 assert wanted() == 'PRO'
 member = login(client(), email, pw)
 landing = member.open(BASE + '/app', timeout=60)
 assert landing.geturl().endswith('/app/abonnement?offre=PRO'), landing.geturl()
-assert 'plan-pro wanted' in landing.read().decode()
+OPENING = 'Ouverture de la page de paiement'
+shown = landing.read().decode()
+assert 'plan-pro wanted' in shown and OPENING in shown
+assert wanted() == 'PRO'  # kept until the payment is asked for (the page asks for it by itself, in a browser)
+assert request(member, 'POST', '/api/billing/checkout', {'plan': 'PRO'})['url'].startswith('https://checkout.mock/')
 assert wanted() == '' and member.open(BASE + '/app', timeout=60).geturl().endswith('/app')
+# Coming back from Stripe (« back » button, cancelled payment) is an ordinary visit: no second departure.
+assert OPENING not in member.open(BASE + '/app/abonnement?offre=PRO', timeout=60).read().decode()
+# An offer that cannot be bought as is (here: a partner, Premium is already offered) is shown once, nothing more.
+sql(f"""UPDATE "Organization" o SET "wantedOffer" = 'PRO', partner = true FROM "User" u WHERE u."organizationId" = o.id AND u.email = '{email}'""")
+shown = member.open(BASE + '/app', timeout=60)
+assert shown.geturl().endswith('/app/abonnement?offre=PRO')
+page = shown.read().decode()
+assert OPENING not in page and 'est partenaire' in page and wanted() == ''
+sql(f"""UPDATE "Organization" o SET partner = false FROM "User" u WHERE u."organizationId" = o.id AND u.email = '{email}'""")
 # Only offers that are sold are remembered; a signup without one opens on the library as before.
 for suite, kept in (('/app/abonnement?offre=EVENEMENT', 'EVENEMENT'), ('/app/abonnement?offre=FREE', ''),
                     ('/app/abonnement?offre=nimporte', ''), ('/app/equipe', ''), (None, '')):

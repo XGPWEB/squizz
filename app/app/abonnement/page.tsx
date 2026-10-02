@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { PLAN_KEYS, offerOf } from "@/lib/plans";
+import { PLAN_KEYS, offerOf, passIsUseful } from "@/lib/plans";
 import { getSessionUser } from "@/lib/server/guard";
 import { prisma } from "@/lib/prisma";
 import { billingEnabled, reconcileEventPasses } from "@/lib/server/billing";
@@ -22,9 +22,19 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
   if (!user.organization) redirect("/super-admin");
   if (user.role === "HOST") redirect("/app/equipe");
   let org = user.organization;
-  // The offer chosen before signing up is shown once, then forgotten: later visits are ordinary ones.
-  const wanted = asked ?? offerOf(org.wantedOffer);
-  if (org.wantedOffer && !user.viewingAs)
+  // The offer chosen before signing up: the page opens on it and, when it can be bought as is (online
+  // payment, nothing subscribed yet), goes straight to its payment page — the checkout request then forgets
+  // the choice, so this happens once (coming back from Stripe is an ordinary visit). When it cannot be
+  // bought as is, the choice is shown this once and forgotten here.
+  const online = billingEnabled();
+  const chosen = user.viewingAs ? null : offerOf(org.wantedOffer);
+  const wanted = asked ?? chosen;
+  const buyable =
+    chosen === PASS
+      ? passIsUseful(org.plan)
+      : org.plan === "FREE" && !org.subscriptionStatus && !org.stripeSubscriptionId;
+  const payNow = Boolean(chosen) && chosen === wanted && online && !org.partner && buyable;
+  if (chosen && !payNow)
     await prisma.organization.update({ where: { id: org.id }, data: { wantedOffer: null } });
   // Back from paying the event pass: it is granted now, without waiting for Stripe's own notification.
   if (paiement === "pack") {
@@ -43,8 +53,9 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
         eventPassUntil: org.eventPassUntil?.toISOString() ?? null,
         hasCustomer: Boolean(org.stripeCustomerId),
       }}
-      online={billingEnabled()}
+      online={online}
       wanted={wanted}
+      payNow={payNow}
       notice={paiement ?? null}
     />
   );

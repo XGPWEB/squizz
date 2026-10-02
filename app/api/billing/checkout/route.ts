@@ -17,6 +17,10 @@ export const POST = route(async (req) => {
     z.union([z.object({ plan: z.enum(PLAN_KEYS) }), z.object({ pass: z.literal(true) })]),
   );
   const org = await prisma.organization.findUniqueOrThrow({ where: { id: user.organizationId } });
+  // A payment is being started: the offer kept from the pricing page has done its job (see the subscription
+  // page). Forgotten whatever happens next, so a failure never sends the buyer back here in a loop.
+  if (org.wantedOffer)
+    await prisma.organization.update({ where: { id: org.id }, data: { wantedOffer: null } });
   if ("pass" in input) {
     const url = await buyEventPass(org, user.email);
     await audit(user, "billing.event-pass", org.id);
