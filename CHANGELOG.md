@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.4] — 2026-10-02
+
+### Site
+- Page Tarifs : les boutons « Choisir Premium » et « Prendre le pack » sont blancs, comme ceux des autres offres (ils étaient verts sur fond vert).
+
 ## [1.10.3] — 2026-10-02
 
 ### Offres
