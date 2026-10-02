@@ -3,7 +3,7 @@
 Paid once, granted once: Premium limits for 7 days, extended by a second pass, back to the plan afterwards.
 """
 import secrets, time
-from helpers import client, call, request, signup, invite, mock, stripe_event, set_plan, sql
+from helpers import BASE, client, call, request, signup, invite, mock, stripe_event, set_plan, sql
 
 buy = lambda c, expect=200: request(c, 'POST', '/api/billing/checkout', {'pass': True}, expect=expect)
 org = lambda c: request(c, 'GET', '/api/org')['organization']
@@ -70,6 +70,16 @@ assert joined() == 5
 # --- A plan that already gives as much does not need it; a subscription can still be taken with a pass ---------
 set_plan(name, 'PREMIUM')
 buy(admin, expect=400)
+# The pricing page sends to the sign-up page; someone already signed in goes straight to the subscription page.
+offer = '/inscription?suite=%2Fapp%2Fabonnement%3Foffre%3DEVENEMENT'
+assert admin.open(BASE + offer, timeout=60).geturl().endswith('/app/abonnement?offre=EVENEMENT')
+assert client().open(BASE + offer, timeout=60).geturl().endswith(offer)
+# Coming from the pricing page for the pass, the page says why it is not offered.
+page = lambda: admin.open(BASE + '/app/abonnement?offre=EVENEMENT', timeout=60).read().decode()
+assert 'donne déjà tout ce qu’apporte le Pack Événement' in page()
+sql(f"""UPDATE "Organization" SET partner = true WHERE name = '{name}'""")
+assert 'est partenaire' in page() and 'le Pack Événement ne vous apporterait rien de plus' in page()
+sql(f"""UPDATE "Organization" SET partner = false WHERE name = '{name}'""")
 set_plan(name, 'PRO')
 assert buy(admin)['url'].startswith('https://checkout.mock/')
 print('PASS: event pass sold once per page, granted once per payment, 7 days of Premium limits, extended by a second pass, caught up when the webhook is late, gone when over.')

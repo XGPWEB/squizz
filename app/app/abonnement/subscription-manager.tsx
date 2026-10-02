@@ -38,6 +38,16 @@ const notices: Record<string, string> = {
   annule: "Paiement annulé : rien n’a été débité.",
 };
 
+/** Why the offer the visitor came for (from /tarifs) is not on the page: they already have as much. */
+function alreadyCovered(org: Org, wanted: Plan | "EVENEMENT" | null) {
+  const offer = wanted === "EVENEMENT" ? `le ${EVENT_PASS.label}` : "un abonnement";
+  if (wanted && wanted !== "FREE" && org.partner)
+    return `Votre organisation est partenaire : l’offre ${PLANS.PREMIUM.label} vous est déjà offerte, ${offer} ne vous apporterait rien de plus.`;
+  if (wanted === "EVENEMENT" && !passIsUseful(org.plan))
+    return `Votre offre ${PLANS[org.plan].label} donne déjà tout ce qu’apporte le ${EVENT_PASS.label}.`;
+  return "";
+}
+
 export function SubscriptionManager({
   org,
   online,
@@ -52,7 +62,7 @@ export function SubscriptionManager({
   const router = useRouter();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [message, setMessage] = useState(notice ? (notices[notice] ?? "") : "");
+    [message, setMessage] = useState(notice ? (notices[notice] ?? "") : alreadyCovered(org, wanted));
   const current = PLANS[org.plan];
   const paid = org.plan !== "FREE" && !org.partner;
   const badge = planBadge(org);

@@ -108,8 +108,8 @@ export default function PricingPage() {
               ) : (
                 <Link
                   className="button secondary"
-                  href={`/connexion?suite=${encodeURIComponent(`/app/abonnement?offre=${key}`)}`}
-                  // A sign-in page per offer is of no use to search engines (see app/robots.ts).
+                  href={`/inscription?suite=${encodeURIComponent(`/app/abonnement?offre=${key}`)}`}
+                  // A sign-up page per offer is of no use to search engines (see app/robots.ts).
                   rel="nofollow"
                 >
                   Choisir {p.label.split(" ")[0]}
@@ -133,7 +133,7 @@ export default function PricingPage() {
         </div>
         <Link
           className="button secondary"
-          href={`/connexion?suite=${encodeURIComponent("/app/abonnement?offre=EVENEMENT")}`}
+          href={`/inscription?suite=${encodeURIComponent("/app/abonnement?offre=EVENEMENT")}`}
           rel="nofollow"
         >
           Prendre le pack

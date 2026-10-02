@@ -16,7 +16,7 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
   const { offre, paiement } = await searchParams;
   const wanted = offre === PASS ? PASS : (PLAN_KEYS.find((k) => k === offre) ?? null);
   const user = await getSessionUser();
-  // « Choisir Pro » on /tarifs without an account: sign in (or sign up), then come back here.
+  // Not signed in: sign in (or sign up), then come back here.
   if (!user)
     redirect(`/connexion?suite=${encodeURIComponent(`/app/abonnement${wanted ? `?offre=${wanted}` : ""}`)}`);
   if (!user.organization) redirect("/super-admin");

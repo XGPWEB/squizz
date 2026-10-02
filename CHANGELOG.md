@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.5] — 2026-10-02
+
+### Site
+- Page Tarifs : « Choisir Essentiel / Pro / Premium » et « Prendre le pack » mènent à la page « Créer un espace » (avec le lien « Se connecter » pour ceux qui ont déjà un compte) au lieu de la page de connexion. Une personne déjà connectée arrive directement sur sa page Abonnement.
+- Page Abonnement : quand l’offre voulue n’est pas proposée parce que l’organisation a déjà autant (partenaire, ou Premium pour le Pack Événement), un message l’explique.
+
 ## [1.10.4] — 2026-10-02
 
 ### Site
