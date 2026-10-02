@@ -83,3 +83,23 @@ describe("emails", async () => {
     expect(mail.subject).toContain("Org");
   });
 });
+
+describe("session super-admin", async () => {
+  const { createAdminToken, readAdminToken, ADMIN_SESSION_MAX_SECONDS } =
+    await import("@/lib/server/admin-session");
+  const now = () => Math.floor(Date.now() / 1000);
+  test("le renouvellement garde la date de connexion", async () => {
+    const first = await readAdminToken(await createAdminToken({ id: "root", sessionVersion: 3 }));
+    expect(first).toMatchObject({ id: "root", sessionVersion: 3 });
+    expect(now() - first!.since).toBeLessThan(5);
+    const since = now() - 3 * 24 * 60 * 60;
+    const renewed = await readAdminToken(await createAdminToken({ id: "root", sessionVersion: 3, since }));
+    expect(renewed?.since).toBe(since);
+  });
+  test("au-delà de 7 jours, le mot de passe est redemandé même en pleine activité", async () => {
+    const since = now() - ADMIN_SESSION_MAX_SECONDS - 60;
+    expect(await readAdminToken(await createAdminToken({ id: "root", sessionVersion: 3, since }))).toBeNull();
+    expect(await readAdminToken("n'importe quoi")).toBeNull();
+    expect(await readAdminToken(undefined)).toBeNull();
+  });
+});

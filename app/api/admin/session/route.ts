@@ -2,7 +2,13 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { route, json } from "@/lib/server/api";
 import { verifyCredentials } from "@/lib/server/credentials";
-import { adminCookieName, adminCookieOptions, createAdminToken } from "@/lib/server/admin-session";
+import {
+  adminCookieName,
+  adminCookieOptions,
+  createAdminToken,
+  readAdminToken,
+} from "@/lib/server/admin-session";
+import { requireSuperAdmin } from "@/lib/server/guard";
 import { VIEW_COOKIE } from "@/lib/server/view-as";
 import { audit } from "@/lib/server/audit";
 import { fail } from "@/lib/server/http";
@@ -27,6 +33,19 @@ export const POST = route(async (req) => {
   jar.set(adminCookieName(), await createAdminToken(user), adminCookieOptions());
   jar.delete(VIEW_COOKIE);
   await audit(user, "super_admin.login", null);
+  return { ok: true };
+});
+
+/**
+ * Keeps the session open while the super-admin is at work: a new cookie with a fresh idle delay and the
+ * same sign-in date, so the 7-day limit still applies. Refused once the session is over or revoked.
+ */
+export const PUT = route(async () => {
+  await requireSuperAdmin();
+  const jar = await cookies();
+  const token = await readAdminToken(jar.get(adminCookieName())?.value);
+  if (!token) fail("Connectez-vous pour continuer.", 401);
+  jar.set(adminCookieName(), await createAdminToken(token), adminCookieOptions());
   return { ok: true };
 });
 

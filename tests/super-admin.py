@@ -9,6 +9,11 @@ admin, admin_email, _ = signup(f'Org vue {tag}')
 set_plan(f'Org vue {tag}', 'STARTER')  # Gratuit n'a qu'un membre
 host, host_email, _ = invite(admin, 'HOST', f'Animateur {tag}')
 root = admin_login(client(), root_email, root_pw)
+# --- The session is renewed while the super-admin works; a client or a visitor gets nothing ---
+request(root, 'PUT', '/api/admin/session')
+request(root, 'GET', '/api/admin/organizations')
+request(admin, 'PUT', '/api/admin/session', expect=401)
+request(client(), 'PUT', '/api/admin/session', expect=401)
 org_id = next(o['id'] for o in request(root, 'GET', '/api/admin/organizations')['organizations'] if o['name'] == f'Org vue {tag}')
 
 # --- "View as": only the super-admin can start it; it gives the org-admin view of that organisation ---

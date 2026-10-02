@@ -3,6 +3,7 @@ import { planBadge } from "@/lib/plans";
 import { Brand } from "./brand";
 import { AppBar } from "./app-bar";
 import { ViewAsBanner } from "./view-as-banner";
+import { AdminKeepAlive } from "./admin-keep-alive";
 
 const roleLabel = { SUPER_ADMIN: "Super-admin", ORG_ADMIN: "Administrateur", HOST: "Animateur" } as const;
 
@@ -11,6 +12,7 @@ export function AppHeader({ user, area }: { user: SessionUser; area: "app" | "ad
   const org = area === "app" ? user.organization : null;
   return (
     <>
+      {(area === "admin" || user.viewingAs) && <AdminKeepAlive />}
       {user.viewingAs && user.organization && (
         <ViewAsBanner organization={user.organization.name} organizationId={user.organization.id} />
       )}

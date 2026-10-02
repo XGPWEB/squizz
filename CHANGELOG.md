@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.9.1] — 2026-10-02
+
+### Super-admin
+- La session ne se ferme plus au bout de 12 heures en plein travail : elle se prolonge tant que le super-admin est utilisé, et se ferme après 12 heures sans activité. Le mot de passe est redemandé au plus tard 7 jours après la dernière connexion.
+
 ## [1.9.0] — 2026-10-02
 
 Migration `20261002200000_event_pass` (appliquée par `deploy.sh`).
