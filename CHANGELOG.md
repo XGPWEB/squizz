@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.13] — 2026-10-03
+
+### Site
+- Pages publiques : un bouton rond « haut de page » apparaît en bas à droite dès qu’on a fait défiler environ un écran. Il se remplit de rose à mesure qu’on avance dans la page, s’anime au survol avec l’étiquette « HOP, EN HAUT ! » et ramène en haut de la page en un clic. Les visiteurs qui demandent moins d’animations remontent sans effet de défilement.
+
 ## [1.10.12] — 2026-10-02
 
 ### Monitoring

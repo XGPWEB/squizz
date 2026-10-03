@@ -1,6 +1,7 @@
 import { PublicHeader } from "@/components/site/public-header";
 import { Footer } from "@/components/site/footer";
 import { Motion } from "@/components/site/motion";
+import { BackToTop } from "@/components/site/back-to-top";
 import { JsonLd } from "@/components/site/json-ld";
 import { organizationLd, websiteLd } from "@/lib/seo";
 
@@ -16,6 +17,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         {children}
       </main>
       <Footer />
+      <BackToTop />
       <JsonLd data={organizationLd} />
       <JsonLd data={websiteLd} />
     </>
