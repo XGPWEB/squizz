@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.18] — 2026-10-04
+
+### Corrigé
+- Rejoindre une partie : la correction de la 1.10.17 ne suffisait pas. Le code et le pseudo tapés avant la fin du chargement étaient effacés au moment où la page devenait active, et « C’est parti ! » ne faisait alors plus rien, sans message. Les deux champs sont désormais laissés au navigateur : ce qui est tapé reste en place et part tel quel. Un test en vrai navigateur rejoue ce cas, scripts retardés.
+
 ## [1.10.17] — 2026-10-04
 
 ### Corrigé

@@ -8,9 +8,7 @@ import { Brand } from "@/components/site/brand";
 
 export function JoinForm({ initialCode }: { initialCode: string }) {
   const router = useRouter();
-  const [code, setCode] = useState(initialCode),
-    [name, setName] = useState(""),
-    [error, setError] = useState(""),
+  const [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const ready = useHydrated();
   return (
@@ -29,13 +27,12 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
           className="stack"
           onSubmit={async (e) => {
             e.preventDefault();
-            // Read from the fields themselves: a player on a slow connection may have typed the code and
-            // the pseudo before the page's script started, and those keystrokes never reached the state.
+            // The two fields are left to the browser and read here: a player on a slow connection may type
+            // the code and the pseudo before the page's script has started. Fields driven by React would be
+            // emptied when it starts, and the form would then refuse to leave without a word.
             const fields = new FormData(e.currentTarget);
             const code = String(fields.get("code") ?? "").replace(/\D/g, "");
             const name = String(fields.get("name") ?? "");
-            setCode(code);
-            setName(name);
             setBusy(true);
             setError("");
             try {
@@ -51,8 +48,11 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
             Code de la partie
             <input
               name="code"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              defaultValue={initialCode}
+              onInput={(e) => {
+                const digits = e.currentTarget.value.replace(/\D/g, "");
+                if (digits !== e.currentTarget.value) e.currentTarget.value = digits;
+              }}
               inputMode="numeric"
               pattern="[0-9]{6}"
               maxLength={6}
@@ -64,8 +64,6 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
             Ton pseudo
             <input
               name="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
               placeholder="Ex. Capitaine Curieux"
               maxLength={24}
               required
