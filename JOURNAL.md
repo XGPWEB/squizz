@@ -61,12 +61,25 @@ Ce qui a été fait, dans l’ordre, et pourquoi. Le détail technique de chaque
 - **Sessions** : après un changement de mot de passe, une désactivation ou une suspension, l’ancien écran de partie perd la main en 5 secondes au plus.
 - **Téléphone** : onglets nommés pour les lecteurs d’écran, état de l’enregistrement visible dans l’éditeur.
 
+## 1er et 2 octobre 2026 — Versions 1.8.3 à 1.10.12
+
+Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, parcours d’achat depuis la page Tarifs : le détail de ces versions est dans le [CHANGELOG](CHANGELOG.md).
+
+## 3 et 4 octobre 2026 — Référencement, haut de page, session super-admin, tests (versions 1.10.13 et 1.10.14)
+
+- **Référencement** : trois jours après la mise en ligne, Search Console affiche encore « Traitement des données en cours ». Rien ne bloque côté site (pages en 200, pas de `noindex`, sitemap lu par Google depuis le 30 septembre) : c’est le délai normal d’un domaine neuf sans lien entrant. Un lien vers squizz.fun a été ajouté sur la page d’accueil de pressweb.fr (carte « Application SQuizz » des réalisations), et les cartes SQuizz et Barber Q PRO y ont été corrigées (étiquettes, titre, texte alternatif).
+- **Bouton « haut de page »** (1.10.13) sur les pages publiques : une pastille dans la charte, qui se remplit de rose au fil de la lecture, s’anime au survol et ramène en haut en un clic. Sur les largeurs intermédiaires (tablette en portrait, fenêtre réduite), elle recouvre la fin du crédit « Site conçu par Pressweb » tout en bas de page : laissé tel quel, à la demande de Xavier.
+- **Session du super-admin** (1.10.14) : 30 jours sans activité au lieu de 12 heures, mot de passe redemandé au plus tard après 90 jours au lieu de 7. La politique de confidentialité indique la nouvelle durée du cookie.
+- **Tests en vrai navigateur** : WebKit (le moteur de Safari) en plus de Chromium, et un nouveau scénario `browser-prod` qui rejoue les parcours de paiement sur un build de production. Le build de production demande aux navigateurs de tout charger en https ; WebKit l’applique aussi à `localhost`, où le serveur de test est en http : cette seule consigne est retirée pour lui dans les tests.
+- **Intégration continue** : elle installe WebKit, garde les traces Playwright d’un échec (elles n’étaient en réalité jamais envoyées) et dure environ 11 minutes au lieu de 9. Le scénario `billing` n’échoue plus sur une machine lente (il attendait un délai fixe).
+
 ## Reste à faire
 
 - Stripe : ajouter l’événement `checkout.session.expired` au webhook (facultatif).
 
 
-- **Search Console** : vérifier vers le 3 octobre que Google a lu `sitemap.xml` (il ne l’avait encore jamais demandé) ; importer le site dans **Bing Webmaster Tools**.
+- **Search Console** : revoir l’indexation vers le 10 octobre (`site:squizz.fun`, et le statut donné par « Inspection de l’URL ») ; demander l’indexation de la page d’accueil de pressweb.fr pour que Google y découvre le lien ; importer le site dans **Bing Webmaster Tools**.
+- **Test de l’éditeur sous WebKit** (`tests/browser/editeur.pw.ts`) : il a échoué quatre fois sur la CI, puis passé deux fois, sans que la cause soit trouvée (le titre saisi n’est pas pris en compte ; jamais reproduit en local). S’il échoue de nouveau, la trace Playwright est maintenant jointe à l’exécution de la CI (artefact `traces-navigateur`).
 - **Compte client personnel** à créer avec une autre adresse que contact@pressweb.fr.
 - **NAS** : ajouter la récupération du module rsync `squizz-backups`.
 - **Mentions légales** : adresse postale complète de Pressweb.
