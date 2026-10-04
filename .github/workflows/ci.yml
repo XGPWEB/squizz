@@ -62,5 +62,7 @@ jobs:
         with:
           name: traces-navigateur
           path: .playwright
+          # The folder's name starts with a dot: without this, nothing is uploaded.
+          include-hidden-files: true
           if-no-files-found: ignore
           retention-days: 7

@@ -11,7 +11,9 @@ export default defineConfig({
   // On a production build (scripts/e2e.sh browser-prod): its own payment tests, since the fake Stripe cannot
   // be plugged into it; the editor and the game run on both.
   testIgnore: process.env.SQUIZZ_BROWSER_BUILD === "production" ? "achat.pw.ts" : "production.pw.ts",
-  outputDir: ".playwright",
+  // One folder per build: each run empties its own, so the traces of a failed « browser » survive the
+  // « browser-prod » that follows it.
+  outputDir: process.env.SQUIZZ_BROWSER_BUILD === "production" ? ".playwright/production" : ".playwright/dev",
   workers: 1,
   timeout: 90_000,
   expect: { timeout: 15_000 },
