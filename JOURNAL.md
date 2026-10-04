@@ -73,13 +73,26 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - **Tests en vrai navigateur** : WebKit (le moteur de Safari) en plus de Chromium, et un nouveau scénario `browser-prod` qui rejoue les parcours de paiement sur un build de production. Le build de production demande aux navigateurs de tout charger en https ; WebKit l’applique aussi à `localhost`, où le serveur de test est en http : cette seule consigne est retirée pour lui dans les tests.
 - **Intégration continue** : elle installe WebKit, garde les traces Playwright d’un échec (elles n’étaient en réalité jamais envoyées) et dure environ 11 minutes au lieu de 9. Le scénario `billing` n’échoue plus sur une machine lente (il attendait un délai fixe).
 
+## 4 octobre 2026 — Saisie avant le chargement, plein écran, partie en famille (versions 1.10.15 à 1.10.21)
+
+- **Saisie perdue avant la fin du chargement** : la trace d’un test qui échouait par intermittence sous WebKit a montré un vrai défaut. Ce qui est tapé avant que la page soit active reste affiché, mais la page ne le reçoit pas, puis le remet à sa valeur de départ. Dans l’**éditeur** (1.10.15), les champs ne s’ouvrent qu’une fois l’éditeur prêt. Sur **« Rejoindre une partie »**, une première correction (1.10.17) lisait les champs à l’envoi : elle arrivait trop tard, les champs étaient déjà vidés et l’envoi était bloqué sans message. La 1.10.18 laisse les deux champs au navigateur, et un test rejoue le cas avec des scripts retardés. Leçon retenue : reproduire le défaut avant de livrer une correction déduite d’un test intermittent. Les autres formulaires (inscription, contact, compte, équipe) n’ont pas été passés en revue.
+- **Plein écran pour l’animateur** (1.10.16) : un bouton en haut à droite de l’écran projeté masque les barres du navigateur, de la salle d’attente au podium. Absent sur iPhone, où le navigateur ne sait pas le faire.
+- **Organisations vides dans le super-admin** (1.10.19) : créer une organisation pour une adresse qui a déjà un compte affichait une erreur mais laissait une organisation à 0 membre ; trois « Famille » se sont ainsi retrouvées dans la liste. L’adresse est maintenant vérifiée avant toute création. Les organisations vides déjà créées se suppriment à la main.
+- **Après une partie jouée en famille** (1.10.20) : sur le téléphone de chaque joueur, après chaque question, l’écran remonte sur sa place et un message selon sa position (en tête, dauphin, podium, en embuscade, dernier). Sur l’écran de l’animateur, l’image d’une question occupe la place disponible au lieu d’une petite vignette, les questions à pin’s sont centrées, et la diapo « Grande image » n’est plus rognée. Vérifié sur des captures du quiz rejoué en local avec trois téléphones simulés, pas sur de vrais appareils.
+- **Accueil** (1.10.21) : le carré bleu et le point d’interrogation, plus gros et plus écartés, dépassent nettement de la carte « T’es dans la partie ? », à laquelle ils sont maintenant accrochés. Un premier essai, posés par-dessus la carte, n’a pas été retenu.
+- **Quiz de la tribu** : un jeu de 15 questions pour la famille de Xavier (fichier `exports/sous-le-meme-toit.squizz`, hors dépôt), avec des portraits dessinés d’après une photo. Deux pistes d’illustrations pour le site (photos détourées en parallaxe, puis personnages dessinés) ont été proposées en maquette et mises de côté.
+- **Référencement** : Google a confirmé par e-mail, le 4 octobre, que des pages de squizz.fun apparaissent dans ses résultats depuis le 30 septembre.
+- **Intégration continue** : verte sur `main` et `plateforme` pour la 1.10.21.
+
 ## Reste à faire
 
 - Stripe : ajouter l’événement `checkout.session.expired` au webhook (facultatif).
 
 
-- **Search Console** : revoir l’indexation vers le 10 octobre (`site:squizz.fun`, et le statut donné par « Inspection de l’URL ») ; demander l’indexation de la page d’accueil de pressweb.fr pour que Google y découvre le lien ; importer le site dans **Bing Webmaster Tools**.
-- **Test de l’éditeur sous WebKit** (`tests/browser/editeur.pw.ts`) : il a échoué quatre fois sur la CI, puis passé deux fois, sans que la cause soit trouvée (le titre saisi n’est pas pris en compte ; jamais reproduit en local). S’il échoue de nouveau, la trace Playwright est maintenant jointe à l’exécution de la CI (artefact `traces-navigateur`).
+- **Search Console** : regarder les rapports Performances (requêtes, positions) et Pages dès qu’ils affichent des données ; demander l’indexation de la page d’accueil de pressweb.fr pour que Google y découvre le lien ; importer le site dans **Bing Webmaster Tools**.
+- **Formulaires** : vérifier que l’inscription, le contact, le compte et l’équipe ne perdent pas ce qui est tapé avant la fin du chargement (défaut corrigé dans l’éditeur et sur « Rejoindre une partie »).
+- **Super-admin** : supprimer les deux organisations « Famille » à 0 membre.
+- **Quiz de la tribu** : ajouter une question sur Noah, dès que ses passions sont connues.
 - **Compte client personnel** à créer avec une autre adresse que contact@pressweb.fr.
 - **NAS** : ajouter la récupération du module rsync `squizz-backups`.
 - **Mentions légales** : adresse postale complète de Pressweb.
