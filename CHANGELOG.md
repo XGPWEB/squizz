@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.15] — 2026-10-04
+
+### Corrigé
+- Éditeur de quiz : ce qui était tapé dans la toute première seconde après l’ouverture de la page (titre, question) restait affiché mais n’était pas pris en compte, puis disparaissait au changement suivant. Les champs ne s’ouvrent désormais à la saisie qu’une fois l’éditeur prêt : plus rien de ce qui est tapé n’est perdu.
+
 ## [1.10.14] — 2026-10-04
 
 ### Super-admin

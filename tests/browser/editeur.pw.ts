@@ -25,14 +25,9 @@ test("répondre dans l’aperçu d’une question n’enregistre pas le quiz et 
   };
 
   await page.goto(`/app/quiz/${quiz.id}`);
-  // What is typed before the page's script has started stays on screen but never reaches the editor, and
-  // typing the same text again changes nothing for it. So the field is emptied and typed again until the
-  // editor reports unsaved changes (seen with WebKit on the CI: the first typing came 0.8 s after loading).
-  await expect(async () => {
-    await page.getByLabel("Titre du quiz").fill("");
-    await page.getByLabel("Titre du quiz").fill("Quiz en brouillon");
-    await expect(page.locator(".save-status.dirty")).toBeVisible({ timeout: 1_000 });
-  }).toPass({ timeout: 30_000 });
+  // The fields stay closed until the editor listens: typing waits for it, nothing typed is lost.
+  await page.getByLabel("Titre du quiz").fill("Quiz en brouillon");
+  await expect(page.locator(".save-status.dirty")).toBeVisible();
   await page.getByRole("button", { name: "Aperçu" }).click();
   const preview = page.getByRole("dialog");
   await preview.getByLabel("Ta réponse").fill("Aznavour");

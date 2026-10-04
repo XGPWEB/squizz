@@ -9,6 +9,10 @@ fieldset {
 .quiz-editor {
   margin-bottom: 40px;
 }
+/* While the editor starts, its fields are closed for a moment: no greyed buttons for that. */
+.quiz-editor fieldset[data-starting] button:disabled {
+  opacity: 1;
+}
 .editor-title h1 {
   font-size: 50px;
   margin: 20px 0;
