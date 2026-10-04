@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
 
@@ -7,6 +8,20 @@ if (process.env.NEXT_DIST_DIR !== ".next-e2e" || !process.env.SQUIZZ_URL || !pro
 
 const hex = (bytes = 4) => randomBytes(bytes).toString("hex");
 
+/**
+ * The server under test is a production build (`bash scripts/e2e.sh browser-prod`) rather than the dev
+ * server: no confirmation link in answers, real rate limits, Stripe not replaceable by the fake one.
+ */
+export const PRODUCTION_BUILD = process.env.SQUIZZ_BROWSER_BUILD === "production";
+
+/** SQL on the isolated test database only, as tests/helpers.py does. */
+export function sql(query: string) {
+  const url = (process.env.DATABASE_URL ?? "").split("?")[0];
+  if (!/_(e2e|test)$/.test(url) || !/(@|\/\/)(localhost|127\.0\.0\.1)[:/]/.test(url))
+    throw new Error("Base isolée obligatoire.");
+  return execFileSync("psql", [url, "-v", "ON_ERROR_STOP=1", "-Atqc", query], { encoding: "utf8" }).trim();
+}
+
 export type Account = { organization: string; email: string; password: string };
 export const newIdentity = (): Account => ({
   organization: `Org navigateur ${hex(3)}`,
@@ -15,13 +30,18 @@ export const newIdentity = (): Account => ({
 });
 
 /** A confirmed account on the free plan, made through the API (the sign-up form has its own test). */
-export async function newAccount(request: APIRequestContext): Promise<Account> {
+export async function newAccount(request: APIRequestContext, suite?: string): Promise<Account> {
   const account = newIdentity();
   const signup = await request.post("/api/account/signup", {
-    data: { name: "Admin Test", ...account },
+    data: { name: "Admin Test", ...account, ...(suite && { suite }) },
+    // Each account from its own address: a production build allows five sign-ups an hour from one.
+    headers: { "X-Real-IP": `192.0.2.${1 + Math.floor(Math.random() * 250)}` },
   });
   expect(signup.ok()).toBe(true);
-  await confirm(request, (await signup.json()).devLink);
+  const { devLink } = await signup.json();
+  // A production build never hands the link out: the address is confirmed in the database instead.
+  if (devLink) await confirm(request, devLink);
+  else sql(`UPDATE "User" SET "emailVerifiedAt" = now() AT TIME ZONE 'UTC' WHERE email = '${account.email}'`);
   return account;
 }
 

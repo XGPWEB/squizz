@@ -51,4 +51,5 @@ tsconfig.tsbuildinfo
 !.env.example
 /.media/
 /.next-e2e/
+/.next-build/
 /exports/

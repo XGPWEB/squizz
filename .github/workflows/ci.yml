@@ -54,8 +54,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx prisma generate
-      # The « browser » scenario drives a real Chromium (tests/browser).
-      - run: npx playwright install --with-deps chromium
+      # The « browser » scenarios drive a real Chromium and a real WebKit (tests/browser).
+      - run: npx playwright install --with-deps chromium webkit
       - run: bash scripts/e2e.sh
       - uses: actions/upload-artifact@v4
         if: failure()

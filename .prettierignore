@@ -7,3 +7,4 @@ vendor
 drizzle
 package-lock.json
 .next-e2e
+.next-build

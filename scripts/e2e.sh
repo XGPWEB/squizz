@@ -3,7 +3,8 @@
 #   bash scripts/e2e.sh            all scenarios
 #   bash scripts/e2e.sh editing    one scenario (tests/editing.py)
 #   bash scripts/e2e.sh browser    the journeys in a real browser (tests/browser, Playwright; once on a new
-#                                  machine: npx playwright install chromium)
+#                                  machine: npx playwright install chromium webkit)
+#   bash scripts/e2e.sh browser-prod   the same browser against a production build (port E2E_PROD_PORT)
 # Creates (or recreates) the local database squizz_e2e, migrates and seeds it, starts a dev server on :5174
 # with its own build folder, runs the Python scenarios, then stops the server.
 set -euo pipefail
@@ -60,10 +61,30 @@ done
 curl -sf "http://127.0.0.1:$PORT/api/health" >/dev/null || { echo "Le serveur de test n’a pas démarré :" >&2; tail -30 "$LOG" >&2; exit 1; }
 
 export SQUIZZ_URL="http://127.0.0.1:$PORT"
-SCENARIOS=${*:-game-flow rich-game-flow timeout quiz-management accounts contact super-admin game-live rights security editing email-verification transfer admins billing event-pass monitoring auth-hardening browser}
+
+# « browser-prod »: the browser journeys against a production build of the application — its own build folder
+# and port, the same isolated database. Page preloading and the production router only exist there.
+browser_prod() {
+  local port=${E2E_PROD_PORT:-$((PORT + 100))} out status server
+  out=$(mktemp)
+  NEXT_DIST_DIR=.next-build npx next build >"$out" 2>&1 || { tail -30 "$out"; return 1; }
+  NEXT_DIST_DIR=.next-build NODE_ENV=production NEXTAUTH_URL="http://localhost:$port" APP_URL="http://localhost:$port" \
+    npx next start --port "$port" >"$out" 2>&1 &
+  server=$!
+  for _ in $(seq 1 60); do
+    curl -sf "http://127.0.0.1:$port/api/health" >/dev/null 2>&1 && break
+    sleep 1
+  done
+  SQUIZZ_URL="http://127.0.0.1:$port" SQUIZZ_BROWSER_BUILD=production npx playwright test && status=0 || status=$?
+  kill "$server" 2>/dev/null
+  [ "$status" -eq 0 ] || { echo "--- serveur de production de test :"; tail -30 "$out"; }
+  return "$status"
+}
+SCENARIOS=${*:-game-flow rich-game-flow timeout quiz-management accounts contact super-admin game-live rights security editing email-verification transfer admins billing event-pass monitoring auth-hardening browser browser-prod}
 FAILED=0
 for t in $SCENARIOS; do
-  # « browser » is the Playwright suite (tests/browser, real Chromium); the others are Python scenarios.
-  if { if [ "$t" = browser ]; then npx playwright test; else python3 "tests/$t.py"; fi; } >"$LOG.$t" 2>&1; then echo "ok    $t"; else echo "ÉCHEC $t"; tail -40 "$LOG.$t"; FAILED=1; fi
+  # « browser » and « browser-prod » are the Playwright suite (tests/browser, real Chromium), on the dev
+  # server and on a production build; the others are Python scenarios.
+  if { case "$t" in browser) npx playwright test ;; browser-prod) browser_prod ;; *) python3 "tests/$t.py" ;; esac; } >"$LOG.$t" 2>&1; then echo "ok    $t"; else echo "ÉCHEC $t"; tail -40 "$LOG.$t"; FAILED=1; fi
 done
 exit $FAILED
