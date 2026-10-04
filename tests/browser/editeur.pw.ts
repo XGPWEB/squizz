@@ -25,12 +25,14 @@ test("répondre dans l’aperçu d’une question n’enregistre pas le quiz et 
   };
 
   await page.goto(`/app/quiz/${quiz.id}`);
-  // Typed again until the editor has taken it: what is typed before the page's script has started is put
-  // back to the saved title when it starts (seen with WebKit on a slow dev server).
+  // What is typed before the page's script has started stays on screen but never reaches the editor, and
+  // typing the same text again changes nothing for it. So the field is emptied and typed again until the
+  // editor reports unsaved changes (seen with WebKit on the CI: the first typing came 0.8 s after loading).
   await expect(async () => {
+    await page.getByLabel("Titre du quiz").fill("");
     await page.getByLabel("Titre du quiz").fill("Quiz en brouillon");
     await expect(page.locator(".save-status.dirty")).toBeVisible({ timeout: 1_000 });
-  }).toPass();
+  }).toPass({ timeout: 30_000 });
   await page.getByRole("button", { name: "Aperçu" }).click();
   const preview = page.getByRole("dialog");
   await preview.getByLabel("Ta réponse").fill("Aznavour");
