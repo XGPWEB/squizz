@@ -38,7 +38,7 @@ export const POST = route(async (req) => {
 
 /**
  * Keeps the session open while the super-admin is at work: a new cookie with a fresh idle delay and the
- * same sign-in date, so the 7-day limit still applies. Refused once the session is over or revoked.
+ * same sign-in date, so the 90-day limit still applies. Refused once the session is over or revoked.
  */
 export const PUT = route(async () => {
   await requireSuperAdmin();

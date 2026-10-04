@@ -12,8 +12,8 @@ import { decode, encode } from "next-auth/jwt";
  */
 const secure = () => (process.env.APP_URL || "").startsWith("https://");
 export const adminCookieName = () => (secure() ? "__Secure-squizz-admin" : "squizz-admin");
-export const ADMIN_SESSION_SECONDS = 12 * 60 * 60;
-export const ADMIN_SESSION_MAX_SECONDS = 7 * 24 * 60 * 60;
+export const ADMIN_SESSION_SECONDS = 30 * 24 * 60 * 60;
+export const ADMIN_SESSION_MAX_SECONDS = 90 * 24 * 60 * 60;
 const SALT = "squizz:super-admin:v1";
 
 /** `since`: when the password was typed, in seconds; kept unchanged each time the cookie is renewed. */

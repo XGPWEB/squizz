@@ -40,7 +40,7 @@ Les types et leur validation sont définis dans `lib/question.ts`.
 | **Animateur** | Créer des quiz, modifier/supprimer les siens, lancer des parties avec tous les quiz de l’organisation |
 | **Joueur** | Rejoindre une partie avec un pseudo, sans compte |
 
-Le super-admin se connecte sur **www.squizz.fun/super-admin/connexion**, avec sa propre session (cookie séparé : 12 h sans activité, renouvelé pendant l'utilisation, 7 jours au plus avant de redemander le mot de passe) : on peut être connecté au super-admin et à un compte client dans le même navigateur. Le compte super-admin est refusé sur la connexion client, et les comptes clients sur celle du super-admin.
+Le super-admin se connecte sur **www.squizz.fun/super-admin/connexion**, avec sa propre session (cookie séparé : 30 jours sans activité, renouvelé pendant l'utilisation, 90 jours au plus avant de redemander le mot de passe) : on peut être connecté au super-admin et à un compte client dans le même navigateur. Le compte super-admin est refusé sur la connexion client, et les comptes clients sur celle du super-admin.
 
 Une organisation garde toujours au moins un administrateur actif. Désactiver un membre, changer son mot de passe ou suspendre l’organisation coupe immédiatement ses sessions.
 

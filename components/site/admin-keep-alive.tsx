@@ -8,7 +8,7 @@ const EVERY_MS = 5 * 60 * 1000;
 /**
  * Renews the super-admin session while it is being used (lib/server/admin-session.ts): on each page, on
  * coming back to the tab, and on clicks or key presses. Nothing is sent while the tab sits idle, so the
- * session still closes after 12 hours without activity.
+ * session still closes after 30 days without activity.
  */
 export function AdminKeepAlive() {
   const pathname = usePathname();

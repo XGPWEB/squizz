@@ -289,7 +289,7 @@ export default function PolitiqueConfidentialitePage() {
               <code>__Secure-squizz-admin</code>
             </td>
             <td>Réservé au support SQuizz : connexion à l’espace d’administration du Service</td>
-            <td>12 heures sans activité (7 jours au plus)</td>
+            <td>30 jours sans activité (90 jours au plus)</td>
           </tr>
           <tr>
             <td>

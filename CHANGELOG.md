@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.14] — 2026-10-04
+
+### Super-admin
+- La session du super-admin reste ouverte 30 jours sans activité, au lieu de 12 heures : elle se prolonge à chaque utilisation. Le mot de passe est redemandé au plus tard 90 jours après la dernière connexion (7 jours jusqu’ici). La politique de confidentialité indique la nouvelle durée du cookie.
+
 ## [1.10.13] — 2026-10-03
 
 ### Site

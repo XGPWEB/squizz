@@ -97,7 +97,7 @@ describe("session super-admin", async () => {
     const renewed = await readAdminToken(await createAdminToken({ id: "root", sessionVersion: 3, since }));
     expect(renewed?.since).toBe(since);
   });
-  test("au-delà de 7 jours, le mot de passe est redemandé même en pleine activité", async () => {
+  test("au-delà de 90 jours, le mot de passe est redemandé même en pleine activité", async () => {
     const since = now() - ADMIN_SESSION_MAX_SECONDS - 60;
     expect(await readAdminToken(await createAdminToken({ id: "root", sessionVersion: 3, since }))).toBeNull();
     expect(await readAdminToken("n'importe quoi")).toBeNull();
