@@ -41,6 +41,14 @@ test("une partie complète : l’animateur lance, un joueur rejoint sur téléph
   await player.getByRole("button", { name: "C’est parti !" }).click();
   await expect(page.getByText("Capitaine Curieux")).toBeVisible();
 
+  // Full screen for the projected screen, where the browser can do it: the game goes on in it.
+  const fullscreen = page.getByRole("button", { name: "Plein écran", exact: true });
+  if (await fullscreen.isVisible()) {
+    await fullscreen.click();
+    await expect(page.getByRole("button", { name: "Quitter le plein écran" })).toBeVisible();
+    expect(await page.evaluate(() => document.fullscreenElement === document.documentElement)).toBe(true);
+  }
+
   await page.getByRole("button", { name: "Lancer le quiz" }).click();
   await expect(page.getByRole("heading", { name: "Capitale de la France ?" })).toBeVisible();
   await player.getByRole("button", { name: /Paris/ }).click();

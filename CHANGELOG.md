@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.16] — 2026-10-04
+
+### Animation
+- Écran de l’animateur : un bouton « Plein écran », en haut à droite, fait disparaître les barres du navigateur (adresse, onglets) autour de l’écran projeté, de la salle d’attente au podium. « Quitter le plein écran » ou la touche Échap y mettent fin. Le bouton n’apparaît pas là où le navigateur ne sait pas le faire (iPhone).
+
 ## [1.10.15] — 2026-10-04
 
 ### Corrigé

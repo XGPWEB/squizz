@@ -7,6 +7,7 @@ import { BarChart3, Copy, Play, Smartphone, SkipForward, Trophy, Users, X } from
 import { Brand } from "@/components/site/brand";
 import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
 import { MediaView } from "@/components/squizz/media";
+import { FullscreenButton } from "@/components/squizz/fullscreen-button";
 import { gameApi as api } from "@/lib/client/api";
 import { type Game, Leaderboard, Podium } from "./game-parts";
 
@@ -50,7 +51,10 @@ export function HostStage(props: Props) {
         {q && !counting && q.type !== "slide" && game.phase === "question" && (
           <Timer seconds={remaining} total={game.duration} done={game.revealed} />
         )}
-        <Brand href="/app" />
+        <div className="host-top-side">
+          <FullscreenButton />
+          <Brand href="/app" />
+        </div>
       </header>
       {game.phase === "lobby" ? (
         <Lobby {...props} />

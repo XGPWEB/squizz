@@ -50,9 +50,31 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.host-top .brand {
+.host-top-side {
   grid-column: 3;
   justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.5vw, 20px);
+}
+.host-fullscreen {
+  white-space: nowrap;
+}
+.host-fullscreen svg {
+  transition: scale 0.15s;
+}
+.host-fullscreen:hover svg {
+  scale: 1.25;
+}
+.host-fullscreen[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--acid);
+  box-shadow: 4px 4px 0 var(--electric);
+}
+@media (max-width: 700px) {
+  .host-fullscreen span {
+    display: none;
+  }
 }
 .host-main {
   position: relative;
