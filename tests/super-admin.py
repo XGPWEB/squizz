@@ -60,4 +60,12 @@ login(client(), root_email, root_pw, ok=False)
 admin_login(client(), both_email, both_pw, ok=False)
 assert '/super-admin/connexion' in client().open(f'{BASE}/super-admin', timeout=60).geturl()
 
-print('PASS: separate client and super-admin sessions, view-as (start, org-admin rights, audit, own account protected, exit), own account, user search.')
+# --- Creating an organisation for an address that already has an account is refused and leaves nothing ---
+named = lambda name: [o for o in request(root, 'GET', '/api/admin/organizations')['organizations'] if o['name'] == name]
+new_org = {'name': f'Org refusée {tag}', 'adminEmail': admin_email, 'plan': 'PARTNER'}
+assert 'existe déjà' in request(root, 'POST', '/api/admin/organizations', new_org, expect=409)['error']
+assert not named(new_org['name'])
+created = request(root, 'POST', '/api/admin/organizations', {**new_org, 'adminEmail': f'libre-{tag}@example.test'})
+assert '/invitation/' in created['link'] and len(named(new_org['name'])) == 1
+
+print('PASS: organisation refused for a taken address leaves nothing, separate client and super-admin sessions, view-as (start, org-admin rights, audit, own account protected, exit), own account, user search.')

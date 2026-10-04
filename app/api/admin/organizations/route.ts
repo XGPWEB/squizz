@@ -2,7 +2,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { route, json, emailSchema, nameSchema } from "@/lib/server/api";
 import { requireSuperAdmin } from "@/lib/server/guard";
-import { createInvitation } from "@/lib/server/accounts";
+import { assertEmailFree, createInvitation } from "@/lib/server/accounts";
 import { audit } from "@/lib/server/audit";
 import { ROOM_TTL } from "@/lib/server/game";
 import { PLAN_KEYS } from "@/lib/plans";
@@ -47,11 +47,16 @@ const createSchema = z.object({
   plan: z.enum([...PLAN_KEYS, "PARTNER"]),
 });
 
-/** Creates an organisation and invites its first administrator. */
+/**
+ * Creates an organisation and invites its first administrator. A refused request leaves nothing behind: the
+ * address is checked before the organisation exists, and the organisation is removed if the invitation
+ * still fails (the address taken in between, for instance).
+ */
 export const POST = route(async (req) => {
   const admin = await requireSuperAdmin();
   const input = await json(req, createSchema);
   const partner = input.plan === "PARTNER";
+  await assertEmailFree(input.adminEmail);
   const org = await prisma.organization.create({
     data: partner
       ? { name: input.name, plan: "FREE", partner: true, partnerSince: new Date() }
@@ -63,7 +68,10 @@ export const POST = route(async (req) => {
     "ORG_ADMIN",
     admin.id,
     "L’équipe SQuizz",
-  );
+  ).catch(async (error) => {
+    await prisma.organization.delete({ where: { id: org.id } }).catch(() => null);
+    throw error;
+  });
   await audit(admin, "organization.create", org.id, input);
   return { id: org.id, link, sent };
 });

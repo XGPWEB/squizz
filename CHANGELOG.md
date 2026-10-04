@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.19] — 2026-10-04
+
+### Corrigé
+- Super-admin : créer une organisation pour une adresse e-mail qui a déjà un compte affichait bien une erreur, mais laissait dans la liste une organisation vide, à 0 membre ; chaque nouvel essai en ajoutait une. L’adresse est maintenant vérifiée avant toute création, et une création refusée ne laisse plus rien.
+
 ## [1.10.18] — 2026-10-04
 
 ### Corrigé
