@@ -2,6 +2,15 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.20] — 2026-10-04
+
+### Partie
+- Sur le téléphone de chaque joueur, après chaque question, l’écran remonte sur son résultat : sa place (« #2 sur 5 ») et un message selon sa position — en tête, dauphin, sur le podium, en embuscade ou dernier (« la remontada commence maintenant »).
+- Écran de l’animateur : l’image d’une question occupe la place disponible au lieu de rester une petite vignette ; plusieurs images s’affichent côte à côte.
+- Questions à pin’s sur l’écran de l’animateur : l’image est centrée et ses repères tombent au bon endroit ; dans la fenêtre des résultats, elle tient en entier sans défilement.
+- Diapo « Grande image » : l’image est montrée en entier, sur téléphone comme sur grand écran, avec son titre en dessous au lieu de la recouvrir.
+- Sur téléphone, l’image d’une question prend moins de hauteur pour laisser les réponses en vue.
+
 ## [1.10.19] — 2026-10-04
 
 ### Corrigé

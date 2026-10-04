@@ -66,6 +66,22 @@ export function Leaderboard({ players }: { players: Game["players"] }) {
   );
 }
 
+/** A word for the player according to where they stand in the ranking, between two questions. */
+export function rankMessage(rank: number, players: Pick<RankedPlayer, "rank">[]) {
+  const count = players.length;
+  const tied = players.filter((p) => p.rank === rank).length > 1;
+  const last = Math.max(...players.map((p) => p.rank));
+  if (count < 2) return "Tu ouvres le bal : aux autres de te rattraper !";
+  if (rank === 1)
+    return tied
+      ? "En tête, à égalité : ça va se jouer à un cheveu !"
+      : "Tu mènes la danse : tout le monde te court après !";
+  if (rank === 2) return "Dauphin du leader : une bonne réponse et tu passes devant.";
+  if (rank === 3) return "Sur le podium ! Accroche-toi, ça pousse derrière.";
+  if (rank === last) return "Dernière place pour l’instant… la remontada commence maintenant !";
+  return `En embuscade à la ${rank}e place : un bon coup et tu grimpes.`;
+}
+
 export function PersonalResult({ game, final = false }: { game: Game; final?: boolean }) {
   const p = game.personal;
   if (!p) return null;
@@ -103,6 +119,7 @@ export function PersonalResult({ game, final = false }: { game: Game; final?: bo
                   ? `Tu recules de ${-p.movement} place${p.movement < -1 ? "s" : ""}. À toi de rebondir !`
                   : "Tu gardes ta place. Garde le rythme !"}
         </span>
+        {!final && <p className="rank-copy">{rankMessage(p.rank, game.players)}</p>}
       </div>
       <div className="place-sticker">
         <strong>#{p.rank}</strong>

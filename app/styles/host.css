@@ -351,17 +351,33 @@
   gap: clamp(8px, 1.6vh, 16px);
   min-height: 0;
 }
+/* The pictures of a question take the room left by the title and the answers, side by side, instead of
+   staying a small thumbnail. */
 .host-answers .question-media {
-  flex: 0 1 auto;
-  min-height: 0;
+  display: flex;
+  flex: 3 1 0;
+  justify-content: center;
+  gap: clamp(10px, 1.5vw, 20px);
+  min-height: 18vh;
   margin: 0;
-  justify-items: center;
+}
+.host-answers .question-media:empty {
+  display: none;
+}
+.host-answers .question-media figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
 }
 .host-answers .question-media img,
 .host-answers .question-media video {
+  flex: 1 1 0;
   width: auto;
   max-width: 100%;
-  max-height: 30vh;
+  min-height: 0;
+  max-height: none;
 }
 .host-answers .question-media iframe {
   width: auto;
@@ -417,13 +433,19 @@
     transform: scale(1.06) rotate(-1deg);
   }
 }
+/* The frame hugs the picture: the pins are placed in percentages of it. */
 .host-answers .pin-image {
-  max-height: 52vh;
-  width: auto;
-  margin: auto;
+  width: fit-content;
+  max-width: 100%;
+  max-height: 58vh;
+  margin: 0 auto;
+}
+.host-answers .pin-answer > .hint,
+.host-answers .pin-answer > .button:disabled {
+  display: none;
 }
 .host-answers .pin-image img {
-  max-height: 52vh;
+  max-height: 58vh;
   width: auto;
 }
 .host-phones {
@@ -462,6 +484,10 @@
 }
 .host-question.is-slide .slide {
   margin: auto 0;
+}
+.host-question.is-slide .slide-hero img,
+.host-question.is-slide .slide-hero video {
+  max-height: 46vh;
 }
 .host-answered {
   position: relative;
@@ -591,6 +617,17 @@
 }
 .host-modal-body .question-results {
   margin: 0;
+}
+/* The picture with everyone's pins fits in the window, whole, without scrolling. */
+.host-modal-body .pin-image {
+  width: fit-content;
+  max-width: 100%;
+  margin: 14px auto;
+}
+.host-modal-body .pin-image img {
+  width: auto;
+  max-width: 100%;
+  max-height: 36vh;
 }
 .host-modal-body .question-results > h3 {
   display: none;

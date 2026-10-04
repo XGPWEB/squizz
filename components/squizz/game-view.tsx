@@ -29,6 +29,11 @@ export function GameView({ code }: { code: string }) {
     () => invitationOrigin(location.origin, process.env.NEXT_PUBLIC_LAN_HOST ?? ""),
     () => "",
   );
+  // Once the answers are in, the player's own result and place are at the top of the phone: brought into view.
+  const revealedStep = game && !game.host && game.revealed ? game.index : -1;
+  useEffect(() => {
+    if (revealedStep >= 0) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [revealedStep]);
   useEffect(() => {
     let active = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -217,6 +222,10 @@ export function GameView({ code }: { code: string }) {
                     className="question-progress"
                     aria-label="Temps restant"
                   />
+                  {/* Each player's own result and place, first thing on the phone once the answers are in. */}
+                  {game.revealed && game.personal && game.question?.type !== "slide" && (
+                    <PersonalResult game={game} />
+                  )}
                   {game.question?.type !== "slide" && (
                     <h2 className="question-title" aria-live="polite">
                       {game.question?.text}
@@ -252,7 +261,6 @@ export function GameView({ code }: { code: string }) {
                   )}
                   {game.revealed && (
                     <>
-                      {game.personal && game.question?.type !== "slide" && <PersonalResult game={game} />}{" "}
                       {game.question && (
                         <QuestionResults
                           question={game.question}
