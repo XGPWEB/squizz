@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.21] — 2026-10-04
+
+### Site
+- Accueil : le carré bleu et le point d’interrogation se voient mieux autour de la carte « T’es dans la partie ? ». Plus gros et davantage écartés, ils restent derrière elle mais dépassent nettement, l’un au-dessus du coin en haut à droite, l’autre sous le coin en bas à droite, sur ordinateur comme sur téléphone.
+
 ## [1.10.20] — 2026-10-04
 
 ### Partie

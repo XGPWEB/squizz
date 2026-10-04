@@ -21,10 +21,6 @@ export default function HomePage() {
             ✦
           </span>
           <span className="shape shape-circle" data-parallax="-0.18" />
-          <span className="shape shape-square" data-parallax="0.35" />
-          <span className="shape shape-question" data-parallax="-0.3">
-            ?
-          </span>
           <span className="shape shape-bolt" data-parallax="0.15">
             <Zap />
           </span>
@@ -56,6 +52,11 @@ export default function HomePage() {
           </div>
         </div>
         <div className="hero-join" data-reveal="pop">
+          {/* Two shapes pinned to the join box itself, so they stick out of its corners at every width. */}
+          <span className="shape shape-square" data-parallax="0.06" aria-hidden="true" />
+          <span className="shape shape-question" data-parallax="-0.05" aria-hidden="true">
+            ?
+          </span>
           <JoinBox />
         </div>
       </section>
