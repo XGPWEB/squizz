@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { gameApi } from "@/lib/client/api";
+import { useHydrated } from "@/lib/client/hydrated";
 import { Brand } from "@/components/site/brand";
 
 export function JoinForm({ initialCode }: { initialCode: string }) {
@@ -11,6 +12,7 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
     [name, setName] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  const ready = useHydrated();
   return (
     <div className="play-join">
       <Brand className="brand-live brand-big" />
@@ -27,6 +29,13 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
           className="stack"
           onSubmit={async (e) => {
             e.preventDefault();
+            // Read from the fields themselves: a player on a slow connection may have typed the code and
+            // the pseudo before the page's script started, and those keystrokes never reached the state.
+            const fields = new FormData(e.currentTarget);
+            const code = String(fields.get("code") ?? "").replace(/\D/g, "");
+            const name = String(fields.get("name") ?? "");
+            setCode(code);
+            setName(name);
             setBusy(true);
             setError("");
             try {
@@ -41,6 +50,7 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
           <label>
             Code de la partie
             <input
+              name="code"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               inputMode="numeric"
@@ -53,6 +63,7 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
           <label>
             Ton pseudo
             <input
+              name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex. Capitaine Curieux"
@@ -62,7 +73,8 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
               autoFocus={!!initialCode}
             />
           </label>
-          <button disabled={busy} className="button">
+          {/* The button waits for the script: sent before it, the form would only reload the page. */}
+          <button disabled={busy || !ready} className="button">
             {busy ? "Connexion…" : "C’est parti !"}
           </button>
         </form>

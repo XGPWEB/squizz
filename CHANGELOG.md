@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.17] — 2026-10-04
+
+### Corrigé
+- Rejoindre une partie : sur une connexion lente, un joueur qui tapait le code et son pseudo avant la fin du chargement de la page voyait sa demande refusée, comme si les champs étaient vides. Le code et le pseudo sont désormais lus tels qu’ils sont affichés au moment de l’envoi, et le bouton « C’est parti ! » attend que la page soit prête.
+
 ## [1.10.16] — 2026-10-04
 
 ### Animation

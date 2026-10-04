@@ -1,7 +1,8 @@
 "use client";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { Dialog } from "radix-ui";
 import { Plus, X, ArrowUp, ArrowDown, Eye, Copy, Undo2 } from "lucide-react";
+import { useHydrated } from "@/lib/client/hydrated";
 import {
   newQuestion,
   questionTypes,
@@ -40,13 +41,9 @@ export function QuizEditor({
   dirty?: boolean;
 }) {
   const [active, setActive] = useState(0);
-  // False on the server and until hydration: what is typed before the editor listens stays on screen but
-  // never reaches it, and is lost at the next change. The fields open once it does.
-  const ready = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
+  // What is typed before the editor listens stays on screen but never reaches it, and is lost at the
+  // next change: the fields open once it does.
+  const ready = useHydrated();
   // The last deleted step, until it is restored or another step is deleted.
   const [removed, setRemoved] = useState<{ step: Question; index: number } | null>(null);
   const [picker, setPicker] = useState(false),
