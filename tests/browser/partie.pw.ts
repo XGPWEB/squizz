@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
-import { newAccount, signIn } from "./helpers";
+import { expect } from "@playwright/test";
+import { newAccount, plainHttp, signIn, test } from "./helpers";
 
 test("une partie complète : l’animateur lance, un joueur rejoint sur téléphone, répond, podium", async ({
   page,
@@ -33,6 +33,7 @@ test("une partie complète : l’animateur lance, un joueur rejoint sur téléph
 
   // Player: another browser, phone-sized, no account.
   const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "fr-FR" });
+  await plainHttp(phone);
   const player = await phone.newPage();
   await player.goto("/jouer");
   await player.getByLabel("Code de la partie").fill(code);

@@ -19,10 +19,7 @@ export default defineConfig({
   // Chromium, and WebKit (Safari's engine): the two do not treat a page that is being left the same way.
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    // The production build tells browsers to load everything over https (« upgrade-insecure-requests »).
-    // Chromium leaves localhost alone; WebKit does not, and the test server is plain http: the policy is
-    // set aside for WebKit only, which is about addresses of the test server, not about the application.
-    { name: "webkit", use: { ...devices["Desktop Safari"], bypassCSP: true } },
+    { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],
   use: {
     // By name, as a visitor would: the dev server only gives its scripts to the address it was started for.

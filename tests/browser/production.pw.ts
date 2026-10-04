@@ -1,5 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
-import { PAYMENT_PAGE, fakeStripePages, newAccount, signIn, sql } from "./helpers";
+import { expect, type Page } from "@playwright/test";
+import { PAYMENT_PAGE, fakeStripePages, newAccount, signIn, sql, test } from "./helpers";
 
 /**
  * Leaving for Stripe from a production build: only there does the router preload the pages in view, which is

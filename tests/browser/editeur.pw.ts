@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test";
-import { newAccount, signIn } from "./helpers";
+import { expect } from "@playwright/test";
+import { newAccount, signIn, test } from "./helpers";
 
 test("répondre dans l’aperçu d’une question n’enregistre pas le quiz et ne quitte pas l’éditeur", async ({
   page,

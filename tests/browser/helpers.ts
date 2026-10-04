@@ -1,6 +1,12 @@
 import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import {
+  expect,
+  test as base,
+  type APIRequestContext,
+  type BrowserContext,
+  type Page,
+} from "@playwright/test";
 
 // Same guard as the Python scenarios: the isolated test server only, never development or production data.
 if (process.env.NEXT_DIST_DIR !== ".next-e2e" || !process.env.SQUIZZ_URL || !process.env.STRIPE_MOCK_URL)
@@ -13,6 +19,33 @@ const hex = (bytes = 4) => randomBytes(bytes).toString("hex");
  * server: no confirmation link in answers, real rate limits, Stripe not replaceable by the fake one.
  */
 export const PRODUCTION_BUILD = process.env.SQUIZZ_BROWSER_BUILD === "production";
+
+/**
+ * The production build tells browsers to load everything over https (« upgrade-insecure-requests »).
+ * Chromium leaves localhost alone; WebKit applies it there too, even with Playwright's `bypassCSP`, and
+ * the test server is plain http: no script loads and the forms stay disabled. For WebKit only, that one
+ * directive is taken out of the pages' policy on their way to the browser; the rest of the policy stays.
+ */
+export async function plainHttp(context: BrowserContext) {
+  if (!PRODUCTION_BUILD || context.browser()?.browserType().name() !== "webkit") return;
+  await context.route("**/*", async (route) => {
+    if (!route.request().isNavigationRequest()) return route.fallback();
+    // Redirects are handed to the browser as they are, so the address bar follows them.
+    const response = await route.fetch({ maxRedirects: 0 });
+    const headers = response.headers();
+    const policy = headers["content-security-policy"];
+    if (policy) headers["content-security-policy"] = policy.replace(/;?\s*upgrade-insecure-requests/, "");
+    await route.fulfill({ response, headers });
+  });
+}
+
+/** `test` of the browser journeys: the page of each test goes through `plainHttp`. */
+export const test = base.extend({
+  context: async ({ context }, run) => {
+    await plainHttp(context);
+    await run(context);
+  },
+});
 
 /** SQL on the isolated test database only, as tests/helpers.py does. */
 export function sql(query: string) {

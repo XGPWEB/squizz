@@ -197,8 +197,13 @@ def overtaken(first_plan, second_plan):
     try:
         a_thread = threading.Thread(target=post, args=('a', first_plan))
         a_thread.start()
-        time.sleep(1.2)  # A holds the claim and is waiting for Stripe to create its page
-        assert sql(f"""SELECT "checkoutOpKey" IS NOT NULL FROM "Organization" WHERE id = '{sid}'""") == 't'
+        # A holds the claim and is waiting for Stripe to create its page. Waited for rather than assumed
+        # after a fixed pause: on a slow machine A's request can take more than a second to get there.
+        holding = lambda: sql(f"""SELECT "checkoutOpKey" IS NOT NULL FROM "Organization" WHERE id = '{sid}'""") == 't'
+        deadline = time.time() + 15
+        while not holding() and time.time() < deadline:
+            time.sleep(0.1)
+        assert holding()
         sql(f"""UPDATE "Organization" SET "checkoutLockedUntil" = {PAST} WHERE id = '{sid}'""")
         post('b', second_plan)
         a_thread.join()
