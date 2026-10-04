@@ -25,7 +25,12 @@ test("répondre dans l’aperçu d’une question n’enregistre pas le quiz et 
   };
 
   await page.goto(`/app/quiz/${quiz.id}`);
-  await page.getByLabel("Titre du quiz").fill("Quiz en brouillon");
+  // Typed again until the editor has taken it: what is typed before the page's script has started is put
+  // back to the saved title when it starts (seen with WebKit on a slow dev server).
+  await expect(async () => {
+    await page.getByLabel("Titre du quiz").fill("Quiz en brouillon");
+    await expect(page.locator(".save-status.dirty")).toBeVisible({ timeout: 1_000 });
+  }).toPass();
   await page.getByRole("button", { name: "Aperçu" }).click();
   const preview = page.getByRole("dialog");
   await preview.getByLabel("Ta réponse").fill("Aznavour");
