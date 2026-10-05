@@ -4,6 +4,7 @@ import type { Plan } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { orgLimits } from "@/lib/plans";
 import { formatSize } from "@/lib/media-limits";
+import { validateProfiles } from "@/lib/profiles";
 import { validateQuestion, type Question } from "@/lib/question";
 import { MAX_TRANSFER_MEDIA_BYTES, TRANSFER_REF, assignRefs } from "@/lib/quiz-file";
 import { fail, validated } from "./http";
@@ -136,7 +137,7 @@ export async function importQuiz(user: Member, raw: unknown, clientKey?: unknown
     fail("Ajoutez un titre et de 1 à 30 questions.");
   if (file.questions.length < 1 || file.questions.length > 30)
     fail("Ajoutez un titre et de 1 à 30 questions.");
-  validated(() => withUrls(null).map(validateQuestion));
+  validated(() => validateProfiles(withUrls(null).map(validateQuestion)));
 
   const limits = orgLimits(user.organization);
   const [quizzes, usage] = await Promise.all([

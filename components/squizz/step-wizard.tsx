@@ -33,6 +33,7 @@ const GROUP_ICONS = {
 export function StepWizard({
   open,
   number,
+  profileNames,
   onClose,
   onAdd,
   onBusy,
@@ -40,6 +41,8 @@ export function StepWizard({
   open: boolean;
   /** Position the new step will take in the quiz (1-based). */
   number: number;
+  /** Set in a profile quiz: scored questions are not offered, polls can point to these profiles. */
+  profileNames?: string[];
   onClose: () => void;
   onAdd: (step: Question) => void;
   onBusy: (busy: boolean) => void;
@@ -129,43 +132,51 @@ export function StepWizard({
           <div className="host-modal-body wizard-body" key={step}>
             {step === "type" && (
               <>
-                {questionGroups.map((group) => (
-                  <section key={group.id} className={`type-group ${group.id}`}>
-                    <header>
-                      <b aria-hidden>{GROUP_ICONS[group.id]}</b>
-                      <div>
-                        <h3>{group.label}</h3>
-                        <p>{group.hint}</p>
-                      </div>
-                      <span className="type-group-tag">{group.tag}</span>
-                    </header>
-                    <div className="type-grid">
-                      {group.id === "slides"
-                        ? slideLayouts.map((l) => (
-                            <TypeCard
-                              key={l.id}
-                              selected={draft?.type === "slide" && draft.layout === l.id}
-                              preview={<LayoutPreview layout={l.id} />}
-                              label={l.label}
-                              hint={l.hint}
-                              onPick={() => pick(newQuestion("slide", l.id))}
-                            />
-                          ))
-                        : questionTypes
-                            .filter((t) => t.group === group.label)
-                            .map((t) => (
+                {profileNames && (
+                  <p className="info-box">
+                    Quiz à profils : les questions à points ne sont pas proposées. Utilisez des sondages pour
+                    faire pointer chaque réponse vers un profil.
+                  </p>
+                )}
+                {questionGroups
+                  .filter((group) => !profileNames || group.id !== "knowledge")
+                  .map((group) => (
+                    <section key={group.id} className={`type-group ${group.id}`}>
+                      <header>
+                        <b aria-hidden>{GROUP_ICONS[group.id]}</b>
+                        <div>
+                          <h3>{group.label}</h3>
+                          <p>{group.hint}</p>
+                        </div>
+                        <span className="type-group-tag">{group.tag}</span>
+                      </header>
+                      <div className="type-grid">
+                        {group.id === "slides"
+                          ? slideLayouts.map((l) => (
                               <TypeCard
-                                key={t.id}
-                                selected={draft?.type === t.id}
-                                preview={<TypePreview type={t.id} />}
-                                label={t.label}
-                                hint={t.hint}
-                                onPick={() => pick(newQuestion(t.id))}
+                                key={l.id}
+                                selected={draft?.type === "slide" && draft.layout === l.id}
+                                preview={<LayoutPreview layout={l.id} />}
+                                label={l.label}
+                                hint={l.hint}
+                                onPick={() => pick(newQuestion("slide", l.id))}
                               />
-                            ))}
-                    </div>
-                  </section>
-                ))}
+                            ))
+                          : questionTypes
+                              .filter((t) => t.group === group.label)
+                              .map((t) => (
+                                <TypeCard
+                                  key={t.id}
+                                  selected={draft?.type === t.id}
+                                  preview={<TypePreview type={t.id} />}
+                                  label={t.label}
+                                  hint={t.hint}
+                                  onPick={() => pick(newQuestion(t.id))}
+                                />
+                              ))}
+                      </div>
+                    </section>
+                  ))}
               </>
             )}
             {draft && step === "content" && (
@@ -173,6 +184,7 @@ export function StepWizard({
                 <QuestionFields
                   q={draft}
                   patch={patch}
+                  profileNames={profileNames}
                   mediaKey={`wizard-${number}`}
                   onBusy={busy}
                   onError={setError}

@@ -21,6 +21,7 @@ import { MediaEditor, PinImage } from "./media";
 export function QuestionFields({
   q,
   patch,
+  profileNames,
   mediaKey,
   setType,
   onBusy,
@@ -28,6 +29,8 @@ export function QuestionFields({
 }: {
   q: Question;
   patch: (value: Partial<Question>) => void;
+  /** Set in a profile quiz: the profiles already named, offered for each answer of a poll. */
+  profileNames?: string[];
   mediaKey: number | string;
   setType?: (type: QuestionType) => void;
   onBusy: (busy: boolean) => void;
@@ -39,15 +42,17 @@ export function QuestionFields({
         <Choice
           label="Type de question"
           value={q.type}
-          options={questionTypes.map((t) => {
-            const group = questionGroups.find((g) => g.label === t.group);
-            return [
-              t.id,
-              t.label,
-              undefined,
-              group ? `${group.label} · ${group.tag.toLowerCase()}` : t.group,
-            ];
-          })}
+          options={questionTypes
+            .filter((t) => !profileNames || !isScored(t.id))
+            .map((t) => {
+              const group = questionGroups.find((g) => g.label === t.group);
+              return [
+                t.id,
+                t.label,
+                undefined,
+                group ? `${group.label} · ${group.tag.toLowerCase()}` : t.group,
+              ];
+            })}
           onChange={(v) => setType(v as QuestionType)}
         />
       )}
@@ -136,12 +141,21 @@ export function QuestionFields({
       )}
       {["quiz", "truefalse", "poll", "puzzle"].includes(q.type) && (
         <section className="answer-editor">
+          {profileNames && (
+            <datalist id="quiz-profile-names">
+              {profileNames.map((name) => (
+                <option key={name} value={name} />
+              ))}
+            </datalist>
+          )}
           <h3>{q.type === "puzzle" ? "Les éléments dans le bon ordre" : "Les réponses"}</h3>
           <p className="hint">
             {q.type === "puzzle"
               ? "Saisissez l’ordre attendu. Les éléments seront mélangés pour les joueurs."
               : q.type === "poll"
-                ? "Pas de bonne ou de mauvaise réponse."
+                ? profileNames
+                  ? "Pas de bonne ou de mauvaise réponse. Indiquez à droite le profil vers lequel pointe chaque réponse (laissez vide si elle ne compte pas)."
+                  : "Pas de bonne ou de mauvaise réponse."
                 : q.multiple
                   ? "Cochez toutes les bonnes réponses. Le joueur doit trouver la combinaison exacte."
                   : "Cochez la bonne réponse."}
@@ -173,6 +187,21 @@ export function QuestionFields({
                 required
                 onChange={(e) => patch({ options: q.options.map((v, k) => (k === j ? e.target.value : v)) })}
               />
+              {profileNames && q.type === "poll" && (
+                <input
+                  className="option-profile"
+                  aria-label={`Profil de la réponse ${j + 1}`}
+                  placeholder="Profil"
+                  list="quiz-profile-names"
+                  maxLength={40}
+                  value={q.profiles[j] ?? ""}
+                  onChange={(e) =>
+                    patch({
+                      profiles: q.options.map((_, k) => (k === j ? e.target.value : (q.profiles[k] ?? ""))),
+                    })
+                  }
+                />
+              )}
               {q.type !== "truefalse" && q.options.length > 2 && (
                 <button
                   type="button"
@@ -183,6 +212,7 @@ export function QuestionFields({
                     patch({
                       options,
                       correctAnswers: q.correctAnswers.filter((k) => k !== j).map((k) => (k > j ? k - 1 : k)),
+                      profiles: q.profiles.filter((_, k) => k !== j),
                       order: options.map((_, k) => k),
                     });
                   }}

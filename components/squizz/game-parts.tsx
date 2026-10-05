@@ -1,5 +1,6 @@
 import { Trophy } from "lucide-react";
 import { type PublicQuestion, type Aggregate, type AnswerPayload } from "@/lib/question";
+import type { PersonalProfile, ProfileShare } from "@/lib/profiles";
 
 export type RankedPlayer = {
   name: string;
@@ -17,6 +18,9 @@ export type Game = {
   index: number;
   total: number;
   totalScored: number;
+  profileQuiz: boolean;
+  profiles: { shares: ProfileShare[]; profiled: number; tied: number } | null;
+  myProfile: PersonalProfile | null;
   duration: number;
   remaining: number;
   revealed: boolean;
@@ -125,6 +129,94 @@ export function PersonalResult({ game, final = false }: { game: Game; final?: bo
         <strong>#{p.rank}</strong>
         <span>TA PLACE</span>
         <small>SUR {game.players.length}</small>
+      </div>
+    </div>
+  );
+}
+
+/** After a question of a profile quiz: the answer is in, nothing to win or lose. */
+export function ProfileStep({ game }: { game: Game }) {
+  const answered = game.personal?.outcome === "opinion";
+  return (
+    <div className={`personal-result profile-step ${answered ? "won" : "missed"}`} role="status">
+      <div>
+        <p className="eyebrow">QUIZ À PROFILS</p>
+        <h2>{answered ? "C’est noté !" : "Le chrono t’a devancé !"}</h2>
+        <p>
+          {answered
+            ? "Pas de bonne ni de mauvaise réponse : ton profil se dessine."
+            : "Cette question ne comptera pas dans ton profil."}
+        </p>
+        <span className="movement-copy">Ton profil sera révélé à la fin.</span>
+      </div>
+    </div>
+  );
+}
+
+/** How the group spreads over the profiles, biggest first. */
+export function ProfileSpread({ game }: { game: Game }) {
+  const result = game.profiles;
+  if (!result) return null;
+  const shares = [...result.shares].sort((a, b) => b.people - a.people);
+  const top = shares[0]?.people ?? 0;
+  return (
+    <div className="profile-spread" aria-label="Répartition du groupe par profil">
+      {shares.map((share, i) => (
+        <div
+          key={share.name}
+          className={`profile-bar ${top > 0 && share.people === top ? "leading" : ""}`}
+          style={{ "--i": i, "--share": `${share.percent}%` } as React.CSSProperties}
+        >
+          <div className="profile-bar-label">
+            <strong>{share.name}</strong>
+            <span>
+              {share.people} personne{share.people > 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="profile-bar-track">
+            <i />
+            <b>{share.percent} %</b>
+          </div>
+        </div>
+      ))}
+      {result.tied > 0 && (
+        <p className="hint">
+          {result.tied} personne{result.tied > 1 ? "s ont" : " a"} deux profils à égalité : elle
+          {result.tied > 1 ? "s comptent" : " compte"} dans chacun, le total peut dépasser 100 %.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** The player's own profile, on their phone only. */
+export function MyProfile({ game }: { game: Game }) {
+  const mine = game.myProfile;
+  if (!mine)
+    return (
+      <div className="personal-result missed" role="status">
+        <div>
+          <p className="eyebrow">TON PROFIL</p>
+          <h2>Pas assez de réponses</h2>
+          <p>Il faut répondre à au moins une question pour dessiner un profil.</p>
+        </div>
+      </div>
+    );
+  return (
+    <div className="personal-result won my-profile" role="status">
+      <div>
+        <p className="eyebrow">{mine.names.length > 1 ? "TES PROFILS, À ÉGALITÉ" : "TON PROFIL"}</p>
+        <h2>{mine.names.join(" · ")}</h2>
+        <ul className="my-profile-scores">
+          {mine.scores.map((score) => (
+            <li key={score.name} className={mine.names.includes(score.name) ? "leading" : undefined}>
+              <span>{score.name}</span>
+              <i style={{ "--share": `${score.percent}%` } as React.CSSProperties} />
+              <b>{score.percent} %</b>
+            </li>
+          ))}
+        </ul>
+        <span className="movement-copy">Calculé sur tes réponses · visible de toi seul·e</span>
       </div>
     </div>
   );

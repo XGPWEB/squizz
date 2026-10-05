@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { rankPlayers, type ScoreRow } from "@/lib/game-results";
 import { orgLimits } from "@/lib/plans";
+import { isProfileQuiz, profileResults } from "@/lib/profiles";
 import type { Quiz } from "@/lib/quizzes";
 import {
   aggregateAnswers,
@@ -196,7 +197,13 @@ export async function kickPlayer(g: GameContext, name: unknown) {
   invalidate(g.room.code);
 }
 
-type Snapshot = { room: Room; people: ScoreRow[]; submitted: AnswerRow[] };
+/** `everything` holds every answer of the game: only read once a profile quiz is over, to work out the profiles. */
+type Snapshot = {
+  room: Room;
+  people: ScoreRow[];
+  submitted: AnswerRow[];
+  everything: (AnswerRow & { question: number })[];
+};
 const snapshots = new Map<string, { at: number; value: Promise<Snapshot> }>();
 
 /** Drops a game's cached snapshot after anything changes it. */
@@ -222,7 +229,21 @@ async function readSnapshot(code: string): Promise<Snapshot> {
       select: { player: true, choice: true, points: true, payload: true, correctness: true },
     }),
   ]);
-  return { room, people, submitted };
+  const everything =
+    room.phase === "finished" && isProfileQuiz(room.quiz.questions)
+      ? await prisma.answer.findMany({
+          where: { code, owner: { kicked: false } },
+          select: {
+            player: true,
+            question: true,
+            choice: true,
+            points: true,
+            payload: true,
+            correctness: true,
+          },
+        })
+      : [];
+  return { room, people, submitted, everything };
 }
 
 /**
@@ -252,12 +273,13 @@ type GameContext = {
   people: ScoreRow[];
   me: ScoreRow | undefined;
   submitted: AnswerRow[];
+  everything: Snapshot["everything"];
   revealed: boolean;
 };
 
 /** `fresh` bypasses the shared snapshot: used by every action that changes the game. */
 export async function loadGame(who: string, code: string, fresh = false): Promise<GameContext> {
-  const { room, people, submitted } = await snapshot(code, fresh);
+  const { room, people, submitted, everything } = await snapshot(code, fresh);
   const quiz = room.quiz;
   const question = quiz.questions[room.question];
   const duration = question.duration * 1000;
@@ -277,7 +299,7 @@ export async function loadGame(who: string, code: string, fresh = false): Promis
         (question.type === "slide" ||
           Date.now() >= room.started + duration ||
           (people.length > 0 && submitted.length >= people.length))));
-  return { who, room, quiz, question, duration, host, people, me, submitted, revealed };
+  return { who, room, quiz, question, duration, host, people, me, submitted, everything, revealed };
 }
 
 export async function submitAnswer(g: GameContext, body: Body) {
@@ -364,6 +386,15 @@ export function gameState(g: GameContext) {
   const personal = players.find((p) => p.me);
   // During the "Ready?" countdown the question itself stays on the server.
   const startsIn = room.phase === "question" ? Math.max(0, room.started - Date.now()) : 0;
+  const profileQuiz = isProfileQuiz(quiz.questions);
+  const outcomeOfProfiles =
+    profileQuiz && room.phase === "finished"
+      ? profileResults(
+          quiz.questions,
+          g.everything.map((a) => ({ player: a.player, question: a.question, payload: decode(a) })),
+          g.who,
+        )
+      : null;
   return {
     code: room.code,
     host: g.host,
@@ -372,6 +403,17 @@ export function gameState(g: GameContext) {
     index: room.question,
     total: quiz.questions.length,
     totalScored: quiz.questions.filter((q) => isScored(q.type)).length,
+    /** A profile quiz sorts people into profiles: no points, no ranking on any screen. */
+    profileQuiz,
+    /** Once a profile quiz is over: how the group spreads, and the visitor's own profile (never anyone else's). */
+    profiles: outcomeOfProfiles
+      ? {
+          shares: outcomeOfProfiles.shares,
+          profiled: outcomeOfProfiles.profiled,
+          tied: outcomeOfProfiles.tied,
+        }
+      : null,
+    myProfile: outcomeOfProfiles?.mine ?? null,
     duration: question.duration,
     remaining: Math.max(0, Math.min(g.duration, room.started + g.duration - Date.now())),
     startsIn,

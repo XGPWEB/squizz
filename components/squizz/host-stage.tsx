@@ -9,7 +9,7 @@ import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play
 import { MediaView } from "@/components/squizz/media";
 import { FullscreenButton } from "@/components/squizz/fullscreen-button";
 import { gameApi as api } from "@/lib/client/api";
-import { type Game, Leaderboard, Podium } from "./game-parts";
+import { type Game, Leaderboard, Podium, ProfileSpread } from "./game-parts";
 
 /** Question types whose answers the projected screen can show as they are (the tiles, the slide, the map). */
 const SHOWN_AS_IS = ["quiz", "truefalse", "poll", "slide", "pin", "pinpoll"];
@@ -39,7 +39,9 @@ export function HostStage(props: Props) {
     game.phase === "lobby"
       ? "SALLE D’ATTENTE"
       : game.phase === "finished"
-        ? "RÉSULTATS FINAUX"
+        ? game.profileQuiz
+          ? "LES PROFILS DU GROUPE"
+          : "RÉSULTATS FINAUX"
         : `${q?.type === "slide" ? "ÉTAPE" : "QUESTION"} ${game.index + 1} / ${game.total}`;
   return (
     <div className={`host-stage phase-${game.phase}`}>
@@ -59,7 +61,11 @@ export function HostStage(props: Props) {
       {game.phase === "lobby" ? (
         <Lobby {...props} />
       ) : game.phase === "finished" ? (
-        <Finale game={game} />
+        game.profileQuiz ? (
+          <ProfileFinale game={game} />
+        ) : (
+          <Finale game={game} />
+        )
       ) : counting ? (
         <div className="host-main host-countdown" role="status" aria-live="assertive">
           <strong>Prêt ?</strong>
@@ -245,7 +251,13 @@ function Question({ game, busy, run, settle, remaining }: Props) {
         "Passage à la suite non confirmé : vérifiez la connexion, puis cliquez à nouveau.",
       ),
     );
-  const nextLabel = last ? "Voir le podium" : slide ? "Continuer" : "Question suivante";
+  const nextLabel = last
+    ? game.profileQuiz
+      ? "Révéler les profils"
+      : "Voir le podium"
+    : slide
+      ? "Continuer"
+      : "Question suivante";
   return (
     <>
       <div className={`host-main host-question ${slide ? "is-slide" : ""}`} key={game.index}>
@@ -326,13 +338,15 @@ function Question({ game, busy, run, settle, remaining }: Props) {
                 >
                   <BarChart3 size={18} /> Réponses
                 </button>
-                <button
-                  role="tab"
-                  aria-selected={tab === "ranking"}
-                  onClick={() => setView({ index: game.index, tab: "ranking" })}
-                >
-                  <Trophy size={18} /> Classement
-                </button>
+                {!game.profileQuiz && (
+                  <button
+                    role="tab"
+                    aria-selected={tab === "ranking"}
+                    onClick={() => setView({ index: game.index, tab: "ranking" })}
+                  >
+                    <Trophy size={18} /> Classement
+                  </button>
+                )}
               </div>
               <Dialog.Close className="host-modal-close" aria-label="Fermer">
                 <X size={22} />
@@ -349,7 +363,9 @@ function Question({ game, busy, run, settle, remaining }: Props) {
               )}
             </div>
             <div className="host-modal-foot">
-              {tab === "results" ? (
+              {game.profileQuiz ? (
+                <span className="hint">Quiz à profils : pas de points, pas de classement.</span>
+              ) : tab === "results" ? (
                 <button
                   className="button secondary"
                   onClick={() => setView({ index: game.index, tab: "ranking" })}
@@ -379,6 +395,41 @@ const CONFETTI = Array.from({ length: 36 }, (_, i) => ({
   color: ["var(--acid)", "var(--pink)", "var(--electric)", "var(--orange)"][i % 4],
   tilt: (i * 47) % 360,
 }));
+
+/** The end of a profile quiz: how the group spreads over the profiles, with nobody named. */
+function ProfileFinale({ game }: { game: Game }) {
+  const shares = game.profiles?.shares ?? [];
+  const top = Math.max(0, ...shares.map((s) => s.people));
+  const leaders = shares.filter((s) => top > 0 && s.people === top);
+  return (
+    <>
+      <div className="host-main host-finale host-profiles">
+        <span className="sticker pink-sticker">LE PORTRAIT DU GROUPE</span>
+        <h1>Qui êtes-vous ?</h1>
+        <p className="handnote">
+          {leaders.length === 0
+            ? "Pas encore de profil à afficher."
+            : leaders.length === 1
+              ? `Profil le plus présent : ${leaders[0].name} !`
+              : `En tête, à égalité : ${leaders.map((l) => l.name).join(" et ")} !`}
+        </p>
+        <ProfileSpread game={game} />
+      </div>
+      <footer className="host-bottom">
+        <span className="hint">
+          {game.profiles?.profiled ?? 0} profil{(game.profiles?.profiled ?? 0) > 1 ? "s" : ""} sur{" "}
+          {game.players.length} participant{game.players.length > 1 ? "s" : ""} · chacun voit le sien sur son
+          téléphone
+        </span>
+        <div className="row">
+          <Link className="button host-primary" href="/app">
+            Retour à mes quiz
+          </Link>
+        </div>
+      </footer>
+    </>
+  );
+}
 
 function Finale({ game }: { game: Game }) {
   const [full, setFull] = useState(false);

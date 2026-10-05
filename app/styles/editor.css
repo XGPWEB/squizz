@@ -25,6 +25,122 @@ fieldset {
 .quiz-title-input input {
   margin-top: 8px;
 }
+/* The two formats of a quiz, side by side: with points, or with profiles. */
+.quiz-format {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.quiz-format button {
+  --format: var(--electric);
+  --format-text: white;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  text-align: left;
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+}
+.quiz-format button.profile {
+  --format: var(--pink);
+  --format-text: var(--ink);
+}
+.quiz-format button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.quiz-format button.selected {
+  background: color-mix(in srgb, var(--format) 14%, white);
+  box-shadow: 5px 5px 0 var(--format);
+}
+.quiz-format b {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: white;
+  transform: rotate(-5deg);
+  transition:
+    transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1),
+    background 0.15s;
+}
+.quiz-format button.selected b {
+  background: var(--format);
+  color: var(--format-text);
+  transform: rotate(4deg) scale(1.08);
+}
+.quiz-format span {
+  font-size: 14px;
+  line-height: 1.45;
+}
+.quiz-format strong {
+  display: block;
+  font-family: Anton, sans-serif;
+  font-weight: 400;
+  font-size: 21px;
+}
+.editor-profiles {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 2px solid var(--ink);
+}
+.editor-profiles h3 {
+  margin-bottom: 10px;
+}
+.editor-profiles ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: grid;
+  gap: 6px;
+}
+.editor-profiles li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.editor-profiles li input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 9px;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--pink);
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+}
+.editor-profiles li small {
+  flex: none;
+  font: 700 12px monospace;
+}
+.option-edit .option-profile {
+  flex: 0 0 30%;
+  min-width: 0;
+  background: color-mix(in srgb, var(--pink) 22%, white);
+}
+@media (max-width: 700px) {
+  .quiz-format {
+    grid-template-columns: 1fr;
+  }
+  .option-edit {
+    flex-wrap: wrap;
+  }
+  .option-edit .option-profile {
+    flex: 1 0 100%;
+    margin-left: 34px;
+  }
+}
 .editor-layout {
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr);

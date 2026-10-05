@@ -724,6 +724,26 @@
   margin: 4px 0 0;
   font-size: clamp(18px, 3vh, 28px);
 }
+.host-profiles {
+  overflow: auto;
+}
+.host-profiles .profile-spread {
+  max-width: 900px;
+  margin: 3vh auto 0;
+  gap: clamp(10px, 2vh, 20px);
+}
+.host-profiles .profile-bar-label strong {
+  font-size: clamp(20px, 3.4vh, 34px);
+}
+.host-profiles .profile-bar-label span {
+  font-size: clamp(15px, 2.2vh, 20px);
+}
+.host-profiles .profile-bar-track {
+  height: clamp(36px, 6.5vh, 64px);
+}
+.host-profiles .profile-bar-track b {
+  font-size: clamp(15px, 2.6vh, 24px);
+}
 .host-finale .podium {
   flex: 1;
   width: 100%;

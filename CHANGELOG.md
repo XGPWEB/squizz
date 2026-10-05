@@ -2,6 +2,17 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.11.0] — 2026-10-05
+
+### Quiz à profils (nouveau format)
+- Un quiz peut désormais classer les participants par profil plutôt que par points : dans chaque sondage, chaque réponse pointe vers un profil (« Directif », « Participatif »…). Le profil d’une personne est celui vers lequel ses réponses pointent le plus souvent.
+- Éditeur : choix du format en haut de page, « Quiz à points » ou « Quiz à profils ». En mode profils, un champ « Profil » apparaît en face de chaque réponse d’un sondage, avec les profils déjà nommés en suggestion ; la colonne de gauche liste les profils, le nombre de réponses rattachées, et permet de les renommer partout d’un coup.
+- Format séparé : un quiz à profils ne contient aucune question à points (elles ne sont plus proposées, et l’enregistrement les refuse), de 2 à 6 profils. Sondages, échelles, nuages de mots, questions ouvertes et diapos restent disponibles.
+- Partie : ni points, ni classement, ni podium. Après chaque question, le téléphone confirme simplement que la réponse est notée.
+- Fin de partie, écran de l’animateur : « Le portrait du groupe », la répartition par profil en nombre de personnes et en pourcentage, sans aucun nom.
+- Fin de partie, téléphone : chacun découvre son profil, visible de lui seul, avec le détail de ses réponses, puis la répartition du groupe. En cas d’égalité, les deux profils sont affichés et la personne compte dans chacun.
+- Le profil associé à une réponse n’est jamais envoyé aux téléphones pendant la partie. Les profils suivent le quiz à l’export, à l’import et à la copie.
+
 ## [1.10.23] — 2026-10-05
 
 ### Éditeur

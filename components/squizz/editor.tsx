@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import { Dialog } from "radix-ui";
-import { Plus, X, ArrowUp, ArrowDown, Eye, Copy, Undo2 } from "lucide-react";
+import { Plus, X, ArrowUp, ArrowDown, Eye, Copy, Undo2, Trophy, UsersRound } from "lucide-react";
 import { useHydrated } from "@/lib/client/hydrated";
+import { isProfileQuiz, MAX_PROFILES, quizProfiles, validateProfiles } from "@/lib/profiles";
 import {
+  isScored,
   newQuestion,
   questionTypes,
   slideLayoutLabel,
@@ -48,6 +50,45 @@ export function QuizEditor({
   const [removed, setRemoved] = useState<{ step: Question; index: number } | null>(null);
   const [picker, setPicker] = useState(false),
     [preview, setPreview] = useState(false);
+  // A profile quiz is one whose answers name profiles; until the first one is named, the choice made
+  // here keeps the editor in that format.
+  const [profileChosen, setProfileChosen] = useState(() => isProfileQuiz(questions));
+  const profileNames = quizProfiles(questions);
+  const profileQuiz = profileChosen || isProfileQuiz(questions);
+  const setFormat = (profiles: boolean) => {
+    if (profiles === profileQuiz) return;
+    if (profiles) {
+      const written = questions.findIndex((x) => isScored(x.type) && x.text.trim());
+      if (written >= 0) {
+        setActive(written);
+        return onError(
+          `Étape ${written + 1} : un quiz à profils ne contient pas de question à points. Transformez-la en sondage ou supprimez-la, puis choisissez à nouveau ce format.`,
+        );
+      }
+      // Scored steps still empty become polls, ready to point to profiles.
+      setQuestions(questions.map((x) => (isScored(x.type) ? newQuestion("poll") : x)));
+      setProfileChosen(true);
+    } else {
+      if (
+        profileNames.length &&
+        !confirm("Revenir à un quiz à points retire les profils associés aux réponses. Continuer ?")
+      )
+        return;
+      setQuestions(questions.map((x) => (x.profiles.length ? { ...x, profiles: [] } : x)));
+      setProfileChosen(false);
+    }
+  };
+  const renameProfile = (from: string, to: string) => {
+    const name = to.trim();
+    if (name === from) return;
+    setQuestions(
+      questions.map((x) =>
+        x.profiles.some((p) => p.trim() === from)
+          ? { ...x, profiles: x.profiles.map((p) => (p.trim() === from ? name : p)) }
+          : x,
+      ),
+    );
+  };
   const index = Math.min(active, questions.length - 1);
   const q = questions[index];
   const patch = (value: Partial<Question>) =>
@@ -86,6 +127,18 @@ export function QuizEditor({
         return;
       }
     }
+    if (profileQuiz) {
+      try {
+        if (profileNames.length < 2)
+          throw new Error(
+            "Un quiz à profils a besoin d’au moins deux profils : dans vos sondages, indiquez un profil en face des réponses.",
+          );
+        validateProfiles(questions);
+      } catch (e) {
+        onError((e as Error).message);
+        return;
+      }
+    }
     onSave();
   }
   return (
@@ -115,6 +168,38 @@ export function QuizEditor({
               required
             />
           </label>
+          <div className="quiz-format" role="radiogroup" aria-label="Format du quiz">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!profileQuiz}
+              className={profileQuiz ? "" : "selected"}
+              onClick={() => setFormat(false)}
+            >
+              <b aria-hidden>
+                <Trophy size={20} />
+              </b>
+              <span>
+                <strong>Quiz à points</strong>
+                Des bonnes réponses, des points, un classement et un podium.
+              </span>
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={profileQuiz}
+              className={profileQuiz ? "selected profile" : "profile"}
+              onClick={() => setFormat(true)}
+            >
+              <b aria-hidden>
+                <UsersRound size={20} />
+              </b>
+              <span>
+                <strong>Quiz à profils</strong>
+                Pas de points : chaque réponse pointe vers un profil, et le groupe découvre sa répartition.
+              </span>
+            </button>
+          </div>
           <div className="editor-layout">
             <aside className="editor-steps">
               <h3>Les étapes</h3>
@@ -146,6 +231,44 @@ export function QuizEditor({
                 <Plus size={16} /> Ajouter une étape
               </button>
               <p className="hint">{questions.length} / 30 étapes</p>
+              {profileQuiz && (
+                <div className="editor-profiles">
+                  <h3>Les profils</h3>
+                  {profileNames.length ? (
+                    <ul>
+                      {profileNames.map((name) => (
+                        <li key={name}>
+                          <input
+                            aria-label={`Renommer le profil ${name}`}
+                            defaultValue={name}
+                            maxLength={40}
+                            onBlur={(e) => renameProfile(name, e.target.value)}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && (e.preventDefault(), e.currentTarget.blur())
+                            }
+                          />
+                          <small>
+                            {questions.reduce(
+                              (n, x) => n + x.profiles.filter((p) => p.trim() === name).length,
+                              0,
+                            )}{" "}
+                            rép.
+                          </small>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="hint">
+                      Aucun profil pour l’instant : dans un sondage, écrivez un profil en face de chaque
+                      réponse.
+                    </p>
+                  )}
+                  <p className="hint">
+                    {profileNames.length} / {MAX_PROFILES} profils · cliquez sur un nom pour le renommer
+                    partout
+                  </p>
+                </div>
+              )}
             </aside>
             <section className="question-workspace">
               <div className="row spaced">
@@ -187,6 +310,7 @@ export function QuizEditor({
               <QuestionFields
                 q={q}
                 patch={patch}
+                profileNames={profileQuiz ? profileNames : undefined}
                 mediaKey={index}
                 setType={setType}
                 onBusy={setBusy}
@@ -225,6 +349,7 @@ export function QuizEditor({
           <StepWizard
             open={picker}
             number={questions.length + 1}
+            profileNames={profileQuiz ? profileNames : undefined}
             onClose={() => setPicker(false)}
             onAdd={add}
             onBusy={setBusy}

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { demos, type Quiz } from "@/lib/quizzes";
 import { normalizeQuestion, validateQuestion, type Question } from "@/lib/question";
 import { orgLimits } from "@/lib/plans";
+import { isProfileQuiz, quizProfiles, validateProfiles } from "@/lib/profiles";
 import { withOrgLock } from "./org-lock";
 import { fail, validated } from "./http";
 import type { SessionUser } from "./guard";
@@ -32,7 +33,11 @@ export function parseQuizInput(value: unknown) {
     v.questions.length > MAX_QUESTIONS
   )
     fail(`Ajoutez un titre et de 1 à ${MAX_QUESTIONS} questions.`);
-  const questions = validated(() => (v.questions as unknown[]).map(validateQuestion));
+  const questions = validated(() => {
+    const checked = (v.questions as unknown[]).map(validateQuestion);
+    validateProfiles(checked);
+    return checked;
+  });
   return { title: v.title.trim(), questions };
 }
 
@@ -73,10 +78,12 @@ function toQuiz(row: Row, user: SessionUser): OrgQuiz {
     id: row.id,
     title: row.title,
     questions,
-    tag: "VOTRE CRÉATION",
+    tag: isProfileQuiz(questions) ? "QUIZ À PROFILS" : "VOTRE CRÉATION",
     symbol: "✦",
     color: "purple",
-    desc: `${questions.length} étape${questions.length > 1 ? "s" : ""} à partager.`,
+    desc: isProfileQuiz(questions)
+      ? `${questions.length} étape${questions.length > 1 ? "s" : ""}, ${quizProfiles(questions).length} profils à révéler.`
+      : `${questions.length} étape${questions.length > 1 ? "s" : ""} à partager.`,
     createdBy: row.createdBy?.name ?? null,
     updatedBy: row.updatedBy?.name ?? null,
     canEdit: row.createdById === user.id || user.role !== "HOST",

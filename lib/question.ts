@@ -173,6 +173,8 @@ export type Question = {
   media: Media[];
   /** Optional text shown with the correction to explain the answer. */
   explanation: string;
+  /** Poll only: the profile each answer points to ("" for none), see lib/profiles.ts. */
+  profiles: string[];
 };
 export type AnswerPayload = {
   choices?: number[];
@@ -211,6 +213,7 @@ export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "
     layout,
     media: [],
     explanation: "",
+    profiles: [],
   };
 }
 export function normalizeQuestion(value: Partial<Question>): Question {
@@ -222,6 +225,7 @@ export function normalizeQuestion(value: Partial<Question>): Question {
     order: value.order ?? (value.options ?? base.options).map((_, i) => i),
     media: value.media ?? [],
     explanation: value.explanation ?? "",
+    profiles: value.profiles ?? [],
   };
 }
 export function youtubeId(raw: string): string | null {
@@ -340,6 +344,15 @@ export function validateQuestion(raw: unknown): Question {
         "Ordre du puzzle invalide.",
       );
   }
+  if (q.type === "poll") {
+    check(
+      Array.isArray(q.profiles) && q.profiles.every((p) => typeof p === "string" && p.trim().length <= 40),
+      "Nom de profil limité à 40 caractères.",
+    );
+    // One entry per answer, so an answer added or removed never shifts the others.
+    q.profiles = q.options.map((_, i) => (q.profiles[i] ?? "").trim());
+    if (q.profiles.every((p) => !p)) q.profiles = [];
+  } else q.profiles = [];
   if (typedAnswer(q.type))
     check(
       Array.isArray(q.accepted) &&
@@ -523,7 +536,20 @@ export function evaluateAnswer(
  * until the reveal, players receive no media (a link or a caption would give the answer away).
  */
 export function publicQuestion(q: Question, revealed: boolean, index = 0, host = true) {
-  const { correct, correctAnswers, accepted, target, tolerance, pin, order, explanation, ...visible } = q;
+  // Which profile an answer points to never reaches the phones: knowing it would steer the answers.
+  const {
+    correct,
+    correctAnswers,
+    accepted,
+    target,
+    tolerance,
+    pin,
+    order,
+    explanation,
+    profiles,
+    ...visible
+  } = q;
+  void profiles;
   if (q.type === "blindtest" && !revealed && !host) visible.media = [];
   // Games store puzzle options already shuffled, never in the solution order (see shufflePuzzles),
   // so the stored order is shown as is: nothing in it points to the answer.

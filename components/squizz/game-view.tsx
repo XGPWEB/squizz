@@ -6,7 +6,15 @@ const noopSubscribe = () => () => {};
 import { X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
-import { type Game, Leaderboard, PersonalResult, Podium } from "./game-parts";
+import {
+  type Game,
+  Leaderboard,
+  MyProfile,
+  PersonalResult,
+  Podium,
+  ProfileSpread,
+  ProfileStep,
+} from "./game-parts";
 import { HostStage } from "./host-stage";
 import { invitationOrigin } from "@/lib/invitation";
 import { gameApi as api, getJson, UncertainError } from "@/lib/client/api";
@@ -166,7 +174,27 @@ export function GameView({ code }: { code: string }) {
               <Brand href={null} />
             </div>
             <section className={`panel game-panel ${game.phase === "finished" ? "final-panel" : ""}`}>
-              {game.phase === "finished" ? (
+              {game.phase === "finished" && game.profileQuiz ? (
+                <>
+                  <div className="center final-heading">
+                    <span className="sticker pink-sticker">LE PORTRAIT DU GROUPE</span>
+                    <h1>Et ton profil est…</h1>
+                  </div>
+                  <MyProfile game={game} />
+                  <div className="section-heading">
+                    <h2>Dans le groupe</h2>
+                    <span className="eyebrow">
+                      {game.profiles?.profiled ?? 0} PROFIL{(game.profiles?.profiled ?? 0) > 1 ? "S" : ""}
+                    </span>
+                  </div>
+                  <ProfileSpread game={game} />
+                  <div className="center" style={{ marginTop: 25 }}>
+                    <Link className="button" href="/">
+                      On remet ça ?
+                    </Link>
+                  </div>
+                </>
+              ) : game.phase === "finished" ? (
                 <>
                   <div className="center final-heading">
                     <span className="sticker pink-sticker">FIN DU GAME</span>
@@ -223,9 +251,10 @@ export function GameView({ code }: { code: string }) {
                     aria-label="Temps restant"
                   />
                   {/* Each player's own result and place, first thing on the phone once the answers are in. */}
-                  {game.revealed && game.personal && game.question?.type !== "slide" && (
-                    <PersonalResult game={game} />
-                  )}
+                  {game.revealed &&
+                    game.personal &&
+                    game.question?.type !== "slide" &&
+                    (game.profileQuiz ? <ProfileStep game={game} /> : <PersonalResult game={game} />)}
                   {game.question?.type !== "slide" && (
                     <h2 className="question-title" aria-live="polite">
                       {game.question?.text}
@@ -268,7 +297,7 @@ export function GameView({ code }: { code: string }) {
                           players={game.players.length}
                         />
                       )}{" "}
-                      {game.question?.type !== "slide" && (
+                      {game.question?.type !== "slide" && !game.profileQuiz && (
                         <>
                           <h2 style={{ marginTop: 24 }}>Qui mène le jeu ?</h2>
                           <Leaderboard players={game.players} />
