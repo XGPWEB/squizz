@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.22] — 2026-10-05
+
+### Éditeur
+- Fenêtre « Ajouter une étape » : Temps imparti, Points et Limite de réponse se règlent dans l’onglet Contenu, entre la question et les réponses, comme dans l’éditeur. L’onglet Réglages disparaît : la fenêtre passe à trois étapes, Type, Contenu, Aperçu.
+- Diapos : le bloc de réglages vide (un trait suivi d’un espace blanc) n’est plus affiché.
+
 ## [1.10.21] — 2026-10-04
 
 ### Site

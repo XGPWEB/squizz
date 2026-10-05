@@ -7,17 +7,16 @@ import { LayoutPreview, TypePreview } from "./type-preview";
 import { QuestionFields } from "./question-fields";
 import { QuestionPreview } from "./question-preview";
 
-type Step = "type" | "content" | "settings" | "preview";
+type Step = "type" | "content" | "preview";
 const LABELS: Record<Step, string> = {
   type: "Type",
   content: "Contenu",
-  settings: "Réglages",
   preview: "Aperçu",
 };
 
 /**
- * Pop-up window that builds a new quiz step in stages: pick the type, write the content, adjust
- * the settings, check the preview, then add it to the quiz.
+ * Pop-up window that builds a new quiz step in stages: pick the type, write the content and its
+ * settings, check the preview, then add it to the quiz.
  */
 export function StepWizard({
   open,
@@ -37,8 +36,7 @@ export function StepWizard({
     [step, setStep] = useState<Step>("type"),
     [error, setError] = useState(""),
     [uploading, setUploading] = useState(false);
-  const steps: Step[] =
-    draft?.type === "slide" ? ["type", "content", "preview"] : ["type", "content", "settings", "preview"];
+  const steps: Step[] = ["type", "content", "preview"];
   const at = steps.indexOf(step);
   const patch = (value: Partial<Question>) => setDraft((d) => (d ? { ...d, ...value } : d));
   const reset = () => {
@@ -65,7 +63,7 @@ export function StepWizard({
   };
   const go = (target: Step) => {
     if (!draft && target !== "type") return;
-    if ((target === "preview" || target === "settings") && step === "content" && !check()) return;
+    if (target === "preview" && step === "content" && !check()) return;
     setStep(target);
   };
   const busy = (b: boolean) => {
@@ -155,12 +153,11 @@ export function StepWizard({
                 </div>
               </>
             )}
-            {draft && (step === "content" || step === "settings") && (
+            {draft && step === "content" && (
               <div className="wizard-fields">
                 <QuestionFields
                   q={draft}
                   patch={patch}
-                  part={step}
                   mediaKey={`wizard-${number}`}
                   onBusy={busy}
                   onError={setError}

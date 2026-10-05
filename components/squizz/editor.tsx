@@ -187,7 +187,6 @@ export function QuizEditor({
               <QuestionFields
                 q={q}
                 patch={patch}
-                part="all"
                 mediaKey={index}
                 setType={setType}
                 onBusy={setBusy}
