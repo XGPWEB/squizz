@@ -1189,3 +1189,11 @@ footer {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+/* A quiz not everyone sees stands out in the library. */
+.pill-private {
+  background: var(--ink);
+  color: var(--acid);
+}
+.pill-selected {
+  background: var(--pink);
+}

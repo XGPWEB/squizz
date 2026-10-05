@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { pageUser } from "@/lib/server/guard";
 import { findQuiz, type OrgQuiz } from "@/lib/server/quiz-store";
-import { isDemo } from "@/lib/server/quiz-store";
+import { isDemo, teammates } from "@/lib/server/quiz-store";
 import { EditorPage } from "@/components/squizz/editor-page";
 
 export const metadata: Metadata = { title: "Modifier le quiz" };
@@ -17,7 +17,17 @@ export default async function EditQuizPage({ params }: { params: Promise<{ id: s
   return (
     <EditorPage
       userId={user.id}
-      quiz={{ id: quiz.id, title: quiz.title, questions: quiz.questions, version: quiz.version }}
+      teammates={await teammates(user)}
+      quiz={{
+        id: quiz.id,
+        title: quiz.title,
+        questions: quiz.questions,
+        version: quiz.version,
+        visibility: quiz.visibility,
+        sharedWith: quiz.sharedWith,
+        canManage: quiz.canManage,
+        author: quiz.createdBy,
+      }}
     />
   );
 }

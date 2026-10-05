@@ -1,5 +1,5 @@
 import "server-only";
-import type { Plan, Prisma, Quiz as QuizRow } from "@prisma/client";
+import type { Plan, Prisma, Quiz as QuizRow, QuizVisibility } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { demos, type Quiz } from "@/lib/quizzes";
 import { normalizeQuestion, validateQuestion, type Question } from "@/lib/question";
@@ -41,10 +41,40 @@ export function parseQuizInput(value: unknown) {
   return { title: v.title.trim(), questions };
 }
 
+export type Sharing = { visibility: QuizVisibility; sharedWith: string[] };
+const VISIBILITIES: QuizVisibility[] = ["PRIVATE", "SELECTED", "TEAM"];
+
+/**
+ * Who sees a quiz, as asked by its author: a private draft, chosen members, or the whole team. Returns
+ * null when the draft says nothing about it. Only active members of the same organisation can be chosen.
+ */
+async function parseSharing(user: Member, value: unknown): Promise<Sharing | null> {
+  const v = value as { visibility?: unknown; sharedWith?: unknown } | null;
+  if (!v || v.visibility === undefined) return null;
+  if (!VISIBILITIES.includes(v.visibility as QuizVisibility)) fail("Visibilité du quiz invalide.");
+  const visibility = v.visibility as QuizVisibility;
+  if (visibility !== "SELECTED") return { visibility, sharedWith: [] };
+  const asked = Array.isArray(v.sharedWith) ? v.sharedWith.filter((id) => typeof id === "string") : [];
+  const members = await prisma.user.findMany({
+    where: {
+      organizationId: user.organizationId,
+      active: true,
+      id: { in: [...new Set(asked)].slice(0, 200), not: user.id },
+    },
+    select: { id: true },
+  });
+  if (!members.length) fail("Choisissez au moins une personne de l’équipe avec qui partager ce quiz.");
+  return { visibility, sharedWith: members.map((m) => m.id).sort() };
+}
+
 export type OrgQuiz = Quiz & {
   createdBy: string | null;
   updatedBy: string | null;
   canEdit: boolean;
+  /** Its author, or an administrator when the author is gone: may delete it and choose who sees it. */
+  canManage: boolean;
+  visibility: QuizVisibility;
+  sharedWith: string[];
   /** Created by the person asking (the « Mes quiz » filter). */
   mine: boolean;
   version: number;
@@ -52,10 +82,43 @@ export type OrgQuiz = Quiz & {
 };
 
 const withNames = {
-  createdBy: { select: { name: true } },
+  createdBy: { select: { name: true, active: true } },
   updatedBy: { select: { name: true } },
 } as const;
-type Row = QuizRow & { createdBy: { name: string } | null; updatedBy: { name: string } | null };
+type Row = QuizRow & {
+  createdBy: { name: string; active: boolean } | null;
+  updatedBy: { name: string } | null;
+};
+
+/**
+ * Access to a quiz inside its organisation.
+ * - Its author always sees it, edits it, deletes it and chooses who else sees it.
+ * - PRIVATE: nobody else. SELECTED: the chosen members see it and edit it too. TEAM: every member sees and
+ *   plays it, and administrators edit and delete it.
+ * - A quiz whose author left (account removed or deactivated) goes to the administrators, whatever its
+ *   visibility, so it never stays out of everyone's reach.
+ */
+const orphan = (row: Pick<Row, "createdById" | "createdBy">) =>
+  !row.createdById || row.createdBy?.active === false;
+const adopts = (row: Pick<Row, "createdById" | "createdBy">, user: SessionUser) =>
+  user.role !== "HOST" && orphan(row);
+const canManage = (row: Row, user: SessionUser) => row.createdById === user.id || adopts(row, user);
+const canEdit = (row: Row, user: SessionUser) =>
+  canManage(row, user) ||
+  (row.visibility === "TEAM" && user.role !== "HOST") ||
+  (row.visibility === "SELECTED" && row.sharedWith.includes(user.id));
+const canDelete = (row: Row, user: SessionUser) =>
+  canManage(row, user) || (row.visibility === "TEAM" && user.role !== "HOST");
+/** The quizzes of the organisation that `user` may see. */
+const visibleTo = (user: Member): Prisma.QuizWhereInput => ({
+  organizationId: user.organizationId,
+  OR: [
+    { visibility: "TEAM" },
+    { createdById: user.id },
+    { visibility: "SELECTED", sharedWith: { has: user.id } },
+    ...(user.role !== "HOST" ? [{ createdById: null }, { createdBy: { active: false } }] : []),
+  ],
+});
 
 /** Idempotency keys come from the browser: short, URL-safe, or ignored. */
 const clientKeyOf = (value: unknown) =>
@@ -86,7 +149,10 @@ function toQuiz(row: Row, user: SessionUser): OrgQuiz {
       : `${questions.length} étape${questions.length > 1 ? "s" : ""} à partager.`,
     createdBy: row.createdBy?.name ?? null,
     updatedBy: row.updatedBy?.name ?? null,
-    canEdit: row.createdById === user.id || user.role !== "HOST",
+    canEdit: canEdit(row, user),
+    canManage: canManage(row, user),
+    visibility: row.visibility,
+    sharedWith: row.sharedWith,
     mine: row.createdById === user.id,
     version: row.version,
     updatedAt: row.updatedAt.toISOString(),
@@ -95,19 +161,19 @@ function toQuiz(row: Row, user: SessionUser): OrgQuiz {
 
 export async function listQuizzes(user: Member): Promise<OrgQuiz[]> {
   const rows = await prisma.quiz.findMany({
-    where: { organizationId: user.organizationId },
+    where: visibleTo(user),
     include: withNames,
     orderBy: { createdAt: "asc" },
   });
   return rows.map((row) => toQuiz(row, user));
 }
 
-/** Finds a demo quiz or one of the organisation's quizzes. */
+/** Finds a demo quiz or one of the organisation's quizzes that the person may see. */
 export async function findQuiz(user: Member, id: unknown): Promise<Quiz | null> {
   const demo = demos.find((q) => q.id === id);
   if (demo) return demo;
   const row = await prisma.quiz.findFirst({
-    where: { id: String(id), organizationId: user.organizationId },
+    where: { AND: [{ id: String(id) }, visibleTo(user)] },
     include: withNames,
   });
   return row ? toQuiz(row, user) : null;
@@ -119,6 +185,7 @@ export async function findQuiz(user: Member, id: unknown): Promise<Quiz | null> 
  */
 export async function createQuiz(user: Member, draft: unknown, key?: unknown): Promise<OrgQuiz> {
   const input = parseQuizInput(draft);
+  const sharing = await parseSharing(user, draft);
   const clientKey = clientKeyOf(key);
   const { maxQuizzes } = orgLimits(user.organization);
   const row = await withOrgLock(user.organizationId, async (tx) => {
@@ -145,6 +212,7 @@ export async function createQuiz(user: Member, draft: unknown, key?: unknown): P
         clientKey,
         title: input.title,
         questions: input.questions as unknown as Prisma.InputJsonValue,
+        ...(sharing ?? {}),
       },
       include: withNames,
     });
@@ -161,16 +229,26 @@ export async function duplicateQuiz(user: Member, id: unknown, key?: unknown): P
   if (!source) fail("Quiz introuvable.", 404);
   const suffix = " (copie)";
   const title = source.title.slice(0, MAX_TITLE - suffix.length).trimEnd() + suffix;
-  return createQuiz(user, { title, questions: source.questions }, key);
+  // The copy of a quiz that not everyone sees starts as a private draft of the person copying it.
+  const visibility = "visibility" in source && source.visibility !== "TEAM" ? "PRIVATE" : "TEAM";
+  return createQuiz(user, { title, questions: source.questions, visibility }, key);
 }
 
-/** Hosts may change only their own quizzes; organisation admins may change all of them. */
-async function editableQuiz(user: Member, id: unknown) {
+/** The quiz to change or delete, when the person may (see the access rules above); refuses otherwise. */
+async function editableQuiz(user: Member, id: unknown, action: "edit" | "delete" = "edit") {
   if (isDemo(id)) fail("Les quiz SQuizz Originals ne peuvent pas être modifiés.", 403);
-  const row = await prisma.quiz.findFirst({ where: { id: String(id), organizationId: user.organizationId } });
+  const row = await prisma.quiz.findFirst({
+    where: { AND: [{ id: String(id) }, visibleTo(user)] },
+    include: withNames,
+  });
   if (!row) fail("Quiz introuvable.", 404);
-  if (user.role === "HOST" && row.createdById !== user.id)
-    fail("Seul l’auteur du quiz ou un administrateur peut le modifier.", 403);
+  if (!(action === "delete" ? canDelete : canEdit)(row, user))
+    fail(
+      action === "delete"
+        ? "Seul l’auteur du quiz ou un administrateur peut le supprimer."
+        : "Seul l’auteur du quiz, les personnes avec qui il le partage ou un administrateur peuvent le modifier.",
+      403,
+    );
   return row;
 }
 
@@ -189,9 +267,12 @@ export async function updateQuiz(
 ): Promise<OrgQuiz> {
   const row = await editableQuiz(user, id);
   const input = parseQuizInput(draft);
+  // Who sees the quiz is its author's decision: sent by anyone else, it is left as it is.
+  const sharing = canManage(row, user) ? await parseSharing(user, draft) : null;
   const data = {
     title: input.title,
     questions: input.questions as unknown as Prisma.InputJsonValue,
+    ...(sharing ?? {}),
     updatedById: user.id,
     version: { increment: 1 },
   };
@@ -203,7 +284,12 @@ export async function updateQuiz(
   const { count } = await prisma.quiz.updateMany({ where: { id: row.id, version: baseVersion }, data });
   const current = await prisma.quiz.findUniqueOrThrow({ where: { id: row.id }, include: withNames });
   if (count) return toQuiz(current, user);
-  const same = current.title === input.title && canonical(current.questions) === canonical(input.questions);
+  const same =
+    current.title === input.title &&
+    canonical(current.questions) === canonical(input.questions) &&
+    (!sharing ||
+      (current.visibility === sharing.visibility &&
+        canonical([...current.sharedWith].sort()) === canonical(sharing.sharedWith)));
   if (same) return toQuiz(current, user);
   const other = toQuiz(current, user);
   const byMe = current.updatedById === user.id;
@@ -220,6 +306,8 @@ export async function updateQuiz(
         byMe,
         title: other.title,
         questions: other.questions,
+        visibility: other.visibility,
+        sharedWith: other.sharedWith,
       },
     },
   );
@@ -227,6 +315,21 @@ export async function updateQuiz(
 
 /** Games already started keep their own snapshot, so deleting a quiz never breaks them. */
 export async function deleteQuiz(user: Member, id: unknown): Promise<void> {
-  const row = await editableQuiz(user, id);
+  const row = await editableQuiz(user, id, "delete");
   await prisma.quiz.delete({ where: { id: row.id } });
+}
+
+/** The other active members of the organisation, to choose who a quiz is shared with. */
+export async function teammates(user: { id: string; organizationId: string | null }) {
+  if (!user.organizationId) return [];
+  return prisma.user.findMany({
+    where: {
+      organizationId: user.organizationId,
+      active: true,
+      id: { not: user.id },
+      role: { not: "SUPER_ADMIN" },
+    },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
 }

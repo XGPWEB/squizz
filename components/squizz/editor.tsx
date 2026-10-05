@@ -1,7 +1,22 @@
 "use client";
 import { useState } from "react";
 import { Dialog } from "radix-ui";
-import { Plus, X, ArrowUp, ArrowDown, Eye, Copy, Undo2, Trophy, UsersRound } from "lucide-react";
+import {
+  Plus,
+  X,
+  ArrowUp,
+  ArrowDown,
+  Eye,
+  Copy,
+  Undo2,
+  Trophy,
+  UsersRound,
+  Check,
+  Lock,
+  UserPlus,
+  Building2,
+} from "lucide-react";
+import type { Visibility } from "@/lib/client/drafts";
 import { useHydrated } from "@/lib/client/hydrated";
 import { isProfileQuiz, MAX_PROFILES, quizProfiles, validateProfiles } from "@/lib/profiles";
 import {
@@ -16,11 +31,60 @@ import {
 import { StepWizard } from "./step-wizard";
 import { QuestionPreview } from "./question-preview";
 import { QuestionFields } from "./question-fields";
+const FORMATS = [
+  {
+    id: "points",
+    label: "Quiz à points",
+    icon: <Trophy size={20} />,
+    goal: "Pour jouer, réviser ou vérifier des acquis.",
+    facts: [
+      [true, "Tous les types de questions : quiz, vrai ou faux, sondage, diapo…"],
+      [true, "Des points à chaque bonne réponse"],
+      [true, "À la fin : classement et podium"],
+    ],
+  },
+  {
+    id: "profiles",
+    label: "Quiz à profils",
+    icon: <UsersRound size={20} />,
+    goal: "Pour situer chacun : style de management, personnalité, positionnement.",
+    facts: [
+      [true, "Questions d’avis uniquement : sondage, échelle, nuage de mots, diapo…"],
+      [false, "Ni points, ni classement, ni bonne réponse"],
+      [true, "À la fin : le profil de chacun et la répartition du groupe"],
+    ],
+  },
+] as const;
+const SHARING = [
+  {
+    id: "PRIVATE",
+    label: "Brouillon privé",
+    icon: <Lock size={16} />,
+    note: "Vous seul voyez ce quiz, le temps de le terminer. Personne d’autre dans l’équipe ne peut l’ouvrir ni le lancer.",
+  },
+  {
+    id: "SELECTED",
+    label: "Quelques personnes",
+    icon: <UserPlus size={16} />,
+    note: "Seules les personnes cochées voient ce quiz : elles peuvent le modifier avec vous et le lancer.",
+  },
+  {
+    id: "TEAM",
+    label: "Toute l’équipe",
+    icon: <Building2 size={16} />,
+    note: "Tous les membres de l’équipe voient ce quiz et peuvent le lancer. Vous et les administrateurs pouvez le modifier.",
+  },
+] as const;
+
 export function QuizEditor({
   title,
   questions,
   setTitle,
   setQuestions,
+  sharing,
+  setSharing,
+  teammates = [],
+  author = null,
   busy,
   setBusy,
   onError,
@@ -33,6 +97,11 @@ export function QuizEditor({
   questions: Question[];
   setTitle: (s: string) => void;
   setQuestions: (q: Question[]) => void;
+  /** Who sees the quiz in the team; `setSharing` is only given to the person who decides it. */
+  sharing?: { visibility: Visibility; sharedWith: string[] };
+  setSharing?: (s: { visibility: Visibility; sharedWith: string[] }) => void;
+  teammates?: { id: string; name: string }[];
+  author?: string | null;
   busy: boolean;
   setBusy: (b: boolean) => void;
   onError: (s: string) => void;
@@ -127,6 +196,8 @@ export function QuizEditor({
         return;
       }
     }
+    if (setSharing && sharing?.visibility === "SELECTED" && !sharing.sharedWith.length)
+      return onError("Partage : cochez au moins une personne de l’équipe, ou choisissez un autre réglage.");
     if (profileQuiz) {
       try {
         if (profileNames.length < 2)
@@ -168,38 +239,97 @@ export function QuizEditor({
               required
             />
           </label>
-          <div className="quiz-format" role="radiogroup" aria-label="Format du quiz">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={!profileQuiz}
-              className={profileQuiz ? "" : "selected"}
-              onClick={() => setFormat(false)}
-            >
-              <b aria-hidden>
-                <Trophy size={20} />
-              </b>
-              <span>
-                <strong>Quiz à points</strong>
-                Des bonnes réponses, des points, un classement et un podium.
-              </span>
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={profileQuiz}
-              className={profileQuiz ? "selected profile" : "profile"}
-              onClick={() => setFormat(true)}
-            >
-              <b aria-hidden>
-                <UsersRound size={20} />
-              </b>
-              <span>
-                <strong>Quiz à profils</strong>
-                Pas de points : chaque réponse pointe vers un profil, et le groupe découvre sa répartition.
-              </span>
-            </button>
-          </div>
+          <section className="editor-block" aria-labelledby="format-heading">
+            <div className="editor-block-head">
+              <h2 id="format-heading">Quel format de quiz ?</h2>
+              <p className="hint">
+                Le format décide de ce qui se passe à la fin de la partie : un classement, ou un profil pour
+                chacun. Choisissez-le avant d’écrire vos questions.
+              </p>
+            </div>
+            <div className="quiz-format" role="radiogroup" aria-labelledby="format-heading">
+              {FORMATS.map((format) => {
+                const selected = (format.id === "profiles") === profileQuiz;
+                return (
+                  <button
+                    key={format.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    className={`${format.id} ${selected ? "selected" : ""}`}
+                    onClick={() => setFormat(format.id === "profiles")}
+                  >
+                    <span className="quiz-format-head">
+                      <b aria-hidden>{format.icon}</b>
+                      <strong>{format.label}</strong>
+                      <i className="quiz-format-mark" aria-hidden>
+                        {selected ? "FORMAT CHOISI" : "CHOISIR"}
+                      </i>
+                    </span>
+                    <span className="quiz-format-goal">{format.goal}</span>
+                    <span className="quiz-format-facts">
+                      {format.facts.map(([ok, text]) => (
+                        <span key={text} className={ok ? "yes" : "no"}>
+                          {ok ? <Check size={15} strokeWidth={3} /> : <X size={15} strokeWidth={3} />}
+                          {text}
+                        </span>
+                      ))}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+          {sharing && (setSharing ? teammates.length > 0 : sharing.visibility !== "TEAM") && (
+            <section className="editor-block" aria-labelledby="sharing-heading">
+              <div className="editor-block-head">
+                <h2 id="sharing-heading">Qui voit ce quiz dans l’équipe ?</h2>
+                {!setSharing && (
+                  <p className="hint">Ce réglage appartient à {author ?? "l’auteur du quiz"}.</p>
+                )}
+              </div>
+              <div className="quiz-sharing" role="radiogroup" aria-labelledby="sharing-heading">
+                {SHARING.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={sharing.visibility === option.id}
+                    className={sharing.visibility === option.id ? "selected" : ""}
+                    disabled={!setSharing}
+                    onClick={() => setSharing?.({ ...sharing, visibility: option.id })}
+                  >
+                    {option.icon} {option.label}
+                  </button>
+                ))}
+              </div>
+              <p className="quiz-sharing-note" key={sharing.visibility}>
+                {SHARING.find((option) => option.id === sharing.visibility)?.note}
+              </p>
+              {sharing.visibility === "SELECTED" && (
+                <div className="quiz-sharing-people">
+                  {teammates.map((member) => (
+                    <label key={member.id}>
+                      <input
+                        type="checkbox"
+                        disabled={!setSharing}
+                        checked={sharing.sharedWith.includes(member.id)}
+                        onChange={(e) =>
+                          setSharing?.({
+                            ...sharing,
+                            sharedWith: e.target.checked
+                              ? [...sharing.sharedWith, member.id]
+                              : sharing.sharedWith.filter((id) => id !== member.id),
+                          })
+                        }
+                      />
+                      {member.name}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
           <div className="editor-layout">
             <aside className="editor-steps">
               <h3>Les étapes</h3>

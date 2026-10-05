@@ -146,7 +146,15 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
     <article className="quiz-card" key={q.id}>
       <div className={`card-art ${q.color}`}>
         <span aria-hidden="true">{q.symbol}</span>
-        <span className="pill">{own ? "Votre équipe" : "SQuizz Originals"}</span>
+        <span className={`pill ${"visibility" in q ? `pill-${q.visibility.toLowerCase()}` : ""}`}>
+          {!own
+            ? "SQuizz Originals"
+            : "visibility" in q && q.visibility === "PRIVATE"
+              ? "Brouillon privé"
+              : "visibility" in q && q.visibility === "SELECTED"
+                ? `Partagé avec ${q.sharedWith.length} personne${q.sharedWith.length > 1 ? "s" : ""}`
+                : "Votre équipe"}
+        </span>
       </div>
       <div className="card-content">
         <p className="eyebrow">
@@ -202,7 +210,7 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
                 <Download size={16} />
               </button>
             )}
-            {"canEdit" in q && q.canEdit && (
+            {"canEdit" in q && q.canEdit && (q.canManage || q.visibility === "TEAM") && (
               <button
                 disabled={busy}
                 aria-label={`Supprimer ${q.title}`}

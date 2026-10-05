@@ -163,23 +163,35 @@ model PasswordResetToken {
   createdAt DateTime  @default(now())
 }
 
+/// PRIVATE: a draft only its author sees. SELECTED: the author and the members they chose, who edit it too.
+/// TEAM: every member of the organisation.
+enum QuizVisibility {
+  PRIVATE
+  SELECTED
+  TEAM
+}
+
 model Quiz {
-  id             String       @id @default(cuid())
+  id             String         @id @default(cuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdById    String?
-  createdBy      User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdBy      User?          @relation(fields: [createdById], references: [id], onDelete: SetNull)
   updatedById    String?
-  updatedBy      User?        @relation("QuizUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedBy      User?          @relation("QuizUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   /// Bumped by every save: an editor sends the version it opened, so two members never overwrite each other.
-  version        Int          @default(0)
+  version        Int            @default(0)
   /// Idempotency key sent by the editor: a save retried after a lost response never creates two quizzes.
   clientKey      String?
   title          String
+  /// Who sees the quiz in the organisation (see lib/server/quiz-store.ts).
+  visibility     QuizVisibility @default(TEAM)
+  /// With SELECTED: ids of the members who see the quiz and edit it with its author.
+  sharedWith     String[]       @default([])
   /// Validated questions (see lib/question.ts).
   questions      Json
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@unique([organizationId, clientKey])
   @@index([organizationId])

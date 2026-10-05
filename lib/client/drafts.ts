@@ -1,5 +1,7 @@
 import type { Question } from "@/lib/question";
 
+export type Visibility = "PRIVATE" | "SELECTED" | "TEAM";
+
 /**
  * Editor drafts kept in this browser (localStorage), so a reload, a crash or a lost connection never loses
  * work. One draft per account and per quiz (`new` for a quiz not saved yet): another account signed in on
@@ -8,6 +10,9 @@ import type { Question } from "@/lib/question";
 export type Draft = {
   title: string;
   questions: Question[];
+  /** Who sees the quiz, when the person editing decides it (drafts from before this existed have none). */
+  visibility?: Visibility;
+  sharedWith?: string[];
   /** Version of the quiz the draft started from (null for a new quiz): used to detect edit conflicts. */
   baseVersion: number | null;
   /** Idempotency key of a new quiz, so saving a restored draft never creates the quiz twice. */

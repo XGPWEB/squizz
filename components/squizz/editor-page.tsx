@@ -6,9 +6,31 @@ import { X } from "lucide-react";
 import { QuizEditor } from "@/components/squizz/editor";
 import { newQuestion, type Question } from "@/lib/question";
 import { ApiError, gameApi, newClientKey, UncertainError, withRetry } from "@/lib/client/api";
-import { clearDraft, loadDraft, sameContent, saveDraft, type Draft } from "@/lib/client/drafts";
+import {
+  clearDraft,
+  loadDraft,
+  sameContent,
+  saveDraft,
+  type Draft,
+  type Visibility,
+} from "@/lib/client/drafts";
 
-type Saved = { id: string; title: string; questions: Question[]; version: number };
+type Sharing = { visibility: Visibility; sharedWith: string[] };
+type Saved = {
+  id: string;
+  title: string;
+  questions: Question[];
+  version: number;
+  visibility: Visibility;
+  sharedWith: string[];
+  /** The person editing is the one who decides who sees the quiz. */
+  canManage: boolean;
+  author: string | null;
+};
+export type Teammate = { id: string; name: string };
+const sameSharing = (a: Sharing, b: Sharing) =>
+  a.visibility === b.visibility &&
+  (a.visibility !== "SELECTED" || [...a.sharedWith].sort().join() === [...b.sharedWith].sort().join());
 type Conflict = {
   byMe?: boolean;
   version: number;
@@ -16,6 +38,8 @@ type Conflict = {
   updatedBy: string | null;
   title: string;
   questions: Question[];
+  visibility?: Visibility;
+  sharedWith?: string[];
 };
 export type SaveState = "saved" | "dirty" | "draft" | "saving" | "unsaved";
 
@@ -29,7 +53,15 @@ const when = (t: number | string) =>
  * offered back after a reload, and cleared once the quiz is saved. Saving sends the version the editor
  * started from: if another member saved in between, nothing is overwritten and the person chooses.
  */
-export function EditorPage({ userId, quiz }: { userId: string; quiz?: Saved }) {
+export function EditorPage({
+  userId,
+  quiz,
+  teammates = [],
+}: {
+  userId: string;
+  quiz?: Saved;
+  teammates?: Teammate[];
+}) {
   const router = useRouter();
   const quizId = quiz?.id ?? null;
   const [title, setTitle] = useState(quiz?.title ?? ""),
@@ -40,6 +72,12 @@ export function EditorPage({ userId, quiz }: { userId: string; quiz?: Saved }) {
     [baseline, setBaseline] = useState(() =>
       quiz ? { title: quiz.title, questions: quiz.questions } : { title: "", questions: [newQuestion()] },
     ),
+    // Who sees the quiz: decided by its author (anyone creating a quiz is its author).
+    [sharing, setSharing] = useState<Sharing>(() => ({
+      visibility: quiz?.visibility ?? "TEAM",
+      sharedWith: quiz?.sharedWith ?? [],
+    })),
+    [savedSharing, setSavedSharing] = useState(sharing),
     [version, setVersion] = useState<number | null>(quiz?.version ?? null),
     [clientKey, setClientKey] = useState(newClientKey),
     [busy, setBusy] = useState(false),
@@ -49,13 +87,17 @@ export function EditorPage({ userId, quiz }: { userId: string; quiz?: Saved }) {
     [found, setFound] = useState<Draft | null>(null),
     [conflict, setConflict] = useState<Conflict | null>(null);
   const leaving = useRef(false);
-  const dirty = !sameContent({ title, questions }, baseline);
+  const canShare = !quiz || quiz.canManage;
+  const dirty = !sameContent({ title, questions }, baseline) || !sameSharing(sharing, savedSharing);
 
   // A draft left by a previous visit (same account, same quiz), different from what is saved.
   useEffect(() => {
     const d = loadDraft(userId, quizId);
     if (!d) return;
-    if (sameContent(d, baseline)) clearDraft(userId, quizId);
+    const sharingKept =
+      !d.visibility ||
+      sameSharing({ visibility: d.visibility, sharedWith: d.sharedWith ?? [] }, savedSharing);
+    if (sameContent(d, baseline) && sharingKept) clearDraft(userId, quizId);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount
     else setFound(d);
     // Only on opening the editor.
@@ -73,6 +115,7 @@ export function EditorPage({ userId, quiz }: { userId: string; quiz?: Saved }) {
       const ok = saveDraft(userId, quizId, {
         title,
         questions,
+        ...(canShare ? sharing : {}),
         baseVersion: version,
         clientKey,
         savedAt: Date.now(),
@@ -81,7 +124,7 @@ export function EditorPage({ userId, quiz }: { userId: string; quiz?: Saved }) {
       setState((s) => (s === "saving" ? s : ok ? "draft" : "unsaved"));
     }, 1000);
     return () => clearTimeout(timer);
-  }, [title, questions, dirty, found, userId, quizId, version, clientKey]);
+  }, [title, questions, sharing, canShare, dirty, found, userId, quizId, version, clientKey]);
 
   // Warns before leaving with changes not saved on the server (reload, closing the tab, links in the app).
   useEffect(() => {
@@ -112,6 +155,7 @@ export function EditorPage({ userId, quiz }: { userId: string; quiz?: Saved }) {
   function restore(d: Draft) {
     setTitle(d.title);
     setQuestions(d.questions);
+    if (canShare && d.visibility) setSharing({ visibility: d.visibility, sharedWith: d.sharedWith ?? [] });
     setVersion(d.baseVersion);
     if (d.clientKey) setClientKey(d.clientKey);
     setFound(null);
@@ -135,7 +179,7 @@ export function EditorPage({ userId, quiz }: { userId: string; quiz?: Saved }) {
     setBusy(true);
     setError("");
     setState("saving");
-    const content = { title, questions };
+    const content = { title, questions, ...(canShare ? sharing : {}) };
     try {
       if (quiz && !options.asCopy) {
         // The version makes a retry safe: the server accepts the same content twice.
@@ -175,6 +219,11 @@ export function EditorPage({ userId, quiz }: { userId: string; quiz?: Saved }) {
     setTitle(c.title);
     setQuestions(structuredClone(c.questions));
     setBaseline({ title: c.title, questions: c.questions });
+    if (c.visibility) {
+      const theirs = { visibility: c.visibility, sharedWith: c.sharedWith ?? [] };
+      setSharing(theirs);
+      setSavedSharing(theirs);
+    }
     setVersion(c.version);
     setConflict(null);
     clearDraft(userId, quizId);
@@ -229,6 +278,10 @@ export function EditorPage({ userId, quiz }: { userId: string; quiz?: Saved }) {
         questions={questions}
         setTitle={setTitle}
         setQuestions={setQuestions}
+        sharing={sharing}
+        setSharing={canShare ? setSharing : undefined}
+        teammates={teammates}
+        author={quiz?.author ?? null}
         busy={busy}
         setBusy={setBusy}
         onError={setError}

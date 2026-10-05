@@ -2,6 +2,18 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.12.0] — 2026-10-05
+
+### Équipe : qui voit un quiz
+- Chaque quiz a désormais un réglage « Qui voit ce quiz dans l’équipe ? », choisi par son auteur dans l’éditeur : **Brouillon privé** (lui seul le voit, le temps de le terminer), **Quelques personnes** (les membres cochés le voient, le modifient avec lui et peuvent le lancer) ou **Toute l’équipe** (comme avant : tous le voient et le lancent, l’auteur et les administrateurs le modifient).
+- Un brouillon privé ou un quiz partagé à quelques personnes est invisible pour tous les autres membres, administrateurs compris : ni dans la bibliothèque, ni à l’ouverture, au lancement, à la copie ou à l’export.
+- Seul l’auteur change ce réglage et supprime le quiz ; une personne avec qui il est partagé en modifie le contenu. La copie d’un quiz que tout le monde ne voit pas démarre en brouillon privé de la personne qui copie.
+- Si le compte de l’auteur est supprimé ou désactivé, ses quiz reviennent aux administrateurs, pour qu’aucun ne reste hors d’atteinte.
+- Bibliothèque : une étiquette « Brouillon privé » ou « Partagé avec N personnes » sur la carte du quiz. Les quiz existants restent visibles de toute l’équipe. Le réglage n’apparaît que si l’équipe compte d’autres membres.
+
+### Éditeur
+- Choix du format plus lisible : un bloc « Quel format de quiz ? » explique à quoi sert chaque format et ce qu’il contient, point par point (types de questions disponibles, points ou non, ce qui s’affiche à la fin), avec une étiquette « Format choisi » sur la carte retenue.
+
 ## [1.11.0] — 2026-10-05
 
 ### Quiz à profils (nouveau format)

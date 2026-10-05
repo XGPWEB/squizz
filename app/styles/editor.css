@@ -25,43 +25,69 @@ fieldset {
 .quiz-title-input input {
   margin-top: 8px;
 }
+/* The settings of the whole quiz, above its steps: one framed block per question asked. */
+.editor-block {
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  background: white;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.editor-block-head h2 {
+  margin: 0;
+  font-size: 26px;
+}
+.editor-block-head .hint {
+  margin: 4px 0 0;
+}
 /* The two formats of a quiz, side by side: with points, or with profiles. */
 .quiz-format {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 24px;
+  gap: 16px;
+  margin-top: 14px;
 }
 .quiz-format button {
   --format: var(--electric);
   --format-text: white;
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
   text-align: left;
-  background: white;
+  background: var(--cream);
   border: 2px solid var(--ink);
   border-radius: 14px;
   box-shadow: 3px 3px 0 var(--ink);
+  opacity: 0.72;
   transition:
     transform 0.15s,
     box-shadow 0.15s,
-    background 0.15s;
+    background 0.15s,
+    opacity 0.15s;
 }
-.quiz-format button.profile {
+.quiz-format button.profiles {
   --format: var(--pink);
   --format-text: var(--ink);
 }
 .quiz-format button:hover {
+  opacity: 1;
   transform: translate(-1px, -1px);
   box-shadow: 5px 5px 0 var(--ink);
 }
 .quiz-format button.selected {
-  background: color-mix(in srgb, var(--format) 14%, white);
-  box-shadow: 5px 5px 0 var(--format);
+  opacity: 1;
+  background: color-mix(in srgb, var(--format) 13%, white);
+  border-width: 3px;
+  box-shadow: 6px 6px 0 var(--format);
 }
-.quiz-format b {
+.quiz-format-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.quiz-format-head b {
   flex: none;
   display: grid;
   place-items: center;
@@ -75,20 +101,125 @@ fieldset {
     transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1),
     background 0.15s;
 }
-.quiz-format button.selected b {
+.quiz-format button.selected .quiz-format-head b {
   background: var(--format);
   color: var(--format-text);
   transform: rotate(4deg) scale(1.08);
 }
-.quiz-format span {
-  font-size: 14px;
-  line-height: 1.45;
-}
-.quiz-format strong {
-  display: block;
+.quiz-format-head strong {
+  flex: 1;
   font-family: Anton, sans-serif;
   font-weight: 400;
-  font-size: 21px;
+  font-size: 24px;
+}
+.quiz-format-mark {
+  flex: none;
+  padding: 4px 8px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: white;
+  font: 700 11px/1.4 monospace;
+  font-style: normal;
+  letter-spacing: 1px;
+}
+.quiz-format button.selected .quiz-format-mark {
+  background: var(--ink);
+  color: var(--acid);
+  transform: rotate(3deg);
+  animation: format-mark 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes format-mark {
+  from {
+    transform: rotate(-12deg) scale(0.6);
+  }
+}
+.quiz-format-goal {
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.quiz-format-facts {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.quiz-format-facts > span {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.quiz-format-facts svg {
+  flex: none;
+  margin-top: 2px;
+  padding: 1px;
+  border-radius: 50%;
+  background: var(--acid);
+  border: 1.5px solid var(--ink);
+  box-sizing: content-box;
+}
+.quiz-format-facts .no svg {
+  background: var(--pink);
+}
+/* Who sees the quiz: three choices in a row, and what the chosen one means. */
+.quiz-sharing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.quiz-sharing button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-weight: 700;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition:
+    transform 0.15s,
+    background 0.15s;
+}
+.quiz-sharing button:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+.quiz-sharing button.selected {
+  background: var(--ink);
+  color: var(--acid);
+  box-shadow: 3px 3px 0 var(--pink);
+}
+.quiz-sharing-note {
+  margin: 12px 0 0;
+  font-size: 15px;
+  line-height: 1.5;
+  animation: stage-in 0.3s ease;
+}
+.quiz-sharing-people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.quiz-sharing-people label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--cream);
+  font-weight: 700;
+  cursor: pointer;
+}
+.quiz-sharing-people label:has(:checked) {
+  background: var(--acid);
+}
+.quiz-sharing-people input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ink);
 }
 .editor-profiles {
   margin-top: 16px;
@@ -132,6 +263,9 @@ fieldset {
 @media (max-width: 700px) {
   .quiz-format {
     grid-template-columns: 1fr;
+  }
+  .quiz-format-mark {
+    display: none;
   }
   .option-edit {
     flex-wrap: wrap;
