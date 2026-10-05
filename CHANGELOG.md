@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.10.23] — 2026-10-05
+
+### Éditeur
+- Fenêtre « Ajouter une étape » : les trois familles d’étapes ont chacune leur bloc encadré, avec sa couleur, son pictogramme, une phrase d’explication et une étiquette — « Tester les connaissances » (points et classement), « Collecter des avis » (sans points ni classement), « Diapos multimédias » (sans réponse).
+- Liste « Type de question » : les intertitres précisent la même différence.
+
 ## [1.10.22] — 2026-10-05
 
 ### Éditeur

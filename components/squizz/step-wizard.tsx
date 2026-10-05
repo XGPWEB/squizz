@@ -1,8 +1,15 @@
 "use client";
 import { useState } from "react";
 import { Dialog } from "radix-ui";
-import { ArrowLeft, ArrowRight, Check, X } from "lucide-react";
-import { newQuestion, questionTypes, slideLayouts, validateQuestion, type Question } from "@/lib/question";
+import { ArrowLeft, ArrowRight, Check, MessagesSquare, Presentation, Trophy, X } from "lucide-react";
+import {
+  newQuestion,
+  questionGroups,
+  questionTypes,
+  slideLayouts,
+  validateQuestion,
+  type Question,
+} from "@/lib/question";
 import { LayoutPreview, TypePreview } from "./type-preview";
 import { QuestionFields } from "./question-fields";
 import { QuestionPreview } from "./question-preview";
@@ -12,6 +19,11 @@ const LABELS: Record<Step, string> = {
   type: "Type",
   content: "Contenu",
   preview: "Aperçu",
+};
+const GROUP_ICONS = {
+  knowledge: <Trophy size={22} />,
+  opinion: <MessagesSquare size={22} />,
+  slides: <Presentation size={22} />,
 };
 
 /**
@@ -117,40 +129,43 @@ export function StepWizard({
           <div className="host-modal-body wizard-body" key={step}>
             {step === "type" && (
               <>
-                {["Tester les connaissances", "Collecter des avis"].map((group) => (
-                  <div key={group}>
-                    <h3>{group}</h3>
+                {questionGroups.map((group) => (
+                  <section key={group.id} className={`type-group ${group.id}`}>
+                    <header>
+                      <b aria-hidden>{GROUP_ICONS[group.id]}</b>
+                      <div>
+                        <h3>{group.label}</h3>
+                        <p>{group.hint}</p>
+                      </div>
+                      <span className="type-group-tag">{group.tag}</span>
+                    </header>
                     <div className="type-grid">
-                      {questionTypes
-                        .filter((t) => t.group === group)
-                        .map((t) => (
-                          <TypeCard
-                            key={t.id}
-                            selected={draft?.type === t.id}
-                            preview={<TypePreview type={t.id} />}
-                            label={t.label}
-                            hint={t.hint}
-                            onPick={() => pick(newQuestion(t.id))}
-                          />
-                        ))}
+                      {group.id === "slides"
+                        ? slideLayouts.map((l) => (
+                            <TypeCard
+                              key={l.id}
+                              selected={draft?.type === "slide" && draft.layout === l.id}
+                              preview={<LayoutPreview layout={l.id} />}
+                              label={l.label}
+                              hint={l.hint}
+                              onPick={() => pick(newQuestion("slide", l.id))}
+                            />
+                          ))
+                        : questionTypes
+                            .filter((t) => t.group === group.label)
+                            .map((t) => (
+                              <TypeCard
+                                key={t.id}
+                                selected={draft?.type === t.id}
+                                preview={<TypePreview type={t.id} />}
+                                label={t.label}
+                                hint={t.hint}
+                                onPick={() => pick(newQuestion(t.id))}
+                              />
+                            ))}
                     </div>
-                  </div>
+                  </section>
                 ))}
-                <div>
-                  <h3>Diapos multimédias</h3>
-                  <div className="type-grid">
-                    {slideLayouts.map((l) => (
-                      <TypeCard
-                        key={l.id}
-                        selected={draft?.type === "slide" && draft.layout === l.id}
-                        preview={<LayoutPreview layout={l.id} />}
-                        label={l.label}
-                        hint={l.hint}
-                        onPick={() => pick(newQuestion("slide", l.id))}
-                      />
-                    ))}
-                  </div>
-                </div>
               </>
             )}
             {draft && step === "content" && (

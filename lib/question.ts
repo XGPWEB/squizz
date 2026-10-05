@@ -91,6 +91,27 @@ export const questionTypes = [
   },
 ] as const;
 export type QuestionType = (typeof questionTypes)[number]["id"];
+/** The families of steps, with what sets each one apart: only the first one gives points. */
+export const questionGroups = [
+  {
+    id: "knowledge",
+    label: "Tester les connaissances",
+    tag: "Points et classement",
+    hint: "Il y a une bonne réponse : elle rapporte des points et fait bouger le classement.",
+  },
+  {
+    id: "opinion",
+    label: "Collecter des avis",
+    tag: "Sans points ni classement",
+    hint: "Pas de bonne réponse : vous recueillez des avis, des idées et des pourcentages, sans toucher au classement.",
+  },
+  {
+    id: "slides",
+    label: "Diapos multimédias",
+    tag: "Sans réponse",
+    hint: "Du texte et des médias à présenter entre deux questions.",
+  },
+] as const;
 export const slideLayouts = [
   {
     id: "classic",

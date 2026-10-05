@@ -875,7 +875,109 @@
   margin: 8px 0 12px;
 }
 .wizard-body .type-grid {
-  margin: 0 0 18px;
+  margin: 0;
+}
+/* One framed block per family of steps, each with its own colour, so scored questions and opinion
+   questions cannot be mistaken for one another. */
+.type-group {
+  --group: var(--electric);
+  --group-text: white;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  padding: 16px;
+  margin: 6px 6px 26px 0;
+  background: color-mix(in srgb, var(--group) 9%, var(--cream));
+  box-shadow: 6px 6px 0 var(--group);
+  animation: type-group-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.type-group.opinion {
+  --group: var(--pink);
+  --group-text: var(--ink);
+  animation-delay: 0.08s;
+}
+.type-group.slides {
+  --group: var(--orange);
+  --group-text: var(--ink);
+  animation-delay: 0.16s;
+}
+.type-group > header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.type-group > header b {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--group);
+  color: var(--group-text);
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-6deg);
+  transition: transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.type-group:hover > header b {
+  transform: rotate(4deg) scale(1.08);
+}
+.type-group > header div {
+  flex: 1;
+  min-width: 0;
+}
+.wizard-body .type-group h3 {
+  margin: 0;
+}
+.type-group > header p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.type-group-tag {
+  flex: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--acid);
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(2deg);
+}
+.type-group.opinion .type-group-tag {
+  color: var(--pink);
+}
+.type-group.slides .type-group-tag {
+  color: var(--orange);
+}
+.type-group .type-grid button:hover {
+  background: color-mix(in srgb, var(--group) 22%, white);
+}
+@keyframes type-group-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@media (max-width: 700px) {
+  .type-group {
+    padding: 12px;
+  }
+  .type-group > header {
+    flex-wrap: wrap;
+  }
+  .type-group-tag {
+    order: 3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .type-group {
+    animation: none;
+  }
 }
 .wizard-body .type-grid button.selected {
   background: var(--acid);

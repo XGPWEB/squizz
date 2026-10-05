@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import {
+  questionGroups,
   questionTypes,
   slideLayouts,
   durations,
@@ -38,7 +39,15 @@ export function QuestionFields({
         <Choice
           label="Type de question"
           value={q.type}
-          options={questionTypes.map((t) => [t.id, t.label, undefined, t.group])}
+          options={questionTypes.map((t) => {
+            const group = questionGroups.find((g) => g.label === t.group);
+            return [
+              t.id,
+              t.label,
+              undefined,
+              group ? `${group.label} · ${group.tag.toLowerCase()}` : t.group,
+            ];
+          })}
           onChange={(v) => setType(v as QuestionType)}
         />
       )}
