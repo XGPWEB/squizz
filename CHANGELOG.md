@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.12.2] — 2026-10-05
+
+### Corrigé
+- Un quiz créé par le super-admin en mode « voir en tant qu’administrateur » appartient à l’organisation visitée : ses administrateurs le voient et le gèrent, quel que soit le réglage de visibilité. Depuis la 1.12.0, un tel quiz laissé en brouillon privé restait attaché au compte super-admin : invisible pour l’organisation, tout en comptant dans son quota, et retrouvable seulement en repassant par ce mode.
+
 ## [1.12.1] — 2026-10-05
 
 ### Éditeur

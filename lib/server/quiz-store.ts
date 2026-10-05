@@ -1,5 +1,5 @@
 import "server-only";
-import type { Plan, Prisma, Quiz as QuizRow, QuizVisibility } from "@prisma/client";
+import type { Plan, Prisma, Quiz as QuizRow, QuizVisibility, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { demos, type Quiz } from "@/lib/quizzes";
 import { normalizeQuestion, validateQuestion, type Question } from "@/lib/question";
@@ -82,11 +82,11 @@ export type OrgQuiz = Quiz & {
 };
 
 const withNames = {
-  createdBy: { select: { name: true, active: true } },
+  createdBy: { select: { name: true, active: true, role: true } },
   updatedBy: { select: { name: true } },
 } as const;
 type Row = QuizRow & {
-  createdBy: { name: string; active: boolean } | null;
+  createdBy: { name: string; active: boolean; role: UserRole } | null;
   updatedBy: { name: string } | null;
 };
 
@@ -96,10 +96,12 @@ type Row = QuizRow & {
  * - PRIVATE: nobody else. SELECTED: the chosen members see it and edit it too. TEAM: every member sees and
  *   plays it, and administrators edit and delete it.
  * - A quiz whose author left (account removed or deactivated) goes to the administrators, whatever its
- *   visibility, so it never stays out of everyone's reach.
+ *   visibility, so it never stays out of everyone's reach. So does a quiz made by the super-admin while
+ *   viewing the organisation as its administrator: it belongs to the organisation, not to an account its
+ *   members cannot reach.
  */
 const orphan = (row: Pick<Row, "createdById" | "createdBy">) =>
-  !row.createdById || row.createdBy?.active === false;
+  !row.createdById || row.createdBy?.active === false || row.createdBy?.role === "SUPER_ADMIN";
 const adopts = (row: Pick<Row, "createdById" | "createdBy">, user: SessionUser) =>
   user.role !== "HOST" && orphan(row);
 const canManage = (row: Row, user: SessionUser) => row.createdById === user.id || adopts(row, user);
@@ -116,7 +118,13 @@ const visibleTo = (user: Member): Prisma.QuizWhereInput => ({
     { visibility: "TEAM" },
     { createdById: user.id },
     { visibility: "SELECTED", sharedWith: { has: user.id } },
-    ...(user.role !== "HOST" ? [{ createdById: null }, { createdBy: { active: false } }] : []),
+    ...(user.role !== "HOST"
+      ? [
+          { createdById: null },
+          { createdBy: { active: false } },
+          { createdBy: { role: "SUPER_ADMIN" as const } },
+        ]
+      : []),
   ],
 });
 

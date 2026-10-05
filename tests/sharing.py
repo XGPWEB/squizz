@@ -1,11 +1,11 @@
 """Qui voit un quiz dans l'équipe : brouillon privé, personnes choisies, toute l'équipe. python3 tests/sharing.py
 (needs the seeded super-admin in .env)."""
 import secrets
-from helpers import call, invite, set_plan, signup, sql
+from helpers import admin_login, call, client, env, invite, request, set_plan, signup, sql
 
 tag = secrets.token_hex(3)
 admin, _, _ = signup(f'Org partage {tag}')
-set_plan(f'Org partage {tag}', 'PRO')
+org_id = set_plan(f'Org partage {tag}', 'PRO')
 ana, ana_email, _ = invite(admin, 'HOST', 'Ana')
 bob, bob_email, _ = invite(admin, 'HOST', 'Bob')
 cy, _, _ = invite(admin, 'HOST', 'Cy')
@@ -70,4 +70,20 @@ sql(f"UPDATE \"User\" SET active = false WHERE email = '{ana_email}'")
 assert sees(admin, lost['id']) and not sees(cy, lost['id'])
 assert next(q for q in call(admin, 'list')['quizzes'] if q['id'] == lost['id'])['canManage']
 call(admin, 'delete', quizId=lost['id'])
-print('PASS: private drafts, quizzes shared with chosen members, team quizzes, orphaned drafts.')
+
+# A private draft made by the super-admin while viewing the organisation as its administrator belongs to the
+# organisation: its administrators see and manage it, other hosts do not, and the super-admin finds it again
+# from the same view — never from anywhere else.
+root = admin_login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
+request(root, 'POST', f'/api/admin/organizations/{org_id}/view')
+viewed = call(root, 'save', quiz={'title': 'Fait en vue admin', 'questions': questions, 'visibility': 'PRIVATE'})['quiz']
+assert viewed['visibility'] == 'PRIVATE' and sees(root, viewed['id'])
+seen = next(q for q in call(admin, 'list')['quizzes'] if q['id'] == viewed['id'])
+assert seen['canManage'] and seen['canEdit'] and not sees(cy, viewed['id'])
+call(cy, 'create', expect=404, quizId=viewed['id'])
+opened = call(admin, 'update', quizId=viewed['id'], version=viewed['version'],
+              quiz={'title': 'Repris par l’admin', 'questions': questions, 'visibility': 'TEAM'})['quiz']
+assert opened['visibility'] == 'TEAM' and sees(cy, opened['id'])
+stranger, _, _ = signup()
+assert not sees(stranger, viewed['id'])
+print('PASS: private drafts, quizzes shared with chosen members, team quizzes, orphaned drafts, drafts made in admin view.')
