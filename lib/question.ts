@@ -244,6 +244,25 @@ export function youtubeId(raw: string): string | null {
     return null;
   }
 }
+/**
+ * What a pasted address most likely is, read from the address itself: a YouTube video, or a file whose
+ * name ends like a picture, a video or a sound. Null when nothing tells (a web page, a picture served
+ * without extension): the type chosen by the person is then kept.
+ */
+export function guessMediaKind(raw: string): Media["kind"] | null {
+  const url = raw.trim();
+  if (youtubeId(url)) return "youtube";
+  let path = "";
+  try {
+    path = new URL(url).pathname.toLowerCase();
+  } catch {
+    return null;
+  }
+  if (/\.(jpe?g|png|webp|gif|avif|svg)$/.test(path)) return "image";
+  if (/\.(mp4|webm|mov)$/.test(path)) return "video";
+  if (/\.(mp3|m4a|ogg|wav)$/.test(path)) return "audio";
+  return null;
+}
 /** Where a YouTube link asks to start, in seconds (`t=43`, `t=1m05s`, `start=43`); 0 when it does not say. */
 export function youtubeStart(raw: string): number {
   try {

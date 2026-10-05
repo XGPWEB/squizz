@@ -52,3 +52,18 @@ test("sondage : nombres, pourcentages, choix en tête et participation", async (
   expect(empty.rows.every((r) => r.percent === 0 && !r.leading)).toBe(true);
   expect(empty.participation).toBe(0);
 });
+
+test("lien collé : le type du média se déduit de l’adresse quand elle le dit", async () => {
+  const { guessMediaKind } = await import("@/lib/question");
+  expect(guessMediaKind("https://www.youtube.com/watch?v=dQw4w9WgXcQ")).toBe("youtube");
+  expect(guessMediaKind("https://youtu.be/dQw4w9WgXcQ?t=43")).toBe("youtube");
+  expect(guessMediaKind(" https://exemple.fr/photos/Chat.JPG?taille=800 ")).toBe("image");
+  expect(guessMediaKind("https://exemple.fr/a.webp")).toBe("image");
+  expect(guessMediaKind("https://exemple.fr/film.mp4")).toBe("video");
+  expect(guessMediaKind("https://exemple.fr/extrait.mp3")).toBe("audio");
+  // Rien ne le dit : une page web, une image servie sans extension, une saisie en cours.
+  expect(guessMediaKind("https://exemple.fr/article")).toBeNull();
+  expect(guessMediaKind("https://images.exemple.fr/photo-123?w=800")).toBeNull();
+  expect(guessMediaKind("https://exe")).toBeNull();
+  expect(guessMediaKind("pas une adresse")).toBeNull();
+});

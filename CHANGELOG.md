@@ -2,6 +2,15 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.12.1] — 2026-10-05
+
+### Éditeur
+- Médias par lien : le type se règle tout seul quand l’adresse collée le dit — YouTube, image (.jpg, .png, .webp, .gif…), vidéo (.mp4, .webm) ou son (.mp3, .m4a, .ogg). « Ajouter un lien » démarre en « Photo par lien » au lieu de YouTube, qui laissait une adresse d’image sans aperçu et refusait l’enregistrement (« Lien YouTube invalide »).
+- Une image par lien qui ne s’affiche pas est expliquée dans l’éditeur : adresse d’une page au lieu de l’image, adresse en http://, site qui refuse l’affichage ailleurs.
+
+### Partie
+- Une image dont le lien ne répond plus est masquée, au lieu d’une icône d’image cassée.
+
 ## [1.12.0] — 2026-10-05
 
 ### Équipe : qui voit un quiz

@@ -4,8 +4,43 @@ import { compressImage } from "@/lib/client/compress-image";
 import { useState, type KeyboardEvent } from "react";
 import { ExternalLink, Music, Play, Square, Upload, X } from "lucide-react";
 import { saveConsent, useConsent } from "@/components/site/cookie-consent";
-import { youtubeId, youtubeStart, safeMediaUrl, isSoundtrack, type Media } from "@/lib/question";
+import {
+  guessMediaKind,
+  youtubeId,
+  youtubeStart,
+  safeMediaUrl,
+  isSoundtrack,
+  type Media,
+} from "@/lib/question";
 import { Choice } from "./settings";
+/**
+ * A picture given by its address. When it does not load (the address is a web page, the site refuses to
+ * show its pictures elsewhere, or it is not in https), players simply do not see it; the editor says why.
+ */
+function LinkedImage({ media, editing }: { media: Media; editing: boolean }) {
+  const [failedUrl, setFailedUrl] = useState("");
+  if (failedUrl !== media.url)
+    return (
+      <img
+        src={media.url}
+        alt={media.caption || "Image de la question"}
+        loading={editing ? undefined : "lazy"}
+        onError={() => setFailedUrl(media.url)}
+      />
+    );
+  if (!editing) return null;
+  return (
+    <p className="info-box media-problem" role="alert">
+      <strong>Cette adresse n’affiche pas d’image.</strong>{" "}
+      {media.url.startsWith("http://")
+        ? "Elle commence par http:// : seules les adresses en https:// s’affichent. "
+        : "Il faut l’adresse de l’image elle-même, pas celle de la page qui la contient : clic droit sur l’image, puis « Copier l’adresse de l’image » (elle finit souvent par .jpg, .png ou .webp). Certains sites refusent aussi que leurs images s’affichent ailleurs. "}
+      Le plus sûr : enregistrez l’image et utilisez « Importer une photo ». Pour un simple lien vers une page,
+      choisissez le type « Lien web ».
+    </p>
+  );
+}
+
 /**
  * The media of a question. `masked` is the blind test before the reveal: only the extract is kept, played
  * without its picture or caption, which would give the answer away.
@@ -14,9 +49,12 @@ export function MediaView({
   media,
   masked = false,
   autoPlay = false,
+  editing = false,
 }: {
   media: Media[];
   masked?: boolean;
+  /** In the editor: a picture that does not load is explained instead of being left out. */
+  editing?: boolean;
   autoPlay?: boolean;
 }) {
   return (
@@ -33,7 +71,7 @@ export function MediaView({
         return (
           <figure key={`${i}-${m.url}`}>
             {m.kind === "image" ? (
-              <img src={m.url} alt={m.caption || "Image de la question"} loading="lazy" />
+              <LinkedImage media={m} editing={editing} />
             ) : m.kind === "video" ? (
               <video
                 src={m.url}
@@ -307,8 +345,13 @@ export function MediaEditor({
             Adresse du média
             <input
               value={m.url}
-              onChange={(e) => onChange(media.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))}
-              placeholder={m.kind === "youtube" ? "https://www.youtube.com/watch?v=…" : "https://…"}
+              onChange={(e) => {
+                // The type follows the address when it tells what it is (YouTube, picture, video, sound).
+                const url = e.target.value;
+                const kind = guessMediaKind(url) ?? m.kind;
+                onChange(media.map((x, j) => (j === i ? { ...x, url, kind } : x)));
+              }}
+              placeholder="https://… (image, vidéo, son, YouTube ou page web)"
               required
             />
           </label>
@@ -322,7 +365,7 @@ export function MediaEditor({
               }
             />
           </label>
-          {m.url && <MediaView media={[m]} />}
+          {m.url && <MediaView media={[m]} editing />}
         </div>
       ))}
       <div className="row">
@@ -344,7 +387,7 @@ export function MediaEditor({
           type="button"
           className="button secondary small"
           disabled={uploading || media.length >= 4}
-          onClick={() => onChange([...media, { kind: "youtube", url: "", caption: "" }])}
+          onClick={() => onChange([...media, { kind: "image", url: "", caption: "" }])}
         >
           Ajouter un lien
         </button>
