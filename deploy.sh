@@ -75,8 +75,25 @@ echo "[3/5] Vérification du serveur"
 $SSH "test -f /opt/squizz-secrets.env && test -x /opt/squizz-tools/node_modules/.bin/prisma && id squizz >/dev/null" \
   || { echo "Serveur non préparé : lancez d'abord  bash deploy.sh --setup"; exit 1; }
 
-echo "[4/5] Envoi (en cas d'erreur réseau, relancez simplement le script)"
-$SCP "$ARCHIVE" /tmp/squizz-prisma.tar.gz "$VPS:/tmp/"
+echo "[4/5] Envoi"
+# The archive weighs about 30 MB and the link sometimes drops halfway: rsync picks the transfer up where it
+# stopped instead of starting over, up to 10 times. Nothing is released unless both files arrived intact.
+FILES="$ARCHIVE /tmp/squizz-prisma.tar.gz"
+sent=0
+for attempt in $(seq 1 10); do
+  # shellcheck disable=SC2086
+  if rsync --partial --inplace -e "ssh -i $KEY -o StrictHostKeyChecking=accept-new" $FILES "$VPS:/tmp/"; then
+    sent=1
+    break
+  fi
+  echo "  Envoi coupé (essai $attempt sur 10), reprise…"
+  sleep 3
+done
+[ "$sent" = 1 ] || { echo "ARRÊT : envoi impossible après 10 essais. Rien n'a été modifié sur le serveur ; relancez le script."; exit 1; }
+# shellcheck disable=SC2086
+LOCAL_SUMS=$(shasum -a 256 $FILES | cut -c1-64)
+REMOTE_SUMS=$($SSH "sha256sum $FILES | cut -c1-64")
+[ "$LOCAL_SUMS" = "$REMOTE_SUMS" ] || { echo "ARRÊT : les fichiers reçus par le serveur diffèrent de ceux envoyés. Rien n'a été modifié ; relancez le script."; exit 1; }
 
 echo "[5/5] Sauvegarde, migration, bascule et redémarrage"
 $SCP deploy/remote-release.sh "$VPS:/opt/squizz/remote-release.sh"
