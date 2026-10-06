@@ -97,13 +97,21 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - **Mises en ligne** : 1.10.22, puis 1.11.0 (avec la 1.10.23), puis 1.12.0, puis 1.12.1, puis 1.12.2. Le premier envoi de la 1.12.0 a été coupé par une erreur réseau avant toute modification du serveur ; relancé, il est passé.
 - **Intégration continue** : verte sur `main` et `plateforme` pour les 1.10.22, 1.11.0 et 1.12.0.
 
+## 6 octobre 2026 — Quiz à profils : le profil du groupe (version 1.13.0)
+
+- **Un bilan général, plus d’analyse individuelle** (1.13.0) : Xavier a précisé ce qu’il attend du quiz à profils. Le but n’est pas de dire à chacun son profil, mais de tirer le profil général du groupe. Le calcul livré la veille (un profil par personne, puis la répartition des personnes) est remplacé : les réponses de tous les participants sont additionnées, et le profil du groupe est celui vers lequel elles pointent le plus souvent ; à égalité, les deux sont affichés. À la fin, l’écran de l’animateur annonce « Le profil du groupe » avec la répartition des réponses par profil, en nombre et en pourcentage, pour un total de 100 %. Les téléphones affichent le même résultat : l’encart « Ton profil » et le détail de ses propres réponses disparaissent. Les textes de la partie et de l’éditeur parlent du profil du groupe. Pas de migration de base.
+- **Un choix fait sans arbitrage de Xavier**, à revoir si besoin : on compte des réponses et non des personnes. Quelqu’un qui répond à toutes les questions pèse donc plus que quelqu’un qui en saute, et un sondage à choix multiples compte chaque case cochée. Les deux choix de la veille sur les profils individuels et les égalités entre personnes n’ont plus d’objet.
+- **Tests** : tests unitaires et scénario « profils » réécrits pour le nouveau calcul. La suite complète (22 scénarios, parcours en navigateur compris) était verte avant la mise en ligne. Les nouveaux écrans de fin n’ont pas été regardés dans un navigateur, ni en local ni sur le site en ligne : le scénario vérifie les résultats envoyés aux écrans, pas leur affichage.
+- **Mise en ligne** : 1.13.0. L’envoi a été coupé deux fois par une erreur réseau avant toute modification du serveur ; le troisième essai est passé. Étiquette `v1.13.0` posée, `main` et `plateforme` poussées. L’intégration continue n’a pas été consultée.
+
 ## Reste à faire
 
 - Stripe : ajouter l’événement `checkout.session.expired` au webhook (facultatif).
 
 
 - **Organisation DG** : décider du sort du quiz « Test » créé en vue admin le 5 octobre (le supprimer, ou l’exporter vers Pôle jeunesse).
-- **Quiz à profils et partage** : les essayer sur le site en ligne avec de vrais comptes (un quiz à profils joué à plusieurs ; un brouillon privé, puis un quiz partagé avec un collègue qui l’ouvre et le modifie). Confirmer ou revoir les trois choix par défaut : l’animateur ne voit pas les profils individuels, les administrateurs ne voient pas les brouillons privés, une égalité compte dans chaque profil.
+- **Quiz à profils** : jouer une partie à plusieurs sur le site en ligne pour voir l’écran final « Le profil du groupe », côté animateur et côté téléphone (jamais regardé dans un navigateur). Confirmer ou revoir le calcul : on additionne des réponses, pas des personnes.
+- **Partage** : l’essayer sur le site en ligne avec de vrais comptes (un brouillon privé, puis un quiz partagé avec un collègue qui l’ouvre et le modifie). Confirmer ou revoir le choix par défaut : les administrateurs ne voient pas les brouillons privés.
 - **Search Console** : regarder les rapports Performances (requêtes, positions) et Pages dès qu’ils affichent des données ; demander l’indexation de la page d’accueil de pressweb.fr pour que Google y découvre le lien ; importer le site dans **Bing Webmaster Tools**.
 - **Formulaires** : vérifier que l’inscription, le contact, le compte et l’équipe ne perdent pas ce qui est tapé avant la fin du chargement (défaut corrigé dans l’éditeur et sur « Rejoindre une partie »).
 - **Super-admin** : supprimer les deux organisations « Famille » à 0 membre.
