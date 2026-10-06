@@ -14,11 +14,11 @@ concurrency:
 jobs:
   checks:
     name: Types, lint, tests unitaires
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -31,7 +31,7 @@ jobs:
 
   integration:
     name: Scénarios d’intégration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: checks
     timeout-minutes: 30
     services:
@@ -47,8 +47,8 @@ jobs:
       SEED_SUPER_ADMIN_EMAIL: superadmin@squizz.test
       SEED_SUPER_ADMIN_PASSWORD: Ci-super-admin-password-42
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -57,7 +57,7 @@ jobs:
       # The « browser » scenarios drive a real Chromium and a real WebKit (tests/browser).
       - run: npx playwright install --with-deps chromium webkit
       - run: bash scripts/e2e.sh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: traces-navigateur
