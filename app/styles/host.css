@@ -1101,3 +1101,32 @@
 .setting-options {
   z-index: 90;
 }
+/* Word cloud in the results window: the whole cloud stays in view on the projected screen, never scrolled.
+   The window is as wide and tall as the screen allows and the cloud takes the height that is left. */
+.host-modal:has(.word-cloud-svg) {
+  width: min(94vw, 1400px);
+  height: 94dvh;
+  max-height: none;
+}
+.host-modal-body:has(.word-cloud-svg) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.host-modal-body:has(.word-cloud-svg) .question-results {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.host-modal-body .word-cloud-block:has(.word-cloud-svg) {
+  flex: 1;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
+}
+.host-modal-body .word-cloud-svg {
+  height: 100%;
+  min-height: 0;
+}

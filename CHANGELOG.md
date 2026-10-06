@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.13.1] — 2026-10-06
+
+### Partie
+- Écran de l’animateur, nuage de mots : dans la fenêtre « Réponses », le nuage s’affiche en entier, sans barre de défilement. La fenêtre s’agrandit pour lui (jusqu’à 94 % de l’écran) et le nuage prend la hauteur disponible ; « Télécharger l’image », « Les plus cités » et « Question suivante » restent visibles en même temps.
+
 ## [1.13.0] — 2026-10-06
 
 ### Quiz à profils : un bilan du groupe, plus d’analyse individuelle
