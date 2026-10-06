@@ -2,6 +2,14 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.13.0] — 2026-10-06
+
+### Quiz à profils : un bilan du groupe, plus d’analyse individuelle
+- Le quiz à profils dessine désormais le profil général du groupe : les réponses de tous les participants sont additionnées, et le profil du groupe est celui vers lequel elles pointent le plus souvent. Plus aucun profil n’est calculé par personne.
+- Fin de partie, écran de l’animateur : « Le profil du groupe », avec la répartition des réponses par profil (nombre de réponses et pourcentage, total à 100 %).
+- Fin de partie, téléphone : chacun voit le même résultat que l’animateur, le profil du groupe et sa répartition. L’encart « Ton profil » et le détail de ses propres réponses disparaissent.
+- Pendant la partie et dans l’éditeur, les textes parlent du profil du groupe et non plus du profil de chacun.
+
 ## [1.12.2] — 2026-10-05
 
 ### Corrigé

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { isProfileQuiz, profileResults, quizProfiles, validateProfiles } from "@/lib/profiles";
+import {
+  isProfileQuiz,
+  leadingProfiles,
+  profileResults,
+  quizProfiles,
+  validateProfiles,
+} from "@/lib/profiles";
 import { newQuestion, publicQuestion, validateQuestion, type Question } from "@/lib/question";
 
 const poll = (text: string, profiles: string[], multiple = false): Question => ({
@@ -58,7 +64,7 @@ describe("quiz à profils", () => {
     expect(publicQuestion(quiz[0], true)).not.toHaveProperty("profiles");
   });
 
-  it("gives each person the profile their answers point to most often", () => {
+  it("adds up the answers of the whole group, never per person", () => {
     const answers = [
       // Ana: Directif three times.
       answer("ana", 0, 0),
@@ -72,41 +78,38 @@ describe("quiz à profils", () => {
       answer("cy", 0, 2),
       answer("cy", 1, 2),
     ];
-    const result = profileResults(quiz, answers, "bob");
-    expect(result.profiled).toBe(3);
-    expect(result.tied).toBe(0);
-    expect(result.shares).toEqual([
-      { name: "Directif", people: 1, percent: 33 },
-      { name: "Participatif", people: 1, percent: 33 },
-      { name: "Délégatif", people: 1, percent: 33 },
-    ]);
-    expect(result.mine?.names).toEqual(["Participatif"]);
-    expect(result.mine?.scores).toEqual([
-      { name: "Directif", count: 0, percent: 0 },
-      { name: "Participatif", count: 2, percent: 67 },
-      { name: "Délégatif", count: 1, percent: 33 },
-    ]);
+    const result = profileResults(quiz, answers);
+    expect(result).toEqual({
+      shares: [
+        { name: "Directif", votes: 3, percent: 43 },
+        { name: "Participatif", votes: 2, percent: 29 },
+        { name: "Délégatif", votes: 2, percent: 29 },
+      ],
+      total: 7,
+      voters: 3,
+    });
+    expect(leadingProfiles(result.shares)).toEqual(["Directif"]);
   });
 
-  it("counts a tie in each tied profile and leaves out people without any profile", () => {
+  it("names every profile tied in the lead and leaves out answers that point to no profile", () => {
     const answers = [
       answer("ana", 0, 0),
       answer("ana", 1, 0), // Directif 1, Participatif 1
       answer("bob", 1, 2), // points to no profile
     ];
-    const result = profileResults(quiz, answers, "bob");
-    expect(result.profiled).toBe(1);
-    expect(result.tied).toBe(1);
-    expect(result.shares.map((s) => s.people)).toEqual([1, 1, 0]);
-    expect(result.shares.map((s) => s.percent)).toEqual([100, 100, 0]);
-    expect(result.mine).toBeNull();
-    expect(profileResults(quiz, answers, "nobody").mine).toBeNull();
+    const result = profileResults(quiz, answers);
+    expect(result.shares.map((s) => s.votes)).toEqual([1, 1, 0]);
+    expect(result.shares.map((s) => s.percent)).toEqual([50, 50, 0]);
+    expect(result.total).toBe(2);
+    expect(result.voters).toBe(1);
+    expect(leadingProfiles(result.shares)).toEqual(["Directif", "Participatif"]);
+    expect(leadingProfiles(profileResults(quiz, []).shares)).toEqual([]);
   });
 
   it("counts every ticked answer of a multiple-choice poll", () => {
     const multi = [poll("Vos réflexes ?", ["Directif", "Directif", "Participatif"], true)];
-    const result = profileResults(multi, [answer("ana", 0, 0, 1, 2)], "ana");
-    expect(result.mine?.names).toEqual(["Directif"]);
-    expect(result.mine?.scores.map((s) => s.count)).toEqual([2, 1]);
+    const result = profileResults(multi, [answer("ana", 0, 0, 1, 2)]);
+    expect(result.shares.map((s) => s.votes)).toEqual([2, 1]);
+    expect(result.voters).toBe(1);
   });
 });

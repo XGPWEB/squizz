@@ -197,7 +197,7 @@ export async function kickPlayer(g: GameContext, name: unknown) {
   invalidate(g.room.code);
 }
 
-/** `everything` holds every answer of the game: only read once a profile quiz is over, to work out the profiles. */
+/** `everything` holds every answer of the game: only read once a profile quiz is over, to work out the profile of the group. */
 type Snapshot = {
   room: Room;
   people: ScoreRow[];
@@ -392,7 +392,6 @@ export function gameState(g: GameContext) {
       ? profileResults(
           quiz.questions,
           g.everything.map((a) => ({ player: a.player, question: a.question, payload: decode(a) })),
-          g.who,
         )
       : null;
   return {
@@ -403,17 +402,10 @@ export function gameState(g: GameContext) {
     index: room.question,
     total: quiz.questions.length,
     totalScored: quiz.questions.filter((q) => isScored(q.type)).length,
-    /** A profile quiz sorts people into profiles: no points, no ranking on any screen. */
+    /** A profile quiz draws the portrait of the group: no points, no ranking on any screen. */
     profileQuiz,
-    /** Once a profile quiz is over: how the group spreads, and the visitor's own profile (never anyone else's). */
-    profiles: outcomeOfProfiles
-      ? {
-          shares: outcomeOfProfiles.shares,
-          profiled: outcomeOfProfiles.profiled,
-          tied: outcomeOfProfiles.tied,
-        }
-      : null,
-    myProfile: outcomeOfProfiles?.mine ?? null,
+    /** Once a profile quiz is over: how the answers of the whole group spread; nobody's own answers. */
+    profiles: outcomeOfProfiles,
     duration: question.duration,
     remaining: Math.max(0, Math.min(g.duration, room.started + g.duration - Date.now())),
     startsIn,

@@ -9,6 +9,7 @@ import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play
 import { MediaView } from "@/components/squizz/media";
 import { FullscreenButton } from "@/components/squizz/fullscreen-button";
 import { gameApi as api } from "@/lib/client/api";
+import { leadingProfiles } from "@/lib/profiles";
 import { type Game, Leaderboard, Podium, ProfileSpread } from "./game-parts";
 
 /** Question types whose answers the projected screen can show as they are (the tiles, the slide, the map). */
@@ -40,7 +41,7 @@ export function HostStage(props: Props) {
       ? "SALLE D’ATTENTE"
       : game.phase === "finished"
         ? game.profileQuiz
-          ? "LES PROFILS DU GROUPE"
+          ? "LE PROFIL DU GROUPE"
           : "RÉSULTATS FINAUX"
         : `${q?.type === "slide" ? "ÉTAPE" : "QUESTION"} ${game.index + 1} / ${game.total}`;
   return (
@@ -253,7 +254,7 @@ function Question({ game, busy, run, settle, remaining }: Props) {
     );
   const nextLabel = last
     ? game.profileQuiz
-      ? "Révéler les profils"
+      ? "Révéler le profil du groupe"
       : "Voir le podium"
     : slide
       ? "Continuer"
@@ -396,11 +397,10 @@ const CONFETTI = Array.from({ length: 36 }, (_, i) => ({
   tilt: (i * 47) % 360,
 }));
 
-/** The end of a profile quiz: how the group spreads over the profiles, with nobody named. */
+/** The end of a profile quiz: the profile of the whole group, with nobody named or singled out. */
 function ProfileFinale({ game }: { game: Game }) {
-  const shares = game.profiles?.shares ?? [];
-  const top = Math.max(0, ...shares.map((s) => s.people));
-  const leaders = shares.filter((s) => top > 0 && s.people === top);
+  const leaders = leadingProfiles(game.profiles?.shares ?? []);
+  const voters = game.profiles?.voters ?? 0;
   return (
     <>
       <div className="host-main host-finale host-profiles">
@@ -410,16 +410,16 @@ function ProfileFinale({ game }: { game: Game }) {
           {leaders.length === 0
             ? "Pas encore de profil à afficher."
             : leaders.length === 1
-              ? `Profil le plus présent : ${leaders[0].name} !`
-              : `En tête, à égalité : ${leaders.map((l) => l.name).join(" et ")} !`}
+              ? `Le profil du groupe : ${leaders[0]} !`
+              : `En tête, à égalité : ${leaders.join(" et ")} !`}
         </p>
         <ProfileSpread game={game} />
       </div>
       <footer className="host-bottom">
         <span className="hint">
-          {game.profiles?.profiled ?? 0} profil{(game.profiles?.profiled ?? 0) > 1 ? "s" : ""} sur{" "}
-          {game.players.length} participant{game.players.length > 1 ? "s" : ""} · chacun voit le sien sur son
-          téléphone
+          {game.profiles?.total ?? 0} réponse{(game.profiles?.total ?? 0) > 1 ? "s" : ""} de {voters}{" "}
+          participant
+          {voters > 1 ? "s" : ""} sur {game.players.length} · un bilan du groupe, aucun résultat individuel
         </span>
         <div className="row">
           <Link className="button host-primary" href="/app">

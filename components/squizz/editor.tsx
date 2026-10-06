@@ -47,11 +47,11 @@ const FORMATS = [
     id: "profiles",
     label: "Quiz à profils",
     icon: <UsersRound size={20} />,
-    goal: "Pour situer chacun : style de management, personnalité, positionnement.",
+    goal: "Pour situer un groupe : style de management, culture d’équipe, positionnement.",
     facts: [
       [true, "Questions d’avis uniquement : sondage, échelle, nuage de mots, diapo…"],
       [false, "Ni points, ni classement, ni bonne réponse"],
-      [true, "À la fin : le profil de chacun et la répartition du groupe"],
+      [true, "À la fin : le profil général du groupe, sans résultat individuel"],
     ],
   },
 ] as const;
@@ -243,8 +243,8 @@ export function QuizEditor({
             <div className="editor-block-head">
               <h2 id="format-heading">Quel format de quiz ?</h2>
               <p className="hint">
-                Le format décide de ce qui se passe à la fin de la partie : un classement, ou un profil pour
-                chacun. Choisissez-le avant d’écrire vos questions.
+                Le format décide de ce qui se passe à la fin de la partie : un classement, ou le profil
+                général du groupe. Choisissez-le avant d’écrire vos questions.
               </p>
             </div>
             <div className="quiz-format" role="radiogroup" aria-labelledby="format-heading">

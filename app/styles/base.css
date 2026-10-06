@@ -767,7 +767,7 @@ footer {
     transform: rotate(-18deg) scale(0.4);
   }
 }
-/* Profile quiz: the group spread over the profiles, one coloured bar each, and one's own profile. */
+/* Profile quiz: the group spread over the profiles, one coloured bar each, and the profile in the lead. */
 .profile-spread {
   display: grid;
   gap: 14px;
@@ -860,41 +860,15 @@ footer {
     transform: scaleX(0);
   }
 }
-.personal-result.my-profile > div {
+.personal-result.group-profile > div {
   flex: 1;
   min-width: 0;
 }
-.personal-result.my-profile h2 {
+.personal-result.group-profile h2 {
   font-family: Anton, sans-serif;
   font-weight: 400;
   font-size: clamp(34px, 9vw, 52px);
   line-height: 1.05;
-}
-.my-profile-scores {
-  list-style: none;
-  padding: 0;
-  margin: 14px 0 10px;
-  display: grid;
-  gap: 8px;
-}
-.my-profile-scores li {
-  display: grid;
-  grid-template-columns: minmax(90px, 34%) 1fr 48px;
-  align-items: center;
-  gap: 10px;
-  font-size: 15px;
-}
-.my-profile-scores li.leading span {
-  font-weight: 800;
-}
-.my-profile-scores i {
-  height: 14px;
-  border: 2px solid var(--ink);
-  border-radius: 8px;
-  background: linear-gradient(var(--ink), var(--ink)) left / var(--share) 100% no-repeat white;
-}
-.my-profile-scores b {
-  text-align: right;
 }
 @media (prefers-reduced-motion: reduce) {
   .profile-bar,

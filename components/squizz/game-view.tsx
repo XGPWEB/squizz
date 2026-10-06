@@ -9,7 +9,7 @@ import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play
 import {
   type Game,
   Leaderboard,
-  MyProfile,
+  GroupProfile,
   PersonalResult,
   Podium,
   ProfileSpread,
@@ -178,13 +178,13 @@ export function GameView({ code }: { code: string }) {
                 <>
                   <div className="center final-heading">
                     <span className="sticker pink-sticker">LE PORTRAIT DU GROUPE</span>
-                    <h1>Et ton profil est…</h1>
+                    <h1>Et votre profil est…</h1>
                   </div>
-                  <MyProfile game={game} />
+                  <GroupProfile game={game} />
                   <div className="section-heading">
-                    <h2>Dans le groupe</h2>
+                    <h2>Dans le détail</h2>
                     <span className="eyebrow">
-                      {game.profiles?.profiled ?? 0} PROFIL{(game.profiles?.profiled ?? 0) > 1 ? "S" : ""}
+                      {game.profiles?.total ?? 0} RÉPONSE{(game.profiles?.total ?? 0) > 1 ? "S" : ""}
                     </span>
                   </div>
                   <ProfileSpread game={game} />

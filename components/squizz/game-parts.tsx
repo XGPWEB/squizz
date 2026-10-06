@@ -1,6 +1,6 @@
 import { Trophy } from "lucide-react";
 import { type PublicQuestion, type Aggregate, type AnswerPayload } from "@/lib/question";
-import type { PersonalProfile, ProfileShare } from "@/lib/profiles";
+import { leadingProfiles, type ProfileShare } from "@/lib/profiles";
 
 export type RankedPlayer = {
   name: string;
@@ -19,8 +19,7 @@ export type Game = {
   total: number;
   totalScored: number;
   profileQuiz: boolean;
-  profiles: { shares: ProfileShare[]; profiled: number; tied: number } | null;
-  myProfile: PersonalProfile | null;
+  profiles: { shares: ProfileShare[]; total: number; voters: number } | null;
   duration: number;
   remaining: number;
   revealed: boolean;
@@ -144,33 +143,33 @@ export function ProfileStep({ game }: { game: Game }) {
         <h2>{answered ? "C’est noté !" : "Le chrono t’a devancé !"}</h2>
         <p>
           {answered
-            ? "Pas de bonne ni de mauvaise réponse : ton profil se dessine."
-            : "Cette question ne comptera pas dans ton profil."}
+            ? "Pas de bonne ni de mauvaise réponse : le profil du groupe se dessine."
+            : "Ta voix manquera au profil du groupe sur cette question."}
         </p>
-        <span className="movement-copy">Ton profil sera révélé à la fin.</span>
+        <span className="movement-copy">Le profil du groupe sera révélé à la fin.</span>
       </div>
     </div>
   );
 }
 
-/** How the group spreads over the profiles, biggest first. */
+/** How the answers of the whole group spread over the profiles, biggest first. */
 export function ProfileSpread({ game }: { game: Game }) {
   const result = game.profiles;
   if (!result) return null;
-  const shares = [...result.shares].sort((a, b) => b.people - a.people);
-  const top = shares[0]?.people ?? 0;
+  const shares = [...result.shares].sort((a, b) => b.votes - a.votes);
+  const top = shares[0]?.votes ?? 0;
   return (
-    <div className="profile-spread" aria-label="Répartition du groupe par profil">
+    <div className="profile-spread" aria-label="Répartition des réponses du groupe par profil">
       {shares.map((share, i) => (
         <div
           key={share.name}
-          className={`profile-bar ${top > 0 && share.people === top ? "leading" : ""}`}
+          className={`profile-bar ${top > 0 && share.votes === top ? "leading" : ""}`}
           style={{ "--i": i, "--share": `${share.percent}%` } as React.CSSProperties}
         >
           <div className="profile-bar-label">
             <strong>{share.name}</strong>
             <span>
-              {share.people} personne{share.people > 1 ? "s" : ""}
+              {share.votes} réponse{share.votes > 1 ? "s" : ""}
             </span>
           </div>
           <div className="profile-bar-track">
@@ -179,44 +178,33 @@ export function ProfileSpread({ game }: { game: Game }) {
           </div>
         </div>
       ))}
-      {result.tied > 0 && (
-        <p className="hint">
-          {result.tied} personne{result.tied > 1 ? "s ont" : " a"} deux profils à égalité : elle
-          {result.tied > 1 ? "s comptent" : " compte"} dans chacun, le total peut dépasser 100 %.
-        </p>
-      )}
     </div>
   );
 }
 
-/** The player's own profile, on their phone only. */
-export function MyProfile({ game }: { game: Game }) {
-  const mine = game.myProfile;
-  if (!mine)
+/** The profile of the whole group, the same on every phone: nobody gets a profile of their own. */
+export function GroupProfile({ game }: { game: Game }) {
+  const leaders = leadingProfiles(game.profiles?.shares ?? []);
+  if (!leaders.length)
     return (
       <div className="personal-result missed" role="status">
         <div>
-          <p className="eyebrow">TON PROFIL</p>
+          <p className="eyebrow">LE PROFIL DU GROUPE</p>
           <h2>Pas assez de réponses</h2>
-          <p>Il faut répondre à au moins une question pour dessiner un profil.</p>
+          <p>Il faut au moins une réponse pour dessiner le profil du groupe.</p>
         </div>
       </div>
     );
   return (
-    <div className="personal-result won my-profile" role="status">
+    <div className="personal-result won group-profile" role="status">
       <div>
-        <p className="eyebrow">{mine.names.length > 1 ? "TES PROFILS, À ÉGALITÉ" : "TON PROFIL"}</p>
-        <h2>{mine.names.join(" · ")}</h2>
-        <ul className="my-profile-scores">
-          {mine.scores.map((score) => (
-            <li key={score.name} className={mine.names.includes(score.name) ? "leading" : undefined}>
-              <span>{score.name}</span>
-              <i style={{ "--share": `${score.percent}%` } as React.CSSProperties} />
-              <b>{score.percent} %</b>
-            </li>
-          ))}
-        </ul>
-        <span className="movement-copy">Calculé sur tes réponses · visible de toi seul·e</span>
+        <p className="eyebrow">
+          {leaders.length > 1 ? "LES PROFILS DU GROUPE, À ÉGALITÉ" : "LE PROFIL DU GROUPE"}
+        </p>
+        <h2>{leaders.join(" · ")}</h2>
+        <span className="movement-copy">
+          Calculé sur les réponses de tout le groupe · aucun résultat individuel
+        </span>
       </div>
     </div>
   );

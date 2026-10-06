@@ -1,4 +1,4 @@
-"""Quiz à profils, de l'enregistrement à la répartition finale. Run against a local SQuizz: python3 tests/profiles.py."""
+"""Quiz à profils, de l'enregistrement au profil du groupe. Run against a local SQuizz: python3 tests/profiles.py."""
 import time
 from helpers import client, call, signup
 
@@ -32,7 +32,7 @@ for index in range(2):
     state = call(ana, 'state', code=code)
     # Which profile an answer points to never reaches a phone, and nothing is revealed before the end.
     assert state['profileQuiz'] and 'profiles' not in state['question'], state
-    assert state['profiles'] is None and state['myProfile'] is None
+    assert state['profiles'] is None and 'myProfile' not in state
     for c, choices in plan.items():
         call(c, 'answer', code=code, question=index, answer={'choices': [choices[index]]})
     call(dee, 'answer', expect=400, code=code, question=index, answer={'choices': [7]})
@@ -45,22 +45,21 @@ for index in range(2):
 
 final = call(ana, 'state', code=code)
 assert final['phase'] == 'finished'
-# Ana: Directif twice. Bob: Participatif twice. Cy: Directif and Délégatif, tied. Dee: no profile.
+# The answers of everybody are added up: Ana Directif twice, Bob Participatif twice, Cy Directif and Délégatif.
 assert final['profiles'] == {
     'shares': [
-        {'name': 'Directif', 'people': 2, 'percent': 67},
-        {'name': 'Participatif', 'people': 1, 'percent': 33},
-        {'name': 'Délégatif', 'people': 1, 'percent': 33},
+        {'name': 'Directif', 'votes': 3, 'percent': 50},
+        {'name': 'Participatif', 'votes': 2, 'percent': 33},
+        {'name': 'Délégatif', 'votes': 1, 'percent': 17},
     ],
-    'profiled': 3,
-    'tied': 1,
+    'total': 6,
+    'voters': 3,
 }, final['profiles']
-assert final['myProfile']['names'] == ['Directif']
-assert call(cy, 'state', code=code)['myProfile']['names'] == ['Directif', 'Délégatif']
-assert call(dee, 'state', code=code)['myProfile'] is None
-# The host sees the group, never one person's profile; nobody scored a point.
+# Nobody gets a profile of their own: every phone and the host see the same group result; nobody scored a point.
+assert 'myProfile' not in final
 host_view = call(host, 'state', code=code)
-assert host_view['myProfile'] is None and host_view['profiles'] == final['profiles']
+for view in (call(cy, 'state', code=code), call(dee, 'state', code=code), host_view):
+    assert 'myProfile' not in view and view['profiles'] == final['profiles']
 assert all(p['score'] == 0 for p in host_view['players'])
 
 print('Quiz à profils OK')
