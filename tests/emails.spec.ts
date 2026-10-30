@@ -43,6 +43,13 @@ describe("e-mails SQuizz", async () => {
     contact: t.contactEmail({ name: "Léa", email: "lea@example.fr", subject: "Devis", message: "Bonjour !" }),
     "contact-accuse": t.contactAckEmail({ name: "Léa", subject: "Devis", message: "Bonjour, un devis svp." }),
     suppression: t.accountDeletedEmail({ name: "Xavier", organization: "Pressweb" }),
+    "nouvelle-inscription": t.newSignupNoticeEmail({
+      name: "Léa",
+      email: "lea@example.fr",
+      organization: "Pressweb",
+      organizationId: "org1",
+      offer: "PRO",
+    }),
     "offre-pro": t.organizationUpdateEmail({ name: "Xavier", organization: "Pressweb", plan: "PRO" }),
     suspension: t.organizationUpdateEmail({ name: "Xavier", organization: "Pressweb", status: "SUSPENDED" }),
     reactivation: t.organizationUpdateEmail({ name: "Xavier", organization: "Pressweb", status: "ACTIVE" }),
@@ -69,7 +76,25 @@ describe("e-mails SQuizz", async () => {
       t.contactAckEmail({ name: evil, subject: evil, message: evil }).html,
       t.memberJoinedEmail({ inviter: evil, member: evil, email: evil, organization: evil }).html,
       t.accountDeletedEmail({ name: evil, organization: evil }).html,
+      t.newSignupNoticeEmail({
+        name: evil,
+        email: evil,
+        organization: evil,
+        organizationId: "org1",
+        offer: null,
+      }).html,
     ].join("");
     expect(html).not.toContain("<script>");
+  });
+
+  test("la notification d’inscription nomme le compte, l’espace et l’offre choisie", () => {
+    const base = { name: "Léa", email: "lea@example.fr", organization: "Lycée", organizationId: "org1" };
+    const pro = t.newSignupNoticeEmail({ ...base, offer: "PRO" });
+    expect(pro.subject).toBe("[SQuizz] Nouvelle inscription : Lycée");
+    expect(pro.text).toContain("lea@example.fr");
+    expect(pro.text).toContain("Offre choisie : Pro.");
+    expect(pro.text).toContain("/super-admin/organisations/org1");
+    expect(t.newSignupNoticeEmail({ ...base, offer: "EVENEMENT" }).text).toContain("Pack Événement");
+    expect(t.newSignupNoticeEmail({ ...base, offer: null }).text).not.toContain("Offre choisie");
   });
 });

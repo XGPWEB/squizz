@@ -5,7 +5,10 @@ import { assertEmailFree, hashPassword, sendEmailVerification } from "@/lib/serv
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { fail } from "@/lib/server/http";
 import { safeNext } from "@/lib/next-path";
-import { offerOfPath } from "@/lib/plans";
+import { offerOf, offerOfPath } from "@/lib/plans";
+import { CONTACT_EMAIL } from "@/lib/company-info";
+import { sendMail } from "@/lib/server/mail";
+import { newSignupNoticeEmail } from "@/lib/server/email-templates";
 
 const schema = z.object({
   organization: nameSchema,
@@ -17,7 +20,8 @@ const schema = z.object({
 
 /**
  * Creates an organisation on the free plan with its first administrator. The account opens once the
- * address is confirmed through the emailed link (the welcome email follows that confirmation).
+ * address is confirmed through the emailed link (the welcome email follows that confirmation). Pressweb
+ * is told at once, confirmed or not.
  */
 export const POST = route(async (req) => {
   if (!(await rateLimit(`signup:${clientIp(req.headers)}`, 5, 60 * 60)).allowed)
@@ -37,5 +41,16 @@ export const POST = route(async (req) => {
     include: { users: true },
   });
   const { devLink } = await sendEmailVerification(org.users[0], next === "/app" ? undefined : next);
+  void sendMail(
+    CONTACT_EMAIL,
+    newSignupNoticeEmail({
+      name: input.name,
+      email: input.email,
+      organization: org.name,
+      organizationId: org.id,
+      offer: offerOf(org.wantedOffer),
+    }),
+    input.email,
+  );
   return { verify: true, ...(devLink && { devLink }) };
 });

@@ -1,7 +1,7 @@
 import "server-only";
 import { COMPANY_INFO } from "@/lib/company-info";
 import type { Plan } from "@prisma/client";
-import { EVENT_PASS, PLANS, isPaid, limitsSummary, priceLabel } from "@/lib/plans";
+import { EVENT_PASS, PASS_OFFER, PLANS, isPaid, limitsSummary, offerOf, priceLabel } from "@/lib/plans";
 import { alertLabel } from "@/lib/monitoring";
 import { appUrl } from "./mail";
 
@@ -390,6 +390,33 @@ export function subscriptionCancelNoticeEmail(o: {
       eyebrow: "Abonnement",
       title: o.resumed ? "Abonnement repris." : "Arrêt d’abonnement.",
       body: `<p style="margin:0 0 12px"><strong>${esc(o.organization)}</strong> ${what} <strong>${esc(p.label)}</strong> (${esc(priceLabel(p))}), demande de ${esc(o.by)} le ${when()}.</p><p style="margin:0">${todo}</p>`,
+      cta: { label: "Voir l’organisation", url: `${site}/super-admin/organisations/${o.organizationId}` },
+    }),
+  };
+}
+
+/** Tells Pressweb that someone just created an organisation; the address is not confirmed yet. */
+export function newSignupNoticeEmail(o: {
+  name: string;
+  email: string;
+  organization: string;
+  organizationId: string;
+  /** The offer chosen on the pricing page, if any. */
+  offer: ReturnType<typeof offerOf>;
+}): Email {
+  const offer = o.offer ? (o.offer === PASS_OFFER ? EVENT_PASS.label : PLANS[o.offer].label) : null;
+  const details = `${o.name} (${o.email}) vient de créer l’espace « ${o.organization} » le ${when()}`;
+  const chosen = offer ? ` Offre choisie : ${offer}.` : "";
+  const todo = "Le compte s’ouvrira quand l’adresse sera confirmée.";
+  const site = appUrl();
+  return {
+    subject: `[SQuizz] Nouvelle inscription : ${o.organization}`,
+    text: `${details}.${chosen}\n\n${todo}\n\n${site}/super-admin/organisations/${o.organizationId}`,
+    html: layout({
+      preheader: `${o.name} vient de créer l’espace ${o.organization}.`,
+      eyebrow: "Inscription",
+      title: "Nouvelle inscription.",
+      body: `<p style="margin:0 0 12px">${esc(details)}.${esc(chosen)}</p><p style="margin:0">${todo}</p>`,
       cta: { label: "Voir l’organisation", url: `${site}/super-admin/organisations/${o.organizationId}` },
     }),
   };

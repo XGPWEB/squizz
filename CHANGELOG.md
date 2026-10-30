@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.13.2] — 2026-10-30
+
+### Ajouté
+- Pressweb reçoit un e-mail à chaque nouvelle inscription, dès la création de l’espace : nom, adresse, nom de l’espace, offre choisie et lien vers l’organisation dans le super-admin. Répondre à ce message écrit directement à la personne inscrite. Les membres invités ne sont pas concernés : l’administrateur de leur organisation est déjà prévenu.
+
 ## [1.13.1] — 2026-10-06
 
 ### Partie
