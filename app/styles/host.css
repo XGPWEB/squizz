@@ -708,6 +708,28 @@
   gap: 12px;
   flex-wrap: wrap;
 }
+.wizard-foot-start {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.wizard-foot-start .text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+@media (max-width: 640px) {
+  /* Précédent and Suivant stay side by side: the answers keep the height of the window. */
+  .wizard-foot-start {
+    display: contents;
+  }
+  .wizard-foot-start .text-button {
+    order: 1;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
 
 /* Finale */
 .host-finale {

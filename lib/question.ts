@@ -216,6 +216,43 @@ export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "
     profiles: [],
   };
 }
+const hasChoices = (type: QuestionType) => ["quiz", "truefalse", "poll", "puzzle"].includes(type);
+/** The same step in another type: what the new type can use is kept, the rest takes its default value. */
+export function changeType(q: Question, type: QuestionType, layout: SlideLayout = q.layout): Question {
+  if (type === q.type && layout === q.layout) return q;
+  const next: Question = {
+    ...newQuestion(type, layout),
+    text: q.text,
+    media: q.media,
+    duration: q.duration,
+    explanation: q.explanation,
+  };
+  if (isScored(type) && isScored(q.type)) next.points = q.points;
+  if (hasChoices(type) && hasChoices(q.type) && type !== "truefalse") {
+    const correct = q.correctAnswers.filter((i) => i < q.options.length);
+    next.options = q.options;
+    next.order = q.options.map((_, i) => i);
+    next.multiple = q.multiple;
+    next.correctAnswers = correct.length ? correct : [0];
+    next.correct = next.correctAnswers[0];
+    if (type === "poll") next.profiles = q.profiles;
+  }
+  if (typedAnswer(type) && typedAnswer(q.type)) next.accepted = q.accepted;
+  if (type === "slide" && q.type === "slide") next.body = q.body;
+  if (["pin", "pinpoll"].includes(type) && ["pin", "pinpoll"].includes(q.type)) next.pin = q.pin;
+  return next;
+}
+/** Whether turning `q` into `type` drops something that coming back to its type would not recover. */
+export const losesContent = (q: Question, type: QuestionType) =>
+  JSON.stringify(changeType(changeType(q, type), q.type, q.layout)) !== JSON.stringify(q);
+/** A step back in its former type, with the fields shared by all types as they are now. */
+export const restoreType = (before: Question, current: Question): Question => ({
+  ...before,
+  text: current.text,
+  media: current.media,
+  duration: current.duration,
+  explanation: current.explanation,
+});
 export function normalizeQuestion(value: Partial<Question>): Question {
   const base = newQuestion(value.type || "quiz");
   return {

@@ -38,6 +38,8 @@ export function QuestionPlay({
   const pinMedia = ["pin", "pinpoll"].includes(q.type) ? q.media.find((m) => m.kind === "image") : undefined;
   const selected = submitted?.choices ?? choices;
   const locked = disabled || !!submitted;
+  // A poll has no right answer, whatever it keeps from the quiz it may have been.
+  const isRight = (i: number) => revealed && isScored(q.type) && q.correctAnswers?.includes(i);
   const send = (answer: AnswerPayload) => {
     if (!locked) onSubmit(answer);
   };
@@ -63,7 +65,7 @@ export function QuestionPlay({
               <button
                 type="button"
                 key={i}
-                className={`answer ${selected.includes(i) ? "selected" : ""} ${revealed && q.correctAnswers?.includes(i) ? "correct" : ""}`}
+                className={`answer ${selected.includes(i) ? "selected" : ""} ${isRight(i) ? "correct" : ""}`}
                 disabled={locked}
                 aria-pressed={selected.includes(i)}
                 onClick={() => {
@@ -74,7 +76,7 @@ export function QuestionPlay({
               >
                 <span className="answer-letter">{String.fromCharCode(65 + i)}</span>
                 <span>{opt}</span>
-                {(selected.includes(i) || (revealed && q.correctAnswers?.includes(i))) && <Check size={23} />}
+                {(selected.includes(i) || isRight(i)) && <Check size={23} />}
               </button>
             ))}
           </div>

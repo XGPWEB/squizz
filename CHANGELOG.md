@@ -2,6 +2,15 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.13.3] — 2026-10-30
+
+### Éditeur
+- Fenêtre « Ajouter une étape » : la fermer (Échap, croix, clic à côté) ne perd plus rien. La rouvrir retrouve l’étape là où elle en était. Pour repartir de zéro, un bouton « Abandonner cette étape » demande confirmation.
+- Changer le type d’une question garde tout ce que le nouveau type sait utiliser : réponses et bonne réponse entre quiz, sondage et puzzle, réponses acceptées, repère sur l’image, texte de diapo, explication. Si des réglages doivent être retirés, un message le dit et « Revenir au type précédent » les rend. Revenir au type d’avant les rend aussi.
+
+### Partie
+- Sondage : à l’affichage des réponses, aucune réponse n’est plus marquée comme bonne.
+
 ## [1.13.2] — 2026-10-30
 
 ### Ajouté

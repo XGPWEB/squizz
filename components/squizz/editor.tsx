@@ -20,9 +20,12 @@ import type { Visibility } from "@/lib/client/drafts";
 import { useHydrated } from "@/lib/client/hydrated";
 import { isProfileQuiz, MAX_PROFILES, quizProfiles, validateProfiles } from "@/lib/profiles";
 import {
+  changeType,
   isScored,
+  losesContent,
   newQuestion,
   questionTypes,
+  restoreType,
   slideLayoutLabel,
   validateQuestion,
   type Question,
@@ -117,6 +120,8 @@ export function QuizEditor({
   const ready = useHydrated();
   // The last deleted step, until it is restored or another step is deleted.
   const [removed, setRemoved] = useState<{ step: Question; index: number } | null>(null);
+  // A step as it was before a change of type dropped part of it, until steps move around it.
+  const [retyped, setRetyped] = useState<{ step: Question; index: number } | null>(null);
   const [picker, setPicker] = useState(false),
     [preview, setPreview] = useState(false);
   // A profile quiz is one whose answers name profiles; until the first one is named, the choice made
@@ -162,14 +167,24 @@ export function QuizEditor({
   const q = questions[index];
   const patch = (value: Partial<Question>) =>
     setQuestions(questions.map((x, i) => (i === index ? { ...x, ...value } : x)));
-  const setType = (type: QuestionType) =>
-    patch({ ...newQuestion(type), text: q.text, media: q.media, duration: q.duration });
+  const before = retyped?.index === index ? retyped.step : null;
+  const undoType = () => {
+    if (before) patch(restoreType(before, q));
+    setRetyped(null);
+  };
+  const setType = (type: QuestionType) => {
+    if (before?.type === type) return undoType();
+    if (losesContent(q, type)) setRetyped({ step: q, index });
+    patch(changeType(q, type));
+  };
   const duplicate = () => {
     const copy = structuredClone(q);
     setQuestions([...questions.slice(0, index + 1), copy, ...questions.slice(index + 1)]);
     setActive(index + 1);
+    setRetyped(null);
   };
   const remove = () => {
+    setRetyped(null);
     setRemoved({ step: q, index });
     setQuestions(questions.filter((_, i) => i !== index));
     setActive(Math.max(0, index - 1));
@@ -180,6 +195,7 @@ export function QuizEditor({
     setQuestions([...questions.slice(0, at), removed.step, ...questions.slice(at)]);
     setActive(at);
     setRemoved(null);
+    setRetyped(null);
   };
   const add = (step: Question) => {
     setQuestions([...questions, step]);
@@ -437,6 +453,14 @@ export function QuizEditor({
                   </button>
                 </p>
               )}
+              {before && (
+                <p className="info-box undo-box" role="status">
+                  Certains réglages n’existent pas dans ce type et ont été retirés.{" "}
+                  <button type="button" className="text-button" onClick={undoType}>
+                    <Undo2 size={16} /> Revenir au type précédent
+                  </button>
+                </p>
+              )}
               <QuestionFields
                 q={q}
                 patch={patch}
@@ -456,6 +480,7 @@ export function QuizEditor({
                     [items[index - 1], items[index]] = [items[index], items[index - 1]];
                     setQuestions(items);
                     setActive(index - 1);
+                    setRetyped(null);
                   }}
                 >
                   <ArrowUp size={16} /> Monter l’étape
@@ -469,6 +494,7 @@ export function QuizEditor({
                     [items[index + 1], items[index]] = [items[index], items[index + 1]];
                     setQuestions(items);
                     setActive(index + 1);
+                    setRetyped(null);
                   }}
                 >
                   <ArrowDown size={16} /> Descendre l’étape

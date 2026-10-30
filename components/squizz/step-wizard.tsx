@@ -1,14 +1,30 @@
 "use client";
 import { useState } from "react";
 import { Dialog } from "radix-ui";
-import { ArrowLeft, ArrowRight, Check, MessagesSquare, Presentation, Trophy, X } from "lucide-react";
 import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  MessagesSquare,
+  Presentation,
+  Trash2,
+  Trophy,
+  Undo2,
+  X,
+} from "lucide-react";
+import {
+  changeType,
+  isScored,
+  losesContent,
   newQuestion,
   questionGroups,
   questionTypes,
+  restoreType,
   slideLayouts,
   validateQuestion,
   type Question,
+  type QuestionType,
+  type SlideLayout,
 } from "@/lib/question";
 import { LayoutPreview, TypePreview } from "./type-preview";
 import { QuestionFields } from "./question-fields";
@@ -28,7 +44,8 @@ const GROUP_ICONS = {
 
 /**
  * Pop-up window that builds a new quiz step in stages: pick the type, write the content and its
- * settings, check the preview, then add it to the quiz.
+ * settings, check the preview, then add it to the quiz. Closing it keeps the step being written: only
+ * adding it or giving it up empties the window.
  */
 export function StepWizard({
   open,
@@ -48,6 +65,8 @@ export function StepWizard({
   onBusy: (busy: boolean) => void;
 }) {
   const [draft, setDraft] = useState<Question | null>(null),
+    // The step as it was before a change of type dropped part of it.
+    [before, setBefore] = useState<Question | null>(null),
     [step, setStep] = useState<Step>("type"),
     [error, setError] = useState(""),
     [uploading, setUploading] = useState(false);
@@ -56,18 +75,32 @@ export function StepWizard({
   const patch = (value: Partial<Question>) => setDraft((d) => (d ? { ...d, ...value } : d));
   const reset = () => {
     setDraft(null);
+    setBefore(null);
     setStep("type");
     setError("");
   };
-  const pick = (q: Question) => {
-    // Keep what was already written when switching type.
-    setDraft(draft ? { ...q, text: draft.text, media: draft.media } : q);
+  const undoType = () => {
+    if (before && draft) setDraft(restoreType(before, draft));
+    setBefore(null);
+  };
+  const pick = (type: QuestionType, layout?: SlideLayout) => {
+    if (!draft) setDraft(newQuestion(type, layout));
+    else if (before?.type === type && type !== "slide") undoType();
+    else {
+      if (losesContent(draft, type)) setBefore(draft);
+      setDraft(changeType(draft, type, layout));
+    }
     setStep("content");
     setError("");
   };
   /** Checks the step before the preview and the final add; returns false with a message if invalid. */
   const check = () => {
     try {
+      // The format of the quiz can have changed while the window was closed.
+      if (draft && profileNames && isScored(draft.type))
+        throw new Error(
+          "Un quiz à profils ne contient pas de question à points : changez le type de cette étape.",
+        );
       validateQuestion(draft);
       setError("");
       return true;
@@ -95,7 +128,7 @@ export function StepWizard({
       onOpenChange={(o) => {
         if (!o && !uploading) {
           onClose();
-          reset();
+          setError("");
         }
       }}
     >
@@ -159,7 +192,7 @@ export function StepWizard({
                                 preview={<LayoutPreview layout={l.id} />}
                                 label={l.label}
                                 hint={l.hint}
-                                onPick={() => pick(newQuestion("slide", l.id))}
+                                onPick={() => pick("slide", l.id)}
                               />
                             ))
                           : questionTypes
@@ -171,7 +204,7 @@ export function StepWizard({
                                   preview={<TypePreview type={t.id} />}
                                   label={t.label}
                                   hint={t.hint}
-                                  onPick={() => pick(newQuestion(t.id))}
+                                  onPick={() => pick(t.id)}
                                 />
                               ))}
                       </div>
@@ -181,6 +214,14 @@ export function StepWizard({
             )}
             {draft && step === "content" && (
               <div className="wizard-fields">
+                {before && (
+                  <p className="info-box undo-box" role="status">
+                    Certains réglages n’existent pas dans ce type et ont été retirés.{" "}
+                    <button type="button" className="text-button" onClick={undoType}>
+                      <Undo2 size={16} /> Revenir au type précédent
+                    </button>
+                  </p>
+                )}
                 <QuestionFields
                   q={draft}
                   patch={patch}
@@ -199,13 +240,29 @@ export function StepWizard({
             </div>
           )}
           <div className="host-modal-foot">
-            {at > 0 ? (
-              <button type="button" className="button secondary" onClick={() => setStep(steps[at - 1])}>
-                <ArrowLeft size={18} /> Précédent
-              </button>
-            ) : (
-              <span className="hint">Choisissez un format pour commencer.</span>
-            )}
+            <div className="wizard-foot-start">
+              {at > 0 ? (
+                <button type="button" className="button secondary" onClick={() => setStep(steps[at - 1])}>
+                  <ArrowLeft size={18} /> Précédent
+                </button>
+              ) : (
+                <span className="hint">
+                  {draft ? "Changez de format, ou gardez le vôtre." : "Choisissez un format pour commencer."}
+                </span>
+              )}
+              {draft && (
+                <button
+                  type="button"
+                  className="text-button"
+                  disabled={uploading}
+                  onClick={() => {
+                    if (confirm("Abandonner cette étape ? Ce que vous y avez écrit sera effacé.")) reset();
+                  }}
+                >
+                  <Trash2 size={16} /> Abandonner cette étape
+                </button>
+              )}
+            </div>
             {step === "preview" ? (
               <button
                 type="button"
