@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.14.6] — 2026-11-01
+
+### Site
+- Menu et pied de page : « Fonctionnalités », « Contact » et « Parlons-en » ramènent à leur section à chaque clic. Une fois l’ancre dans l’adresse, un nouveau clic ne faisait plus rien.
+- « Fonctionnalités » ne coupe plus le haut du titre de la section à l’arrivée.
+
 ## [1.14.5] — 2026-11-01
 
 ### Super-admin

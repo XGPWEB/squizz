@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AnchorLink } from "@/components/site/anchor-link";
 import { Brand } from "@/components/site/brand";
 import { CookieSettingsLink } from "@/components/site/cookie-consent";
 import { APP_VERSION } from "@/lib/version";
@@ -46,6 +47,8 @@ export function Footer() {
                 <li key={link.href}>
                   {link.href.startsWith("mailto:") ? (
                     <a href={link.href}>{link.label}</a>
+                  ) : link.href.startsWith("/#") ? (
+                    <AnchorLink href={link.href}>{link.label}</AnchorLink>
                   ) : (
                     <Link href={link.href}>{link.label}</Link>
                   )}

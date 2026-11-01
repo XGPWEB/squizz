@@ -612,6 +612,9 @@ a.card-action {
 .audiences {
   margin-bottom: 60px;
 }
+#fonctionnalites {
+  scroll-margin-top: 20px;
+}
 .cta-band {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
