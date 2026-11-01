@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.14.2] — 2026-11-01
+
+### Super-admin
+- « Trafic du site » : les quatre listes se rangent par deux sur grand écran, et l’une sous l’autre sur téléphone.
+
 ## [1.14.1] — 2026-11-01
 
 ### Super-admin

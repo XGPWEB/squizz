@@ -1329,7 +1329,7 @@ label.cookie-service {
 }
 .traffic-lists {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px 22px;
   margin-top: 20px;
 }
@@ -1451,6 +1451,11 @@ label.cookie-service {
   .traffic-live i,
   .traffic-list li::before {
     animation: none;
+  }
+}
+@media (max-width: 760px) {
+  .traffic-lists {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 560px) {
