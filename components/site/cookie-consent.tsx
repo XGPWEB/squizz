@@ -84,12 +84,13 @@ export function CookieConsent() {
         <section className="cookie-banner" role="region" aria-label="Cookies">
           <div>
             <p className="cookie-banner-title">
-              <Cookie size={20} aria-hidden /> Cookies : le strict nécessaire
+              <Cookie size={20} aria-hidden /> Cookies : à vous de choisir
             </p>
             <p>
-              SQuizz n’utilise que les cookies indispensables à son fonctionnement : ni publicité, ni mesure
-              d’audience. Seules les <strong>vidéos YouTube</strong> insérées dans certains quiz demandent
-              votre accord. <Link href="/confidentialite#cookies">En savoir plus</Link>
+              SQuizz ne fait aucune publicité. Deux services demandent votre accord : la{" "}
+              <strong>mesure d’audience</strong> des pages publiques (Google Analytics) et les{" "}
+              <strong>vidéos YouTube</strong> insérées dans certains quiz.{" "}
+              <Link href="/confidentialite#cookies">En savoir plus</Link>
             </p>
           </div>
           <div className="cookie-banner-actions">

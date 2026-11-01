@@ -102,7 +102,7 @@ export default function PricingPage() {
                 ))}
               </ul>
               {p.price === 0 ? (
-                <Link className="button secondary" href="/inscription">
+                <Link className="button secondary" href="/inscription" data-conversion="signup_cta_click">
                   Créer mon espace
                 </Link>
               ) : (
@@ -111,6 +111,7 @@ export default function PricingPage() {
                   href={`/inscription?suite=${encodeURIComponent(`/app/abonnement?offre=${key}`)}`}
                   // A sign-up page per offer is of no use to search engines (see app/robots.ts).
                   rel="nofollow"
+                  data-conversion="pricing_cta_click"
                 >
                   Choisir {p.label.split(" ")[0]}
                 </Link>
@@ -135,6 +136,7 @@ export default function PricingPage() {
           className="button secondary"
           href={`/inscription?suite=${encodeURIComponent("/app/abonnement?offre=EVENEMENT")}`}
           rel="nofollow"
+          data-conversion="pricing_cta_click"
         >
           Prendre le pack
         </Link>

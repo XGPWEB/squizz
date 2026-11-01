@@ -190,7 +190,7 @@ export default function AlternativePage() {
           </p>
         </div>
         <div className="cta-points">
-          <Link className="button" href="/inscription">
+          <Link className="button" href="/inscription" data-conversion="signup_cta_click">
             Créer mon espace gratuit
           </Link>
           <Link className="button secondary" href="/tarifs">

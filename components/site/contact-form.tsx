@@ -6,6 +6,7 @@ import { Send } from "lucide-react";
 import { CONTACT_SUBJECTS } from "@/lib/contact";
 import { PLANS, priceLabel } from "@/lib/plans";
 import { postJson } from "@/lib/client/api";
+import { trackEvent } from "@/lib/analytics";
 
 type TurnstileOptions = {
   sitekey: string;
@@ -126,6 +127,7 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
             turnstileToken: token,
           });
           setStatus({ kind: "sent" });
+          trackEvent("contact_form_submit");
         } catch (err) {
           // A Turnstile token works once: get a fresh one before retrying.
           setToken("");

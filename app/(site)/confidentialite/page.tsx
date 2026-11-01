@@ -67,6 +67,18 @@ export default function PolitiqueConfidentialitePage() {
         <li>Journaux du serveur web (adresse IP, page demandée, date), conservés 14 jours</li>
         <li>Journal des actions sensibles (invitations, changements de rôle, suspensions, suppressions)</li>
       </ul>
+      <h3>2.5 Mesure d’audience (seulement si vous l’acceptez)</h3>
+      <ul>
+        <li>
+          Pages publiques consultées, provenance de la visite, ville approximative, type d’appareil, clics sur
+          les boutons d’inscription et d’offres, envoi des formulaires d’inscription et de contact (sans leur
+          contenu)
+        </li>
+        <li>
+          Rien n’est mesuré pendant une partie ni dans les espaces connectés : les joueurs ne sont pas
+          concernés
+        </li>
+      </ul>
 
       <h2>3. Pourquoi nous collectons ces données (finalités)</h2>
       <ul>
@@ -87,6 +99,10 @@ export default function PolitiqueConfidentialitePage() {
           <strong>Communication</strong> : emails transactionnels (invitation, réinitialisation du mot de
           passe, réponse à vos messages)
         </li>
+        <li>
+          <strong>Mesure d’audience</strong> (si vous l’acceptez) : savoir combien de personnes visitent le
+          site, comment elles le trouvent et quelles pages les intéressent
+        </li>
       </ul>
 
       <h2>4. Bases légales du traitement</h2>
@@ -100,7 +116,8 @@ export default function PolitiqueConfidentialitePage() {
         </li>
         <li>
           <strong>Consentement</strong> (art. 6.1.a RGPD) : traitement de votre message envoyé par le
-          formulaire de contact (case à cocher), que vous pouvez retirer à tout moment par email
+          formulaire de contact (case à cocher), que vous pouvez retirer à tout moment par email ; mesure
+          d’audience et vidéos YouTube, que vous pouvez retirer à tout moment depuis « Gérer les cookies »
         </li>
         <li>
           <strong>Intérêt légitime</strong> (art. 6.1.f RGPD) : sécurité du Service, lutte contre la fraude,
@@ -153,6 +170,10 @@ export default function PolitiqueConfidentialitePage() {
             <td>Supprimés chaque nuit après expiration</td>
           </tr>
           <tr>
+            <td>Statistiques de mesure d’audience (chez Google)</td>
+            <td>2 mois, puis suppression automatique</td>
+          </tr>
+          <tr>
             <td>Factures (offres payantes, si souscrites)</td>
             <td>10 ans (obligation comptable)</td>
           </tr>
@@ -179,11 +200,17 @@ export default function PolitiqueConfidentialitePage() {
           le nom de l’organisation, l’adresse email de l’administrateur et les données de carte bancaire, que
           SQuizz ne voit ni ne conserve jamais
         </li>
+        <li>
+          <strong>Google Ireland Ltd.</strong> (Irlande), avec sa maison mère Google LLC (États-Unis) — mesure
+          d’audience des pages publiques (Google Analytics), uniquement si vous l’acceptez : Google reçoit
+          votre adresse IP et les informations listées au 2.5, sans partage à des fins publicitaires
+        </li>
       </ul>
       <p>
-        Les transferts vers les États-Unis (Resend, Cloudflare, et Stripe pour certains traitements) reposent
-        sur le cadre de protection des données UE–États-Unis (Data Privacy Framework) ou, à défaut, sur les
-        clauses contractuelles types de la Commission européenne. Aucune donnée n’est vendue à des tiers.
+        Les transferts vers les États-Unis (Resend, Cloudflare, Google, et Stripe pour certains traitements)
+        reposent sur le cadre de protection des données UE–États-Unis (Data Privacy Framework) ou, à défaut,
+        sur les clauses contractuelles types de la Commission européenne. Aucune donnée n’est vendue à des
+        tiers.
       </p>
       <p>
         <strong>Vidéos YouTube</strong> : lorsqu’un quiz contient une vidéo YouTube, elle n’est chargée
@@ -231,16 +258,19 @@ export default function PolitiqueConfidentialitePage() {
 
       <h2 id="cookies">8. Cookies</h2>
       <p>
-        Le Service dépose uniquement des cookies <strong>strictement nécessaires</strong> à son fonctionnement
-        ; aucun consentement préalable n’est requis pour ceux-ci (article 82 loi Informatique et Libertés,
-        exemptions CNIL). Aucun cookie publicitaire ni outil de mesure d’audience n’est utilisé.
+        Le Service dépose des cookies <strong>strictement nécessaires</strong> à son fonctionnement ; aucun
+        consentement préalable n’est requis pour ceux-ci (article 82 loi Informatique et Libertés, exemptions
+        CNIL). Aucun cookie publicitaire n’est utilisé.
       </p>
       <p>
-        <strong>Votre accord est demandé</strong> pour un seul type de contenu, fourni par un tiers : les
-        vidéos YouTube insérées dans certains quiz. Tant que vous n’avez pas accepté, elles ne sont pas
-        chargées et rien n’est transmis à YouTube ; vous pouvez accepter pour une seule vidéo, pour toutes, ou
-        refuser. Refuser est aussi simple qu’accepter et n’empêche pas d’utiliser le Service. Votre choix est
-        conservé 6 mois sur votre appareil, puis redemandé, et vous pouvez le modifier à tout moment :{" "}
+        <strong>Votre accord est demandé</strong> pour deux services fournis par des tiers. La{" "}
+        <strong>mesure d’audience</strong> (Google Analytics) ne fonctionne que sur les pages publiques du
+        site : tant que vous n’avez pas accepté, rien n’est chargé ni transmis à Google, et si vous retirez
+        votre accord, elle s’arrête et ses cookies sont supprimés. Les <strong>vidéos YouTube</strong>{" "}
+        insérées dans certains quiz ne sont pas chargées non plus avant votre accord, et rien n’est transmis à
+        YouTube ; vous pouvez accepter pour une seule vidéo, pour toutes, ou refuser. Refuser est aussi simple
+        qu’accepter et n’empêche pas d’utiliser le Service. Votre choix est conservé 6 mois sur votre
+        appareil, puis redemandé, et vous pouvez le modifier à tout moment :{" "}
         <CookieSettingsLink className="link-button" />.
       </p>
       <p>
@@ -281,8 +311,15 @@ export default function PolitiqueConfidentialitePage() {
             <td>
               <code>sq_consent</code>
             </td>
-            <td>Mémorise votre choix sur les contenus soumis à accord (vidéos YouTube)</td>
+            <td>Mémorise votre choix sur les services soumis à accord (mesure d’audience, vidéos YouTube)</td>
             <td>6 mois</td>
+          </tr>
+          <tr>
+            <td>
+              <code>_ga</code>, <code>_ga_*</code>
+            </td>
+            <td>Mesure d’audience Google Analytics, déposés seulement si vous l’acceptez</td>
+            <td>13 mois</td>
           </tr>
           <tr>
             <td>
@@ -300,6 +337,10 @@ export default function PolitiqueConfidentialitePage() {
           </tr>
         </tbody>
       </table>
+      <p>
+        <strong>Support SQuizz</strong> : un marqueur <code>sq_no_audience</code>, gardé dans le stockage
+        local du navigateur de nos administrateurs, exclut leurs propres visites de la mesure d’audience.
+      </p>
       <p>
         Vous pouvez à tout moment supprimer ces cookies via les paramètres de votre navigateur ; la
         conséquence est la perte de votre session de connexion ou de votre place dans une partie en cours.

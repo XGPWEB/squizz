@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { recentRooms } from "@/lib/server/game";
 import { PLANS } from "@/lib/plans";
 import { Organizations } from "./organizations";
+import { SiteTraffic, SiteTrafficLoading } from "./site-traffic";
 
 export const metadata: Metadata = { title: "Super-admin" };
 
@@ -44,6 +46,9 @@ export default async function AdminHome() {
         <Stat label="Quiz" value={quizzes} />
         <Stat label="Parties (24 h)" value={games} />
       </div>
+      <Suspense fallback={<SiteTrafficLoading />}>
+        <SiteTraffic />
+      </Suspense>
       <Organizations />
     </>
   );

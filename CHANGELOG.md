@@ -2,6 +2,15 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.14.0] — 2026-11-01
+
+### Ajouté
+- Super-admin : section « Trafic du site » sur la vue d’ensemble. Visiteurs, sessions et pages vues sur 7 jours avec l’évolution, visiteurs en ligne, pages les plus vues, sources, villes, appareils et conversions. Les chiffres viennent de Google Analytics 4 ; une lenteur ou une panne de Google ne bloque pas le tableau de bord.
+- Mesure d’audience Google Analytics sur les pages publiques, uniquement avec l’accord du visiteur. Rien n’est mesuré en partie ni dans les espaces connectés, et les visites des administrateurs ne sont pas comptées. Reste éteinte tant que `NEXT_PUBLIC_GA_MEASUREMENT_ID` n’est pas renseigné.
+
+### Confidentialité
+- Bandeau cookies, panneau « Gérer les cookies » et politique de confidentialité mis à jour : « ni mesure d’audience » n’est plus vrai. Le choix de cookies est redemandé à tous les visiteurs.
+
 ## [1.13.3] — 2026-10-30
 
 ### Éditeur

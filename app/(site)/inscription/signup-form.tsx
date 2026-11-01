@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { AuthForm } from "@/components/auth/auth-form";
 import { postJson } from "@/lib/client/api";
+import { trackEvent } from "@/lib/analytics";
 import { PasswordInput } from "@/components/site/password-input";
 import { VerifyPending } from "@/components/auth/verify-pending";
 import { EVENT_PASS, PASS_OFFER, PLANS, offerOfPath, priceLabel } from "@/lib/plans";
@@ -47,6 +48,7 @@ export function SignupForm({ next }: { next: string }) {
           suite: next === "/app" ? undefined : next,
         });
         setPending({ email: body.email.trim().toLowerCase(), devLink: out.devLink });
+        trackEvent("signup_complete");
       }}
       footer={
         <span>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NotCountedInAudience } from "@/components/site/analytics";
 import { AppHeader } from "@/components/site/app-header";
 import { pageUser } from "@/lib/server/guard";
 import { APP_VERSION } from "@/lib/version";
@@ -10,6 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await pageUser({ superAdmin: true });
   return (
     <>
+      <NotCountedInAudience />
       <a className="skip-link" href="#contenu">
         Aller au contenu
       </a>

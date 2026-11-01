@@ -41,6 +41,9 @@ export NEXT_DIST_DIR=.next-e2e
 # No real email or anti-bot service during tests, and no real Stripe: billing talks to a local mock
 # (tests/stripe_mock.py) with fake keys. STRIPE_API_BASE is ignored by the app in production.
 unset SMTP_HOST TURNSTILE_SECRET_KEY TURNSTILE_SITE_KEY STRIPE_PRICE_STARTER STRIPE_PRICE_PRO STRIPE_PRICE_PREMIUM
+# Nor real Google Analytics: empty, because a test build would otherwise read the ID in .env.production.
+unset GA_PROPERTY_ID GA_SERVICE_ACCOUNT_EMAIL GA_SERVICE_ACCOUNT_PRIVATE_KEY
+export NEXT_PUBLIC_GA_MEASUREMENT_ID=
 STRIPE_MOCK_PORT=${E2E_STRIPE_PORT:-5175}
 export STRIPE_SECRET_KEY=sk_test_mock_never_real STRIPE_WEBHOOK_SECRET=whsec_mock_never_real
 export STRIPE_API_BASE="http://127.0.0.1:$STRIPE_MOCK_PORT" STRIPE_MOCK_URL="http://127.0.0.1:$STRIPE_MOCK_PORT"

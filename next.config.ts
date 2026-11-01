@@ -1,17 +1,19 @@
 import type { NextConfig } from "next";
 
 /**
- * What the pages may load: our own code, Cloudflare Turnstile (contact form), YouTube videos in
- * quizzes, and images/videos from https links that quiz authors add. Next.js needs inline scripts.
+ * What the pages may load: our own code, Cloudflare Turnstile (contact form), Google Analytics
+ * (public site, with consent; it sends to regional hosts such as region1.google-analytics.com),
+ * YouTube videos in quizzes, and images/videos from https links that quiz authors add. Next.js
+ * needs inline scripts.
  */
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "media-src 'self' https:",
   "font-src 'self'",
-  "connect-src 'self' https://challenges.cloudflare.com",
+  "connect-src 'self' https://challenges.cloudflare.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com",
   "frame-src https://challenges.cloudflare.com https://www.youtube-nocookie.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -28,6 +30,8 @@ const nextConfig: NextConfig = {
   // The isolated test server (scripts/e2e.sh) builds elsewhere, so it can run beside `npm run dev`.
   distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
+  // Loads its gRPC definitions from disk at runtime, which bundling would break.
+  serverExternalPackages: ["@google-analytics/data"],
   async headers() {
     return [
       {

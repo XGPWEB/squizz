@@ -25,7 +25,7 @@ export const COMPANY_INFO = {
     website: "https://www.hostinger.fr",
   },
   dpo: { name: "Xavier Gerinette", email: "contact@pressweb.fr" },
-  lastUpdated: new Date("2026-10-04"),
+  lastUpdated: new Date("2026-11-01"),
 } as const;
 
 export const CONTACT_EMAIL = COMPANY_INFO.editor.email;

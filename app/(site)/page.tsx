@@ -43,7 +43,7 @@ export default function HomePage() {
             Classement en direct, podium final, zéro application à installer.
           </p>
           <div className="row hero-in" style={{ marginTop: 26, ["--d" as string]: "560ms" }}>
-            <Link className="button" href="/inscription">
+            <Link className="button" href="/inscription" data-conversion="signup_cta_click">
               <Sparkles size={18} /> Créer mon espace gratuit
             </Link>
             <Link className="button secondary" href="/tarifs">
@@ -213,7 +213,7 @@ export default function HomePage() {
           <span>
             <Zap size={18} /> Démarrage gratuit, sans carte bancaire
           </span>
-          <Link className="button" href="/inscription">
+          <Link className="button" href="/inscription" data-conversion="signup_cta_click">
             Créer mon espace
           </Link>
         </div>

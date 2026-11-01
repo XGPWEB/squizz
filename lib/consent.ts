@@ -1,15 +1,23 @@
 /**
- * Cookie consent. SQuizz only sets strictly necessary cookies (sign-in, security, anonymous player id),
- * which need no consent. Consent is asked for third-party content that deposits its own trackers when it
- * loads: YouTube videos embedded in quizzes. The choice is kept 6 months in a first-party cookie, then
- * asked again (CNIL recommendation), and can be changed at any time (« Gérer les cookies »).
+ * Cookie consent. SQuizz's own cookies are strictly necessary (sign-in, security, anonymous player id) and
+ * need no consent. Consent is asked for third parties that deposit their own trackers when they load: Google
+ * Analytics on the public pages, and YouTube videos embedded in quizzes. The choice is kept 6 months in a
+ * first-party cookie, then asked again (CNIL recommendation), and can be changed at any time (« Gérer les
+ * cookies »).
  */
 export const CONSENT_COOKIE = "sq_consent";
-export const CONSENT_VERSION = 1;
+export const CONSENT_VERSION = 2;
 export const CONSENT_MONTHS = 6;
 
 /** Optional services, each refused by default. Add new ones here and bump CONSENT_VERSION. */
 export const SERVICES = [
+  {
+    id: "audience",
+    label: "Mesure d’audience",
+    provider: "Google Ireland Ltd.",
+    purpose:
+      "Compter les visites des pages publiques du site avec Google Analytics, pour savoir comment il est trouvé et ce qui vous intéresse. Jamais pendant une partie, ni dans les espaces connectés. Google reçoit votre adresse IP et dépose ses cookies pour 13 mois au plus.",
+  },
   {
     id: "youtube",
     label: "Vidéos YouTube",

@@ -29,7 +29,7 @@ export async function PublicHeader() {
             <Link className="button small secondary" href="/connexion">
               Connexion
             </Link>
-            <Link className="button small" href="/inscription">
+            <Link className="button small" href="/inscription" data-conversion="signup_cta_click">
               Créer un compte
             </Link>
           </>
