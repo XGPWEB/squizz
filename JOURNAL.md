@@ -123,7 +123,6 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 
 
 - **Trafic du site** : revoir le panneau du super-admin dans quelques jours, pour confirmer que les chiffres sur 7 jours se remplissent.
-- **Confidentialité** : prévenir les administrateurs des organisations par e-mail (article 11 de la politique).
 - **Organisation DG** : décider du sort du quiz « Test » créé en vue admin le 5 octobre (le supprimer, ou l’exporter vers Pôle jeunesse).
 - **Quiz à profils** : jouer une partie à plusieurs sur le site en ligne pour voir l’écran final « Le profil du groupe », côté animateur et côté téléphone (jamais regardé dans un navigateur). Confirmer ou revoir le calcul : on additionne des réponses, pas des personnes.
 - **Quiz « Quel manager êtes-vous à Nogent ? »** : l’importer dans Pôle jeunesse et le jouer une fois avant le comité de direction ; confirmer les réponses retenues pour la question 6 et le choix d’un résultat de groupe sans style individuel.
