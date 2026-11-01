@@ -33,6 +33,7 @@
   scrollbar-width: none;
 }
 .app-tab {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -47,6 +48,30 @@
   transition:
     background 0.15s,
     transform 0.15s;
+}
+/* Sticker on a tab: what is waiting there. */
+.tab-badge {
+  min-width: 22px;
+  padding: 1px 6px;
+  font: 700 12px/18px monospace;
+  text-align: center;
+  color: var(--ink);
+  background: var(--pink);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: rotate(-6deg);
+  animation: tab-badge-pop 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) backwards;
+}
+@keyframes tab-badge-pop {
+  from {
+    transform: rotate(-6deg) scale(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tab-badge {
+    animation: none;
+  }
 }
 .app-tab:hover {
   background: var(--cream);
@@ -233,6 +258,17 @@
   }
   .app-tab {
     padding: 10px 12px;
+  }
+  /* Inside the tab: the tab row scrolls, so anything sticking out of it is cut off. */
+  .tab-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 18px;
+    padding: 0 4px;
+    font-size: 11px;
+    line-height: 14px;
+    box-shadow: none;
   }
 }
 /* Decorative shapes and tilted bands must never make the page scroll sideways. */

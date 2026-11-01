@@ -8,7 +8,15 @@ import { AdminKeepAlive } from "./admin-keep-alive";
 const roleLabel = { SUPER_ADMIN: "Super-admin", ORG_ADMIN: "Administrateur", HOST: "Animateur" } as const;
 
 /** Header of the signed-in areas: the organisation dashboard and the super-admin. */
-export function AppHeader({ user, area }: { user: SessionUser; area: "app" | "admin" }) {
+export function AppHeader({
+  user,
+  area,
+  pendingMessages,
+}: {
+  user: SessionUser;
+  area: "app" | "admin";
+  pendingMessages?: number;
+}) {
   const org = area === "app" ? user.organization : null;
   return (
     <>
@@ -28,6 +36,7 @@ export function AppHeader({ user, area }: { user: SessionUser; area: "app" | "ad
           canTeam={user.role !== "HOST"}
           isSuperAdmin={user.realRole === "SUPER_ADMIN"}
           viewingAs={user.viewingAs}
+          pendingMessages={pendingMessages}
         />
       </header>
     </>

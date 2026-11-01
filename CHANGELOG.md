@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.14.5] — 2026-11-01
+
+### Super-admin
+- Pastille sur l’onglet « Messages » : le nombre de messages de contact à traiter. Elle disparaît quand tout est traité.
+
 ## [1.14.4] — 2026-11-01
 
 ### Mesure d’audience

@@ -20,7 +20,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-type Item = { href: string; label: string; icon: LucideIcon; exact?: boolean };
+type Item = { href: string; label: string; icon: LucideIcon; exact?: boolean; pending?: number };
 type Props = {
   area: "app" | "admin";
   name: string;
@@ -31,6 +31,8 @@ type Props = {
   canTeam: boolean;
   isSuperAdmin: boolean;
   viewingAs: boolean;
+  /** Contact messages still to handle (super-admin only). */
+  pendingMessages?: number;
 };
 
 const initials = (name: string) =>
@@ -88,7 +90,7 @@ export function AppBar(p: Props) {
       : [
           { href: "/super-admin", label: "Organisations", icon: Building2, exact: true },
           { href: "/super-admin/utilisateurs", label: "Utilisateurs", icon: Users },
-          { href: "/super-admin/messages", label: "Messages", icon: Mail },
+          { href: "/super-admin/messages", label: "Messages", icon: Mail, pending: p.pendingMessages },
           { href: "/super-admin/journal", label: "Journal", icon: History },
           { href: "/super-admin/monitoring", label: "Monitoring", icon: Activity },
         ];
@@ -111,11 +113,16 @@ export function AppBar(p: Props) {
             aria-current={active(i) ? "page" : undefined}
             // The label is hidden on phones (icon only): the link keeps its name for screen readers, and a
             // tooltip for everyone.
-            aria-label={i.label}
-            title={i.label}
+            aria-label={i.pending ? `${i.label}, ${i.pending} à traiter` : i.label}
+            title={i.pending ? `${i.label} : ${i.pending} à traiter` : i.label}
           >
             <i.icon size={18} aria-hidden />
             <span>{i.label}</span>
+            {!!i.pending && (
+              <b className="tab-badge" aria-hidden>
+                {i.pending > 99 ? "99+" : i.pending}
+              </b>
+            )}
           </Link>
         ))}
       </nav>

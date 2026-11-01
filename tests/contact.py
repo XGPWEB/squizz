@@ -1,6 +1,7 @@
 """Contact form: python3 tests/contact.py (needs the seeded super-admin in .env)."""
+import re
 import secrets
-from helpers import client, request, signup, login, env, admin_login
+from helpers import BASE, client, request, signup, login, env, admin_login
 
 tag = secrets.token_hex(4)
 ok = {'name': 'Jean Test', 'email': 'jean@example.test', 'subject': 'Souscrire à un abonnement',
@@ -16,6 +17,9 @@ request(anon, 'POST', '/api/contact', ok)
 
 root = admin_login(client(), env('SEED_SUPER_ADMIN_EMAIL'), env('SEED_SUPER_ADMIN_PASSWORD'))
 page = request(root, 'GET', '/super-admin/messages', expect=200)
+# The menu shows what is waiting, on every super-admin page.
+home = root.open(BASE + '/super-admin', timeout=60).read().decode()
+assert re.search(r'Messages, \d+ à traiter', home) and 'tab-badge' in home, home[:300]
 member, _, _ = signup()
 request(member, 'PATCH', '/api/admin/messages/x', {'handled': True}, expect=401)
 request(anon, 'DELETE', '/api/admin/messages/x', expect=401)
