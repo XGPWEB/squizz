@@ -61,25 +61,28 @@ function Counter({ label, value, change }: { label: string; value: number; chang
   );
 }
 
-/** A top list: each line is filled in proportion to the first one. */
+/** A top list: each line is filled in proportion to the first one. Empty lists stay visible. */
 function Ranking({ title, rows }: { title: string; rows: { label: string; value: number }[] }) {
-  if (rows.length === 0) return null;
   const max = Math.max(...rows.map((r) => r.value), 1);
   return (
     <div className="traffic-list">
       <h3>{title}</h3>
-      <ul>
-        {rows.map((r, i) => (
-          <li
-            key={r.label}
-            style={{ "--share": r.value / max, "--i": i } as React.CSSProperties}
-            title={r.label}
-          >
-            <span>{r.label}</span>
-            <b>{fr(r.value)}</b>
-          </li>
-        ))}
-      </ul>
+      {rows.length === 0 ? (
+        <p className="traffic-list-empty">Pas encore de données</p>
+      ) : (
+        <ul>
+          {rows.map((r, i) => (
+            <li
+              key={r.label}
+              style={{ "--share": r.value / max, "--i": i } as React.CSSProperties}
+              title={r.label}
+            >
+              <span>{r.label}</span>
+              <b>{fr(r.value)}</b>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -1339,6 +1339,15 @@ label.cookie-service {
   letter-spacing: 1px;
   text-transform: uppercase;
 }
+.traffic-list-empty {
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: #55514b;
+  background: white;
+  border: 2px dashed var(--ink);
+  border-radius: 8px;
+}
 .traffic-list ul {
   display: grid;
   gap: 6px;

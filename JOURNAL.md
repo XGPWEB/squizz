@@ -122,7 +122,7 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - Stripe : ajouter l’événement `checkout.session.expired` au webhook (facultatif).
 
 
-- **Trafic du site** : créer la clé du compte de service et l’ajouter à `/opt/squizz-secrets.env` avec `GA_PROPERTY_ID` et `GA_SERVICE_ACCOUNT_EMAIL`, puis vérifier le panneau. La mesure elle-même est confirmée en ligne : visite reçue dans le Temps réel, sans erreur CSP.
+- **Trafic du site** : revoir le panneau du super-admin dans quelques jours, pour confirmer que les chiffres sur 7 jours se remplissent.
 - **Confidentialité** : prévenir les administrateurs des organisations par e-mail (article 11 de la politique).
 - **Organisation DG** : décider du sort du quiz « Test » créé en vue admin le 5 octobre (le supprimer, ou l’exporter vers Pôle jeunesse).
 - **Quiz à profils** : jouer une partie à plusieurs sur le site en ligne pour voir l’écran final « Le profil du groupe », côté animateur et côté téléphone (jamais regardé dans un navigateur). Confirmer ou revoir le calcul : on additionne des réponses, pas des personnes.
