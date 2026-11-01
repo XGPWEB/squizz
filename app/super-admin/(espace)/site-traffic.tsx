@@ -96,7 +96,7 @@ export function SiteTrafficView({
 }) {
   const live = realtime !== null && (
     <span className="traffic-live">
-      <i aria-hidden /> {fr(realtime.activeUsersNow)} en ligne en ce moment
+      <i aria-hidden /> {fr(realtime.activeUsersNow)} en ligne (5 dernières min)
     </span>
   );
   if (analytics === null) {

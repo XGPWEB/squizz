@@ -98,4 +98,7 @@ test("le temps réel compte les visiteurs et les conversions en cours", async ()
     activeUsersNow: 5,
     conversionsLast30min: [{ name: "contact_form_submit", count: 2 }],
   });
+  // « En ligne » means the last 5 minutes, not Google's default of 30.
+  const online = runRealtimeReport.mock.calls.find(([r]) => !r.dimensions)?.[0];
+  expect(online.minuteRanges).toEqual([{ startMinutesAgo: 4, endMinutesAgo: 0 }]);
 });

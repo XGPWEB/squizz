@@ -154,7 +154,7 @@ export async function getSiteAnalytics(): Promise<SiteAnalytics | null> {
 }
 
 /**
- * The last 30 minutes, from the separate Realtime pipeline (standard reports lag by several hours). This API has
+ * The last minutes, from the separate Realtime pipeline (standard reports lag by several hours). This API has
  * no page dimension, so PUBLIC_PAGES cannot apply here; the tag's own limits to the public site still do.
  */
 export async function getSiteRealtimeAnalytics(): Promise<SiteRealtimeAnalytics | null> {
@@ -165,7 +165,12 @@ export async function getSiteRealtimeAnalytics(): Promise<SiteRealtimeAnalytics 
   try {
     const property = `properties/${propertyId}`;
     const [[summary], [events]] = await Promise.all([
-      ga.runRealtimeReport({ property, metrics: [{ name: "activeUsers" }] }),
+      // Google counts the last 30 minutes by default: far too wide to call someone online now.
+      ga.runRealtimeReport({
+        property,
+        metrics: [{ name: "activeUsers" }],
+        minuteRanges: [{ startMinutesAgo: 4, endMinutesAgo: 0 }],
+      }),
       ga.runRealtimeReport({
         property,
         dimensions: [{ name: "eventName" }],

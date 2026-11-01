@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.14.3] — 2026-11-01
+
+### Super-admin
+- « Trafic du site » : le compteur « en ligne » ne regarde plus que les 5 dernières minutes, au lieu des 30 de Google, qui comptaient des visiteurs déjà partis.
+
 ## [1.14.2] — 2026-11-01
 
 ### Super-admin
