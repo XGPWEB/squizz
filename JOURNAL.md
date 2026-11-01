@@ -109,11 +109,21 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - **Envoi qui reprend après une coupure** : à la demande de Xavier, `deploy.sh` envoie désormais l’archive avec rsync, qui reprend là où l’envoi s’est arrêté, jusqu’à dix essais, puis compare les empreintes des fichiers des deux côtés ; sans envoi complet et identique, le script s’arrête avant de toucher à la version en ligne. Essayé seul, sans mise en ligne : une copie tronquée à 10 Mo sur le serveur a été complétée et vérifiée. Aucune coupure n’est survenue pendant cet essai : la reprise après une vraie coupure se verra à la prochaine mise en ligne.
 - **Intégration continue** : verte sur `main` et `plateforme` pour la 1.13.0, puis pour le dernier commit de la journée (le nouvel envoi de `deploy.sh`), qui contient la 1.13.1. Les passes lancées pour le commit de la 1.13.1 lui-même ont été annulées, remplacées par celles des commits poussés dans les minutes suivantes.
 
+## 1er novembre 2026 — Trafic du site dans le super-admin (version 1.14.0)
+
+- **Trafic du site** : nouvelle section sur la vue d’ensemble du super-admin (visiteurs, sessions, pages vues, en ligne, pages, sources, villes, appareils, conversions), alimentée par Google Analytics 4.
+- **Une promesse publique a changé** : le bandeau et la politique de confidentialité disaient « ni mesure d’audience ». Ils ont été réécrits, et le choix de cookies est redemandé à tous les visiteurs.
+- **Limites choisies** : mesure avec accord uniquement, sur les pages publiques seulement, jamais en partie ni dans les espaces connectés. Les visites des administrateurs ne sont pas comptées. Côté Google : pages vues seules dans les mesures améliorées, conservation de 2 mois.
+- **Comptes** : propriété GA4 « SQuizz » et projet Google Cloud `squizz-analytics` avec son compte de service, propres à SQuizz.
+- **Mise en ligne** : 1.14.0 vérifiée en ligne (version, bandeau, ID de mesure dans les scripts, rien de chargé avant l’accord).
+
 ## Reste à faire
 
 - Stripe : ajouter l’événement `checkout.session.expired` au webhook (facultatif).
 
 
+- **Trafic du site** : créer la clé du compte de service et l’ajouter à `/opt/squizz-secrets.env` avec `GA_PROPERTY_ID` et `GA_SERVICE_ACCOUNT_EMAIL`, puis vérifier le panneau et, cookies acceptés, l’absence d’erreur CSP dans la console.
+- **Confidentialité** : prévenir les administrateurs des organisations par e-mail (article 11 de la politique).
 - **Organisation DG** : décider du sort du quiz « Test » créé en vue admin le 5 octobre (le supprimer, ou l’exporter vers Pôle jeunesse).
 - **Quiz à profils** : jouer une partie à plusieurs sur le site en ligne pour voir l’écran final « Le profil du groupe », côté animateur et côté téléphone (jamais regardé dans un navigateur). Confirmer ou revoir le calcul : on additionne des réponses, pas des personnes.
 - **Quiz « Quel manager êtes-vous à Nogent ? »** : l’importer dans Pôle jeunesse et le jouer une fois avant le comité de direction ; confirmer les réponses retenues pour la question 6 et le choix d’un résultat de groupe sans style individuel.
