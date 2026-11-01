@@ -32,11 +32,12 @@ function clearGaCookies() {
  * visitor leaves the public site, because the loaded script otherwise keeps following page changes.
  */
 export function Analytics() {
-  const { consent } = useConsent();
+  const { consent, ready } = useConsent();
   const enabled = !!GA_ID && consent?.services.audience === true && !isNotCounted();
 
   useEffect(() => {
-    if (!GA_ID) return;
+    // Before `ready` the choice is unknown, not refused: acting now would erase a visitor's cookies on each page.
+    if (!GA_ID || !ready) return;
     const flag = `ga-disable-${GA_ID}`;
     const globals = window as unknown as Record<string, unknown>;
     globals[flag] = !enabled;
@@ -44,7 +45,7 @@ export function Analytics() {
     return () => {
       globals[flag] = true;
     };
-  }, [enabled]);
+  }, [enabled, ready]);
 
   useEffect(() => {
     if (!enabled) return;

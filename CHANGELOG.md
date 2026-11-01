@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.14.4] — 2026-11-01
+
+### Mesure d’audience
+- Un visiteur qui a accepté n’est plus compté comme nouveau à chaque page : les cookies de mesure étaient effacés à chaque chargement, avant la lecture de son choix.
+
 ## [1.14.3] — 2026-11-01
 
 ### Super-admin
