@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Fragment, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import {
   BadgeCheck,
   ChartColumn,
+  ChevronDown,
   EyeOff,
   FileDown,
   FileSpreadsheet,
@@ -216,62 +217,63 @@ export function TypeExplorer({ families }: { families: ExplorerFamily[] }) {
   );
 }
 
-/** Everything around the questions, one moment of a game at a time. */
+/**
+ * Everything around the questions, one moment of a game at a time. Each moment is a button followed by its
+ * panel: on a wide screen the CSS grid lines the buttons up on the left and the open panel on the right; on
+ * a phone it reads as an accordion, the panel opening right under its button.
+ */
 export function MomentTabs({ moments }: { moments: ExplorerMoment[] }) {
   const [active, setActive] = useState(0);
+  const open = (i: number, button: HTMLElement) => {
+    setActive(i);
+    // On a phone, closing the panel above moves the button up: keep it in view.
+    requestAnimationFrame(() => {
+      if (button.getBoundingClientRect().top < 70)
+        button.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  };
   return (
     <div className="moment-tabs">
-      <div
-        className="moment-list"
-        role="tablist"
-        aria-label="Moments d’une partie"
-        aria-orientation="vertical"
-      >
-        {moments.map((m, i) => (
+      {moments.map((m, i) => (
+        <Fragment key={m.id}>
           <button
-            key={m.id}
             type="button"
-            role="tab"
             id={`moment-${m.id}`}
-            aria-selected={i === active}
+            aria-expanded={i === active}
             aria-controls={`panneau-${m.id}`}
-            tabIndex={i === active ? 0 : -1}
             className={`moment-tab tone-${i % 4}`}
-            onClick={() => setActive(i)}
-            onKeyDown={(e) => tabKeys(e, i, moments.length, setActive)}
+            onClick={(e) => open(i, e.currentTarget)}
           >
             <span className="moment-num" aria-hidden>
               {String(i + 1).padStart(2, "0")}
             </span>
             <span className="moment-label">{m.label}</span>
             <small>{m.items.length} fonctions</small>
+            <ChevronDown className="moment-chevron" aria-hidden />
           </button>
-        ))}
-      </div>
-      {moments.map((m, i) => (
-        <div
-          key={m.id}
-          id={`panneau-${m.id}`}
-          role="tabpanel"
-          aria-labelledby={`moment-${m.id}`}
-          hidden={i !== active}
-          className={`moment-panel tone-${i % 4}`}
-        >
-          <ul>
-            {m.items.map((item, j) => {
-              const Icon = icons[item.icon];
-              return (
-                <li key={item.title} style={{ ["--i" as string]: j }}>
-                  <Icon aria-hidden />
-                  <div>
-                    <h4>{item.title}</h4>
-                    <p>{item.text}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+          <div
+            id={`panneau-${m.id}`}
+            role="region"
+            aria-labelledby={`moment-${m.id}`}
+            hidden={i !== active}
+            className={`moment-panel tone-${i % 4}`}
+          >
+            <ul>
+              {m.items.map((item, j) => {
+                const Icon = icons[item.icon];
+                return (
+                  <li key={item.title} style={{ ["--i" as string]: j }}>
+                    <Icon aria-hidden />
+                    <div>
+                      <h4>{item.title}</h4>
+                      <p>{item.text}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </Fragment>
       ))}
     </div>
   );

@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.27.2] — 2026-11-03
+
+### Site public
+
+- « Tout ce qu’il faut pour animer » sur téléphone : un accordéon à la place des onglets qui défilaient de côté. Les cinq moments restent visibles, celui qui est ouvert est en noir avec une flèche vers le haut, et ses fonctions s’affichent juste en dessous ; le moment touché reste à l’écran. Sur grand écran, rien ne change, sauf une flèche qui désigne le panneau ouvert.
+
 ## [1.27.1] — 2026-11-03
 
 ### Site public
