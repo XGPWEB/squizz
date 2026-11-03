@@ -2,6 +2,15 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.27.0] — 2026-11-03
+
+### Site public
+
+- Accueil : la section « Fonctionnalités » montre désormais les 16 types de questions, la diapo (avec ses 6 mises en page) et la roue, rangés par famille (tester les connaissances, collecter des avis, diapos), chacun avec sa vignette et sa description. Pastilles de navigation en haut de section vers chaque famille et chaque moment.
+- Nouvelle section « Tout ce qu’il faut pour animer », en cinq moments : créer (IA, import Excel ou CSV, modèles, médias), animer en direct (équipes, télécommande, questions du public, réponses anonymes), jouer à son rythme (autonomie, rejouer en différé, quiz à profils), après la partie (résultats 12 mois, export Excel et PDF), à votre image (style sobre, logo et couleur, mention « SQuizz » masquable, équipe).
+- « Comment ça marche », bandeau défilant, FAQ (IA, équipes, autonomie, résultats), tarifs (fonctions incluses dans chaque offre), comparatif Kahoot! et `/llms.txt` mis à jour ; données structurées complétées.
+- Une seule source pour ces textes (`lib/seo.ts`), alignée sur la liste des types de l’éditeur : un type ajouté sans description publique bloque la vérification des types.
+
 ## [1.26.3] — 2026-11-03
 
 ### Corrigé

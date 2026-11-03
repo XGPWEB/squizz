@@ -569,12 +569,284 @@ a.card-action {
   border-radius: 12px;
   box-shadow: 3px 3px 0 var(--ink);
 }
-.slides-showcase {
-  margin-top: 18px;
+/* Features: quick links, every step by family, then everything around the questions */
+.feature-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 34px;
 }
-.feature-more {
-  margin: 18px 0 0;
-  font-weight: 700;
+.feature-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: white;
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 14px;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1.6),
+    box-shadow 0.2s,
+    background 0.2s;
+}
+.feature-nav a:hover,
+.feature-nav a:focus-visible {
+  transform: translate(-2px, -3px) rotate(-1.5deg);
+  box-shadow: 4px 5px 0 var(--ink);
+  background: var(--cream);
+}
+.feature-nav a b {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: white;
+  font-size: 12px;
+}
+.feature-nav .chip-knowledge {
+  background: var(--acid);
+}
+.feature-nav .chip-opinion {
+  background: var(--pink);
+}
+.feature-nav .chip-slides {
+  background: #9ca3ff;
+}
+.type-families {
+  display: grid;
+  gap: 44px;
+}
+.type-family,
+.feature-group {
+  scroll-margin-top: 90px;
+}
+.type-family-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 4px;
+  margin-bottom: 4px;
+}
+.type-family-head h3 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 34px);
+}
+.type-family-head h3 small {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--electric);
+  white-space: nowrap;
+}
+.type-family-head p {
+  grid-column: 1 / -1;
+  margin: 0;
+  max-width: 720px;
+  line-height: 1.5;
+}
+.family-tag {
+  justify-self: start;
+  padding: 5px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transform: rotate(-2deg);
+  background: var(--acid);
+}
+.family-opinion .family-tag {
+  background: var(--pink);
+}
+.family-slides .family-tag {
+  background: #9ca3ff;
+}
+.type-family .type-grid.showcase {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+.type-grid.showcase article h4 {
+  font-family: Anton, sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+  margin: 0;
+}
+.family-knowledge .type-grid.showcase article:hover {
+  background: #f4ffd0;
+}
+.family-opinion .type-grid.showcase article:hover {
+  background: #ffeaf4;
+}
+.family-slides .type-grid.showcase article:hover {
+  background: #eef0ff;
+}
+.type-grid.layout-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.layout-strip article {
+  padding: 10px 10px 12px;
+  background: white;
+  border: 2px dashed var(--ink);
+  border-radius: 12px;
+  transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1.4);
+}
+.layout-strip article:hover {
+  transform: translateY(-4px) rotate(0.8deg);
+  border-style: solid;
+}
+.layout-strip .pv {
+  height: 120px;
+  margin: 0;
+}
+.layout-strip h4 {
+  margin: 8px 2px 0;
+  font-size: 15px;
+}
+.features-more {
+  margin-bottom: 60px;
+}
+.feature-groups {
+  display: grid;
+  gap: 26px;
+}
+.feature-group {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  gap: 22px;
+  align-items: start;
+  padding: 24px;
+  border: 3px solid var(--ink);
+  border-radius: 20px;
+  background: var(--cream);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.feature-group-head {
+  position: sticky;
+  top: 90px;
+}
+.feature-number {
+  display: block;
+  font-family: Anton, sans-serif;
+  font-size: 54px;
+  line-height: 1;
+  color: var(--electric);
+  -webkit-text-stroke: 2px var(--ink);
+}
+.feature-group h3 {
+  margin: 6px 0 0;
+  font-size: 28px;
+  line-height: 1.1;
+}
+.feature-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+.feature-cards article {
+  padding: 18px;
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1.4),
+    box-shadow 0.25s;
+}
+.feature-cards article:hover {
+  transform: translate(-2px, -4px) rotate(-0.5deg);
+  box-shadow: 6px 7px 0 var(--ink);
+}
+.feature-cards svg {
+  width: 38px;
+  height: 38px;
+  padding: 7px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--acid);
+}
+.feature-cards article:hover svg {
+  animation: bounce 0.6s ease;
+}
+.tone-1 .feature-cards svg {
+  background: var(--pink);
+}
+.tone-2 .feature-cards svg {
+  background: #9ca3ff;
+}
+.tone-3 .feature-cards svg {
+  background: var(--orange);
+}
+.feature-cards h4 {
+  margin: 12px 0 6px;
+  font-size: 19px;
+  font-weight: 800;
+}
+.feature-cards p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+@media (max-width: 860px) {
+  .feature-group {
+    grid-template-columns: 1fr;
+    padding: 18px;
+    gap: 14px;
+  }
+  .feature-group-head {
+    position: static;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .feature-number {
+    font-size: 40px;
+  }
+  .feature-group h3 {
+    font-size: 24px;
+  }
+}
+@media (max-width: 560px) {
+  .feature-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: 0 -16px 28px;
+    padding: 4px 16px 8px;
+    scrollbar-width: none;
+  }
+  .feature-nav a {
+    flex-shrink: 0;
+  }
+  .type-family-head {
+    grid-template-columns: 1fr;
+  }
+  .type-family .type-grid.showcase {
+    grid-template-columns: 1fr;
+  }
+  .type-grid.layout-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feature-nav a,
+  .feature-cards article,
+  .layout-strip article {
+    transition: none;
+  }
+  .feature-cards article:hover svg {
+    animation: none;
+  }
 }
 .audience-grid {
   display: grid;

@@ -1,4 +1,4 @@
-import { ADVANTAGES, FAQ, QUESTION_TYPES, SUMMARY } from "@/lib/seo";
+import { ADVANTAGES, FAQ, FEATURES, QUESTION_COUNT, TYPE_DETAILS, TYPE_FAMILIES, SUMMARY } from "@/lib/seo";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { PLAN_KEYS, PLANS, limitsSummary, priceLabel } from "@/lib/plans";
 
@@ -25,7 +25,18 @@ Offres payantes sans engagement, résiliables à tout moment. TVA non applicable
 
 ## Types de questions
 
-${QUESTION_TYPES.map((t) => `- ${t}`).join("\n")}
+${QUESTION_COUNT} types de questions, des diapos et une roue de tirage au sort.
+
+${TYPE_FAMILIES.map(
+  (f) =>
+    `### ${f.label} (${f.tag.toLowerCase()})\n\n${f.types.map((t) => `- **${t.label}** : ${TYPE_DETAILS[t.id]}`).join("\n")}`,
+).join("\n\n")}
+
+## Fonctionnalités
+
+${FEATURES.map(
+  (g) => `### ${g.label}\n\n${g.items.map((i) => `- **${i.title}** : ${i.text}`).join("\n")}`,
+).join("\n\n")}
 
 ## Questions fréquentes
 
@@ -33,7 +44,7 @@ ${FAQ.map(({ q, a }) => `### ${q}\n\n${a}`).join("\n\n")}
 
 ## Pages
 
-- [Accueil](${site}/) : présentation et fonctionnalités
+- [Accueil](${site}/) : présentation, types de questions et fonctionnalités
 - [Alternative à Kahoot!](${site}/alternative-kahoot) : comparatif avec Kahoot!, Mentimeter et Wooclap
 - [Tarifs](${site}/tarifs) : offres Gratuit, Essentiel, Pro et Premium annuel
 - [Rejoindre une partie](${site}/jouer) : saisir le code de la partie

@@ -1,16 +1,13 @@
 import Link from "next/link";
 import { Building2, GraduationCap, PartyPopper, QrCode, Sparkles, Trophy, Users, Zap } from "lucide-react";
-import { questionTypes, slideLayouts } from "@/lib/question";
-import { TypePreview, LayoutPreview } from "@/components/squizz/type-preview";
+import { FeatureGroups, FeatureNav, TypeShowcase } from "@/components/site/features";
 import { JoinBox } from "@/components/site/join-box";
 import { ContactSection } from "@/components/site/contact-section";
 import { Marquee } from "@/components/site/marquee";
 import { JsonLd } from "@/components/site/json-ld";
 import { Advantages, Faq } from "@/components/site/seo-sections";
-import { faqLd, softwareLd } from "@/lib/seo";
+import { QUESTION_COUNT, faqLd, softwareLd } from "@/lib/seo";
 import { EVENT_PASS, PLANS } from "@/lib/plans";
-
-const featured = ["quiz", "truefalse", "blindtest", "puzzle", "wordcloud", "pin"] as const;
 
 export default function HomePage() {
   return (
@@ -66,13 +63,15 @@ export default function HomePage() {
           "Quiz",
           "Vrai ou faux",
           "Blind test",
-          "Curseur",
+          "Textes à trous",
+          "Appariement",
           "Puzzle",
           "Sondage",
           "Nuage de mots",
-          "Place le pin’s",
           "Brainstorming",
-          "Diapos",
+          "Roue de tirage",
+          "Mode équipes",
+          "Quiz par IA",
           "Podium",
         ]}
       />
@@ -90,21 +89,30 @@ export default function HomePage() {
               <Sparkles />
             </span>
             <h3>Préparez</h3>
-            <p>Choisissez parmi 14 types de questions et 6 diapos, ajoutez vos images et vidéos.</p>
+            <p>
+              {QUESTION_COUNT} types de questions, des diapos et une roue : écrivez votre quiz, importez-le
+              depuis Excel ou laissez l’IA le rédiger.
+            </p>
           </li>
           <li>
             <span className="step-icon">
               <QrCode />
             </span>
             <h3>Invitez</h3>
-            <p>Un code à six chiffres et un QR code : les joueurs rejoignent en une seconde, sans compte.</p>
+            <p>
+              Un code à six chiffres et un QR code : les joueurs rejoignent en une seconde, sans compte, seuls
+              ou en équipes.
+            </p>
           </li>
           <li>
             <span className="step-icon">
               <Trophy />
             </span>
             <h3>Jouez</h3>
-            <p>Chrono, points de rapidité, classement après chaque question et podium final.</p>
+            <p>
+              Chrono, points de rapidité, classement et podium, pilotés depuis votre téléphone. Les résultats
+              restent ensuite dans votre espace.
+            </p>
           </li>
         </ol>
       </section>
@@ -115,33 +123,20 @@ export default function HomePage() {
             <p className="eyebrow">TESTER, SONDER, PRÉSENTER</p>
             <h2 id="features-title">Tous les formats pour faire participer</h2>
           </div>
-          <span className="hint">{questionTypes.length - 1} types de questions</span>
+          <span className="hint">{QUESTION_COUNT} types de questions, des diapos et une roue</span>
         </div>
-        <div className="type-grid showcase" data-stagger="zoom">
-          {featured.map((id) => {
-            const t = questionTypes.find((x) => x.id === id)!;
-            return (
-              <article key={id}>
-                <TypePreview type={id} />
-                <h3>{t.label}</h3>
-                <span>{t.hint}</span>
-              </article>
-            );
-          })}
+        <FeatureNav />
+        <TypeShowcase />
+      </section>
+
+      <section className="features-more" aria-labelledby="features-more-title">
+        <div className="section-heading" data-reveal="left">
+          <div>
+            <p className="eyebrow">AVANT, PENDANT, APRÈS</p>
+            <h2 id="features-more-title">Tout ce qu’il faut pour animer</h2>
+          </div>
         </div>
-        <p className="feature-more">
-          Et aussi : réponse libre, curseur, sondage, échelle, NPS, place le pin’s, question ouverte,
-          brainstorming…
-        </p>
-        <div className="type-grid showcase slides-showcase" data-stagger="up">
-          {slideLayouts.slice(0, 3).map((l) => (
-            <article key={l.id}>
-              <LayoutPreview layout={l.id} />
-              <h3>Diapo · {l.label}</h3>
-              <span>{l.hint}</span>
-            </article>
-          ))}
-        </div>
+        <FeatureGroups />
       </section>
 
       <section className="audiences" aria-labelledby="audiences-title">

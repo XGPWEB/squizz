@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { Faq } from "@/components/site/seo-sections";
 import { EVENT_PASS, PLAN_KEYS, PLANS, sizeLabel, type PlanLimits } from "@/lib/plans";
+import { QUESTION_COUNT } from "@/lib/seo";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/tarifs" },
@@ -25,7 +26,12 @@ function features(p: PlanLimits) {
         ? "1 animateur"
         : `${p.maxMembers} animateurs dans l’équipe`,
     `${sizeLabel(p.mediaBytes)} de médias`,
-    "Tous les types de questions et de diapos",
+    `Les ${QUESTION_COUNT} types de questions, les diapos et la roue`,
+    "Équipes, télécommande, questions du public, quiz en autonomie",
+    "IA, import Excel, résultats et export",
+    ...(p.price > 0
+      ? ["Logo, couleur, mention « SQuizz » masquable"]
+      : ["Logo et couleur de votre organisation"]),
     ...(p.support ? [p.support === "priority" ? "Support prioritaire" : "Support par e-mail"] : []),
   ];
 }
@@ -34,6 +40,10 @@ const PRICING_FAQ = [
   {
     q: "J’organise un seul événement : dois-je m’abonner ?",
     a: `Non. Le ${EVENT_PASS.label} coûte ${EVENT_PASS.price} € en une fois : pendant ${EVENT_PASS.days} jours à partir du paiement, votre espace accueille jusqu’à ${PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie, avec les limites de l’offre Premium. Rien n’est renouvelé ; ensuite votre espace retrouve son offre habituelle et vos quiz sont conservés.`,
+  },
+  {
+    q: "Toutes les fonctions sont-elles incluses dans chaque offre ?",
+    a: "Oui. Toutes les offres, y compris Gratuit, donnent accès à tous les types de questions, au mode équipes, à la télécommande, aux questions du public, aux quiz en autonomie, à la création par IA, à l’import Excel et aux résultats. Les offres se distinguent par le nombre de quiz, de joueurs, d’animateurs et l’espace pour les médias ; masquer la mention « SQuizz » demande une offre payante ou le Pack Événement.",
   },
   {
     q: "Suis-je engagé ?",

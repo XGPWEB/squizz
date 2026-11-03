@@ -3,7 +3,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/site/json-ld";
 import { Advantages, Faq } from "@/components/site/seo-sections";
 import { PLANS } from "@/lib/plans";
-import { PAID_PLANS_TEXT } from "@/lib/seo";
+import { PAID_PLANS_TEXT, QUESTION_COUNT } from "@/lib/seo";
 import { COMPANY_INFO } from "@/lib/company-info";
 
 export const metadata: Metadata = {
@@ -158,6 +158,14 @@ export default function AlternativePage() {
               <li>vos données doivent rester en Europe (RGPD) ;</li>
               <li>vos parties comptent jusqu’à {PLANS.PREMIUM.maxPlayersPerGame} joueurs ;</li>
               <li>plusieurs animateurs partagent les mêmes quiz ;</li>
+              <li>
+                vous voulez mêler quiz notés et questions d’avis : {QUESTION_COUNT} types de questions, des
+                diapos et une roue de tirage au sort ;
+              </li>
+              <li>
+                vous jouez en équipes, pilotez depuis votre téléphone ou laissez chacun jouer à son rythme ;
+              </li>
+              <li>vous préparez vos quiz depuis Excel ou avec l’IA, et gardez les résultats 12 mois ;</li>
               <li>vous voulez essayer gratuitement, puis vous abonner sans engagement.</li>
             </ul>
           </article>
