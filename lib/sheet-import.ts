@@ -49,6 +49,18 @@ const typeNames: [QuestionType, string[]][] = [
   ["text", ["reponse libre", "reponse courte", "texte", "type answer", "saisie"]],
   ["slider", ["curseur", "slider", "nombre"]],
   ["puzzle", ["puzzle", "remettre dans l ordre", "ordre", "classement"]],
+  [
+    "fill",
+    [
+      "textes a trous",
+      "texte a trous",
+      "trous",
+      "fill in the blanks",
+      "fill the blanks",
+      "phrase a completer",
+    ],
+  ],
+  ["match", ["appariement", "association", "relier", "paires", "matching", "match"]],
   ["poll", ["sondage", "poll", "vote"]],
   ["scale", ["echelle", "scale", "likert"]],
   ["nps", ["nps", "echelle nps"]],
@@ -63,6 +75,8 @@ export const importTypeLabels = [
   "Réponse libre",
   "Curseur",
   "Puzzle",
+  "Textes à trous",
+  "Appariement",
   "Sondage",
   "Échelle",
   "Échelle NPS",
@@ -218,6 +232,22 @@ export function rowsToQuestions(rows: Rows): ImportResult {
       if (max !== null) q.max = max;
     }
     if (type === "slide") q.body = cut(options.join("\n"), 4000);
+    if (type === "fill") {
+      // The text with its blanks, in the Question column itself or in Réponse 1.
+      const withBlanks = /\[[^\]]+\]/.test(text) ? text : (options[0] ?? "");
+      if (!/\[[^\]]+\]/.test(withBlanks))
+        return skip("mettez les mots à trouver entre crochets, ex. [Paris]");
+      q.body = cut(withBlanks, 1000);
+      if (withBlanks === text) q.text = "Complétez le texte.";
+    }
+    if (type === "match") {
+      const pairs = options.map((o) => o.split(/\s*(?:=>|->|=|→)\s*/));
+      if (pairs.length < 2 || pairs.some((p) => p.length !== 2 || !p[0] || !p[1]))
+        return skip("écrivez chaque paire sous la forme « Italie = Rome », une par colonne Réponse");
+      q.options = pairs.slice(0, MAX_OPTIONS).map((p) => cut(p[0], 100));
+      q.targets = pairs.slice(0, MAX_OPTIONS).map((p) => cut(p[1], 100));
+      q.order = q.options.map((_, k) => k);
+    }
     try {
       result.questions.push(validateQuestion(q));
     } catch (e) {
@@ -317,6 +347,20 @@ export function importTemplate(): Sheet[] {
           "oui",
         ),
         row("Échelle", "Cette formation vous a-t-elle été utile ?", ["5"], "", 30),
+        row(
+          "Textes à trous",
+          "Complétez la devise de la République.",
+          ["[Liberté], [Égalité], [Fraternité]"],
+          "",
+          45,
+        ),
+        row(
+          "Appariement",
+          "Reliez chaque pays à sa capitale.",
+          ["Italie = Rome", "Japon = Tokyo", "Pérou = Lima"],
+          "",
+          45,
+        ),
         row("Nuage de mots", "Un mot pour résumer la journée ?", [], "", 45),
         row("Diapo", "Pause café : reprise dans 10 minutes", ["À tout de suite !"], "", ""),
       ],
@@ -330,7 +374,7 @@ export function importTemplate(): Sheet[] {
         ["Question", "Le texte de la question (300 caractères au plus). Obligatoire."],
         [
           "Réponse 1 à 6",
-          "Les réponses proposées (Quiz, Sondage, Puzzle). Pour un Puzzle, dans le bon ordre : elles seront mélangées pendant la partie. Pour un Curseur : le minimum en Réponse 1 et le maximum en Réponse 2. Pour une Échelle : la note la plus haute en Réponse 1. Pour une Diapo : le texte affiché.",
+          "Les réponses proposées (Quiz, Sondage, Puzzle). Pour un Puzzle, dans le bon ordre : elles seront mélangées pendant la partie. Pour un Curseur : le minimum en Réponse 1 et le maximum en Réponse 2. Pour une Échelle : la note la plus haute en Réponse 1. Pour une Diapo : le texte affiché. Pour des Textes à trous : le texte avec les mots à trouver entre crochets, [Paris] (ou directement dans la colonne Question). Pour un Appariement : une paire par colonne, « Italie = Rome ».",
         ],
         [
           "Bonne réponse",

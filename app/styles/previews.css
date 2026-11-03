@@ -516,3 +516,58 @@
   border-radius: 2px;
   background: var(--acid);
 }
+/* Fill in the blanks: a sentence with a found word and a blank still to fill */
+.type-grid .pv-fill-text {
+  width: 86%;
+  padding: 8px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: white;
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: 12px;
+  line-height: 1.7;
+  text-align: center;
+}
+.pv-fill-text b {
+  padding: 1px 5px;
+  background: var(--acid);
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+}
+.pv-fill-text i {
+  display: inline-block;
+  min-width: 34px;
+  border-bottom: 2px dashed var(--electric);
+  color: var(--electric);
+  font-style: normal;
+}
+/* Matching: pairs joined by a line */
+.type-grid .pv-match {
+  display: grid;
+  gap: 5px;
+  width: 88%;
+}
+.type-grid .pv .pv-pair {
+  display: grid;
+  grid-template-columns: 1fr 22px 1fr;
+  align-items: center;
+}
+.type-grid .pv .pv-pair > span {
+  padding: 3px 4px;
+  font:
+    400 10px/1.2 Anton,
+    sans-serif;
+  text-align: center;
+  background: var(--pv);
+  color: var(--pv-text);
+  border: 1.5px solid var(--ink);
+  border-radius: 5px;
+}
+.type-grid .pv .pv-pair > span:last-child {
+  background: white;
+  color: var(--ink);
+}
+.type-grid .pv .pv-pair > i {
+  height: 2px;
+  background: var(--ink);
+}

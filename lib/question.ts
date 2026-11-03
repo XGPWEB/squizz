@@ -42,6 +42,18 @@ export const questionTypes = [
     hint: "Les participants doivent classer les réponses dans le bon ordre.",
   },
   {
+    id: "fill",
+    label: "Textes à trous",
+    group: "Tester les connaissances",
+    hint: "Les participants complètent une phrase ou un court texte en tapant les mots manquants.",
+  },
+  {
+    id: "match",
+    label: "Appariement",
+    group: "Tester les connaissances",
+    hint: "Les participants relient chaque élément à celui qui lui correspond.",
+  },
+  {
     id: "poll",
     label: "Sondage",
     group: "Collecter des avis",
@@ -177,6 +189,8 @@ export type Question = {
   profiles: string[];
   /** Opinion questions only: nobody sees who answered what, not even in the kept results. */
   anonymous: boolean;
+  /** Matching: what each of `options` is matched with; `order[i]` is the target of option i. */
+  targets: string[];
 };
 export type AnswerPayload = {
   choices?: number[];
@@ -186,17 +200,44 @@ export type AnswerPayload = {
   y?: number;
   order?: number[];
   ideas?: string[];
+  /** Fill in the blanks: one word or phrase per blank. */
+  blanks?: string[];
+  /** Matching: the target chosen for each option. */
+  matches?: number[];
 };
 export const durations = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240];
 export const isScored = (type: QuestionType) =>
-  ["quiz", "truefalse", "text", "blindtest", "slider", "pin", "puzzle"].includes(type);
+  ["quiz", "truefalse", "text", "blindtest", "slider", "pin", "puzzle", "fill", "match"].includes(type);
+export const MAX_BLANKS = 10;
+export const MAX_BLANK_LENGTH = 60;
+/**
+ * A fill-in-the-blanks text: « La capitale est [Paris] ». Several accepted answers are separated by
+ * « | » ([Rome|Roma]). Returns the text around the blanks and what each blank accepts.
+ */
+export function parseBlanks(body: string) {
+  const parts: string[] = [];
+  const answers: string[][] = [];
+  let last = 0;
+  for (const m of body.matchAll(/\[([^[\]]+)\]/g)) {
+    parts.push(body.slice(last, m.index));
+    answers.push(
+      m[1]
+        .split("|")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    );
+    last = m.index + m[0].length;
+  }
+  parts.push(body.slice(last));
+  return { parts, answers };
+}
 /** Questions that collect opinions, the only ones that can be answered anonymously. */
 export const canBeAnonymous = (type: QuestionType) => !isScored(type) && type !== "slide";
 export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "classic"): Question {
   return {
     type,
     text: "",
-    options: type === "truefalse" ? ["Vrai", "Faux"] : ["", "", "", ""],
+    options: type === "truefalse" ? ["Vrai", "Faux"] : type === "match" ? ["", "", ""] : ["", "", "", ""],
     correct: 0,
     correctAnswers: [0],
     multiple: false,
@@ -212,13 +253,14 @@ export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "
     minLabel: type === "nps" ? "Peu probable" : type === "scale" ? "Je ne suis pas d’accord" : "",
     maxLabel: type === "nps" ? "Très probable" : type === "scale" ? "Je suis d’accord" : "",
     pin: { x: 0.5, y: 0.5, radius: 0.1 },
-    order: [0, 1, 2, 3],
+    order: type === "match" ? [0, 1, 2] : [0, 1, 2, 3],
     body: "",
     layout,
     media: [],
     explanation: "",
     profiles: [],
     anonymous: false,
+    targets: type === "match" ? ["", "", ""] : [],
   };
 }
 const hasChoices = (type: QuestionType) => ["quiz", "truefalse", "poll", "puzzle"].includes(type);
@@ -245,6 +287,12 @@ export function changeType(q: Question, type: QuestionType, layout: SlideLayout 
   }
   if (typedAnswer(type) && typedAnswer(q.type)) next.accepted = q.accepted;
   if (type === "slide" && q.type === "slide") next.body = q.body;
+  if (type === "fill" && q.type === "fill") next.body = q.body;
+  if (type === "match" && q.type === "match") {
+    next.options = q.options;
+    next.targets = q.targets;
+    next.order = q.order;
+  }
   if (["pin", "pinpoll"].includes(type) && ["pin", "pinpoll"].includes(q.type)) next.pin = q.pin;
   return next;
 }
@@ -270,6 +318,7 @@ export function normalizeQuestion(value: Partial<Question>): Question {
     explanation: value.explanation ?? "",
     profiles: value.profiles ?? [],
     anonymous: value.anonymous === true,
+    targets: value.targets ?? base.targets,
   };
 }
 export function youtubeId(raw: string): string | null {
@@ -409,6 +458,40 @@ export function validateQuestion(raw: unknown): Question {
         "Ordre du puzzle invalide.",
       );
   }
+  if (q.type === "fill") {
+    const { answers } = parseBlanks(q.body);
+    check(q.body.length <= 1000, "Le texte à trous est limité à 1 000 caractères.");
+    check(
+      answers.length >= 1 && answers.length <= MAX_BLANKS,
+      `Mettez de 1 à ${MAX_BLANKS} mots à trouver entre crochets, par exemple [Paris].`,
+    );
+    check(
+      answers.every((a) => a.length >= 1 && a.length <= 10 && a.every((t) => t.length <= MAX_BLANK_LENGTH)),
+      `Chaque trou attend un mot ou une expression de ${MAX_BLANK_LENGTH} caractères au plus.`,
+    );
+  }
+  if (q.type === "match") {
+    check(
+      Array.isArray(q.options) &&
+        Array.isArray(q.targets) &&
+        q.options.length >= 2 &&
+        q.options.length <= 6 &&
+        q.targets.length === q.options.length &&
+        [...q.options, ...q.targets].every((o) => typeof o === "string" && o.trim() && o.length <= 100),
+      "Ajoutez de 2 à 6 paires complètes, de 100 caractères maximum de chaque côté.",
+    );
+    check(
+      new Set(q.targets.map((t) => normalizeText(t))).size === q.targets.length,
+      "Deux éléments de droite sont identiques : chaque élément ne peut correspondre qu’à un seul autre.",
+    );
+    check(
+      Array.isArray(q.order) &&
+        q.order.length === q.options.length &&
+        new Set(q.order).size === q.options.length &&
+        q.order.every((i) => Number.isInteger(i) && i >= 0 && i < q.targets.length),
+      "Paires invalides.",
+    );
+  } else q.targets = [];
   if (q.type === "poll") {
     check(
       Array.isArray(q.profiles) && q.profiles.every((p) => typeof p === "string" && p.trim().length <= 40),
@@ -584,6 +667,31 @@ export function evaluateAnswer(
       return fail();
     return { payload: { order: a.order }, correct: a.order.every((v, i) => v === q.order[i]) };
   }
+  if (q.type === "fill") {
+    const { answers } = parseBlanks(q.body);
+    if (
+      !Array.isArray(a.blanks) ||
+      a.blanks.length !== answers.length ||
+      a.blanks.some((t) => typeof t !== "string" || t.length > MAX_BLANK_LENGTH) ||
+      a.blanks.every((t) => !t.trim())
+    )
+      return fail();
+    const blanks = a.blanks.map((t) => t.trim());
+    return {
+      payload: { blanks },
+      correct: blanks.every((t, i) => answers[i].some((ok) => normalizeText(ok) === normalizeText(t))),
+    };
+  }
+  if (q.type === "match") {
+    if (
+      !Array.isArray(a.matches) ||
+      a.matches.length !== q.options.length ||
+      new Set(a.matches).size !== a.matches.length ||
+      a.matches.some((i) => !Number.isInteger(i) || i < 0 || i >= q.targets.length)
+    )
+      return fail();
+    return { payload: { matches: a.matches }, correct: a.matches.every((t, i) => t === q.order[i]) };
+  }
   if (q.type === "brainstorm") {
     if (
       !Array.isArray(a.ideas) ||
@@ -616,6 +724,9 @@ export function publicQuestion(q: Question, revealed: boolean, index = 0, host =
   } = q;
   void profiles;
   if (q.type === "blindtest" && !revealed && !host) visible.media = [];
+  // The words to find are inside the text: only the text around the blanks leaves the server.
+  const fillParts = q.type === "fill" ? parseBlanks(q.body).parts : undefined;
+  if (q.type === "fill" && !revealed) visible.body = "";
   // Games store puzzle options already shuffled, never in the solution order (see shufflePuzzles),
   // so the stored order is shown as is: nothing in it points to the answer.
   void index;
@@ -623,6 +734,7 @@ export function publicQuestion(q: Question, revealed: boolean, index = 0, host =
   return {
     ...visible,
     puzzleOrder,
+    fillParts,
     ...(revealed ? { correct, correctAnswers, accepted, target, tolerance, pin, order, explanation } : {}),
   };
 }
@@ -639,9 +751,25 @@ export function aggregateAnswers(q: Question, answers: AnswerPayload[]) {
       const old = terms.get(key);
       terms.set(key, { label: old?.label ?? text, count: (old?.count ?? 0) + 1 });
     }
+  // Fill in the blanks and matching: how many found each blank or each pair.
+  const blanks = q.type === "fill" ? parseBlanks(q.body).answers : [];
+  const found =
+    q.type === "fill"
+      ? blanks.map((ok, i) => ({
+          label: ok[0] ?? "",
+          count: answers.filter((a) =>
+            ok.some((t) => normalizeText(t) === normalizeText(a.blanks?.[i] ?? "")),
+          ).length,
+        }))
+      : q.type === "match"
+        ? q.options.map((left, i) => ({
+            label: `${left} → ${q.targets[q.order[i]] ?? ""}`,
+            count: answers.filter((a) => a.matches?.[i] === q.order[i]).length,
+          }))
+        : null;
   return {
     responses: answers.length,
-    counts,
+    counts: found ?? counts,
     average: values.length ? values.reduce((a, b) => a + b, 0) / values.length : null,
     nps:
       q.type === "nps" && values.length

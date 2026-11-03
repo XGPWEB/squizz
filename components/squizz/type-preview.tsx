@@ -114,6 +114,28 @@ const typePreviews: Record<QuestionType, [string, React.ReactNode]> = {
     "Du plus ancien au plus récent",
     <Tiles key="t" column labels={["Pyramides", "Colisée", "Tour Eiffel", "Burj Khalifa"]} />,
   ],
+  fill: [
+    "Complète la phrase",
+    <span key="t" className="pv-fill-text">
+      Paris est la <b>capitale</b> de la <i>…</i>
+    </span>,
+  ],
+  match: [
+    "Relie chaque pays à sa capitale",
+    <span key="t" className="pv-match">
+      {[
+        ["Italie", "Rome"],
+        ["Japon", "Tokyo"],
+        ["Pérou", "Lima"],
+      ].map(([a, b], i) => (
+        <span key={a} className={`pv-pair t${i}`}>
+          <span>{a}</span>
+          <i />
+          <span>{b}</span>
+        </span>
+      ))}
+    </span>,
+  ],
   poll: ["Ta pizza préférée ?", <Tiles key="t" labels={["Margherita", "Reine", "4 fromages", "Chorizo"]} />],
   scale: [
     "Ce quiz était-il fun ?",

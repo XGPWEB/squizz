@@ -8,6 +8,8 @@ import {
   type Aggregate,
   formatValue,
   isScored,
+  parseBlanks,
+  MAX_BLANK_LENGTH,
   safeMediaUrl,
   choiceStats,
 } from "@/lib/question";
@@ -34,7 +36,9 @@ export function QuestionPlay({
     [value, setValue] = useState(q.min),
     [pin, setPin] = useState<{ x: number; y: number } | undefined>(),
     [order, setOrder] = useState(q.puzzleOrder ?? q.options.map((_, i) => i)),
-    [ideas, setIdeas] = useState(["", "", ""]);
+    [ideas, setIdeas] = useState(["", "", ""]),
+    [blanks, setBlanks] = useState<string[]>(() => (q.fillParts ?? [""]).slice(1).map(() => "")),
+    [matches, setMatches] = useState<(number | null)[]>(() => q.options.map(() => null));
   const pinMedia = ["pin", "pinpoll"].includes(q.type) ? q.media.find((m) => m.kind === "image") : undefined;
   const selected = submitted?.choices ?? choices;
   const locked = disabled || !!submitted;
@@ -236,6 +240,55 @@ export function QuestionPlay({
           )}
         </section>
       )}
+      {q.type === "fill" && (
+        <form
+          method="post"
+          className="response-form fill-answer"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            send({ blanks });
+          }}
+        >
+          <p className="hint center">Complète le texte, puis valide.</p>
+          <FillSentence
+            parts={q.fillParts ?? []}
+            values={submitted?.blanks ?? blanks}
+            solutions={revealed ? parseBlanks(q.body).answers : undefined}
+            disabled={locked}
+            onChange={(i, v) => setBlanks(blanks.map((b, k) => (k === i ? v : b)))}
+          />
+          {!submitted && !revealed && (
+            <button className="button" disabled={locked || blanks.every((b) => !b.trim())}>
+              Valider mes réponses
+            </button>
+          )}
+        </form>
+      )}
+      {q.type === "match" && (
+        <section className="match-answer">
+          <p className="hint center">Relie chaque élément à celui qui lui correspond, puis valide.</p>
+          <MatchBoard
+            q={q}
+            values={submitted?.matches ?? matches}
+            revealed={revealed}
+            disabled={locked}
+            onChange={(i, target) =>
+              // A target goes to one element only: choosing it again elsewhere frees it here.
+              setMatches(matches.map((m, k) => (k === i ? target : m === target ? null : m)))
+            }
+          />
+          {!submitted && !revealed && (
+            <button
+              className="button"
+              disabled={locked || matches.some((m) => m === null)}
+              onClick={() => send({ matches: matches as number[] })}
+            >
+              Valider mes paires
+            </button>
+          )}
+        </section>
+      )}
       {q.type === "brainstorm" && (
         <form
           method="post"
@@ -267,6 +320,129 @@ export function QuestionPlay({
         </form>
       )}
     </>
+  );
+}
+
+/**
+ * A text with blanks: inputs on the phone, empty boxes on the big screen (no `onChange`), and once
+ * revealed, each answer marked right or wrong with what was expected.
+ */
+export function FillSentence({
+  parts,
+  values,
+  solutions,
+  disabled = false,
+  onChange,
+}: {
+  parts: string[];
+  values?: string[];
+  solutions?: string[][];
+  disabled?: boolean;
+  onChange?: (index: number, value: string) => void;
+}) {
+  const fold = (t: string) =>
+    t
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLocaleLowerCase("fr")
+      .replace(/\s+/g, " ");
+  return (
+    <p className={`fill-sentence ${onChange ? "" : "board"}`}>
+      {parts.map((part, i) => {
+        if (i === parts.length - 1) return <span key={i}>{part}</span>;
+        const value = values?.[i] ?? "";
+        const ok = solutions?.[i]?.some((t) => fold(t) === fold(value));
+        return (
+          <span key={i}>
+            {part}
+            {onChange ? (
+              <span className={`fill-slot ${solutions ? (ok ? "right" : "wrong") : ""}`}>
+                <input
+                  aria-label={`Trou ${i + 1}`}
+                  value={value}
+                  maxLength={MAX_BLANK_LENGTH}
+                  disabled={disabled}
+                  autoComplete="off"
+                  size={Math.max(5, Math.min(18, value.length + 1))}
+                  onChange={(e) => onChange(i, e.target.value)}
+                />
+                {solutions && !ok && <b>{solutions[i]?.[0]}</b>}
+              </span>
+            ) : (
+              <span className={`fill-slot board ${solutions ? "right" : ""}`}>
+                {solutions ? solutions[i]?.[0] : <i>{i + 1}</i>}
+              </span>
+            )}
+          </span>
+        );
+      })}
+    </p>
+  );
+}
+
+/** Matching: each element with a list of the possible matches (sorted by name, so their order says nothing). */
+export function MatchBoard({
+  q,
+  values,
+  revealed,
+  disabled = false,
+  onChange,
+}: {
+  q: PublicQuestion;
+  values?: (number | null)[];
+  revealed: boolean;
+  disabled?: boolean;
+  onChange?: (index: number, target: number | null) => void;
+}) {
+  const sorted = q.targets
+    .map((label, i) => ({ label, i }))
+    .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+  if (!onChange)
+    return (
+      <div className="match-board">
+        <ul>
+          {q.options.map((o, i) => (
+            <li key={i} className={`t${i % 4}`}>
+              {o}
+              {revealed && q.order && <b>{q.targets[q.order[i]]}</b>}
+            </li>
+          ))}
+        </ul>
+        {!revealed && (
+          <ul className="match-targets">
+            {sorted.map((t) => (
+              <li key={t.i}>{t.label}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  return (
+    <div className="match-rows">
+      {q.options.map((o, i) => {
+        const value = values?.[i] ?? null;
+        const state = revealed && q.order ? (value === q.order[i] ? "right" : "wrong") : "";
+        return (
+          <label key={i} className={`match-row t${i % 4} ${state}`}>
+            <span>{o}</span>
+            <select
+              value={value ?? ""}
+              disabled={disabled}
+              onChange={(e) => onChange(i, e.target.value === "" ? null : Number(e.target.value))}
+            >
+              <option value="">Choisir…</option>
+              {sorted.map((t) => (
+                <option key={t.i} value={t.i}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+            {state === "wrong" && q.order && <b>{q.targets[q.order[i]]}</b>}
+          </label>
+        );
+      })}
+    </div>
   );
 }
 
@@ -406,6 +582,22 @@ export function QuestionResults({
           {!!q.tolerance && ` (tolérance ±${formatValue(q.tolerance, q.unit)})`}
         </p>
       )}
+      {q.type === "fill" && q.fillParts && (
+        <div className="info-box">
+          <FillSentence parts={q.fillParts} solutions={parseBlanks(q.body).answers} />
+        </div>
+      )}
+      {q.type === "match" && q.order && (
+        <ul className="match-solution">
+          {q.options.map((o, i) => (
+            <li key={i}>
+              <span>{o}</span>
+              <i aria-hidden />
+              <b>{q.targets[q.order![i]]}</b>
+            </li>
+          ))}
+        </ul>
+      )}
       {q.type === "puzzle" && (
         <ol className="puzzle-solution">
           {q.order?.map((i) => (
@@ -476,6 +668,23 @@ export function QuestionResults({
                   ayant répondu, leur total peut dépasser 100 %.
                 </p>
               )}
+            </div>
+          )}
+          {["fill", "match"].includes(q.type) && stats && (
+            <div className="distribution">
+              {stats.rows.map((c, i) => (
+                <div key={i}>
+                  <div className="row spaced">
+                    <span>{q.type === "fill" ? `Trou ${i + 1} · ${c.label}` : c.label}</span>
+                    <b>
+                      {c.count} <small>trouvé{c.count > 1 ? "s" : ""}</small> · {c.percent} %
+                    </b>
+                  </div>
+                  <div className="bar-track">
+                    <span style={{ width: `${c.percent}%` }} />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
           {["slider", "scale", "nps"].includes(q.type) && (

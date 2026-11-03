@@ -2,6 +2,7 @@ import {
   aggregateAnswers,
   formatValue,
   isScored,
+  parseBlanks,
   questionTypes,
   type AnswerPayload,
   type Question,
@@ -61,6 +62,8 @@ export function describeAnswer(q: Question, a: AnswerPayload): string {
     return `Pin’s à ${Math.round(a.x * 100)} % de la largeur, ${Math.round(a.y * 100)} % de la hauteur`;
   if (a.order) return a.order.map((i) => q.options[i] ?? "?").join(" → ");
   if (a.ideas) return a.ideas.join(" · ");
+  if (a.blanks) return a.blanks.map((t) => t || "…").join(" · ");
+  if (a.matches) return a.matches.map((t, i) => `${q.options[i]} → ${q.targets[t] ?? "?"}`).join(" · ");
   return "";
 }
 
@@ -81,6 +84,12 @@ export function describeSolution(q: Question): string {
       return "La zone choisie sur l’image";
     case "puzzle":
       return q.order.map((i) => q.options[i]).join(" → ");
+    case "fill":
+      return parseBlanks(q.body)
+        .answers.map((a) => a.join(" / "))
+        .join(" · ");
+    case "match":
+      return q.options.map((o, i) => `${o} → ${q.targets[q.order[i]]}`).join(" · ");
     default:
       return "";
   }

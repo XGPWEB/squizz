@@ -5,7 +5,7 @@ import { Dialog } from "radix-ui";
 import { useState } from "react";
 import { BarChart3, Copy, Lock, Play, Smartphone, SkipForward, Trophy, Users, X } from "lucide-react";
 import { Brand } from "@/components/site/brand";
-import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
+import { FillSentence, MatchBoard, QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
 import { MediaView } from "@/components/squizz/media";
 import { FullscreenButton } from "@/components/squizz/fullscreen-button";
 import { gameApi as api } from "@/lib/client/api";
@@ -290,6 +290,8 @@ function Question({ game, busy, run, settle, remaining }: Props) {
         ) : (
           <div className="host-answers">
             <MediaView media={q.media} masked={q.type === "blindtest" && !game.revealed} autoPlay />
+            {q.type === "fill" && q.fillParts && <FillSentence parts={q.fillParts} />}
+            {q.type === "match" && <MatchBoard q={q} revealed={false} />}
             <p className="host-phones">
               <Smartphone aria-hidden />
               Répondez sur votre téléphone !

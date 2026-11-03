@@ -36,10 +36,17 @@ describe("import de questions", () => {
       "puzzle",
       "poll",
       "scale",
+      "fill",
+      "match",
       "wordcloud",
       "slide",
     ]);
-    const [single, multi, tf, text, slider, puzzle, , scale] = questions;
+    const [single, multi, tf, text, slider, puzzle, , scale, fill, match] = questions;
+    expect(fill.body).toBe("[Liberté], [Égalité], [Fraternité]");
+    expect(match).toMatchObject({
+      options: ["Italie", "Japon", "Pérou"],
+      targets: ["Rome", "Tokyo", "Lima"],
+    });
     expect(single).toMatchObject({ correctAnswers: [1], multiple: false, duration: 20 });
     expect(single.explanation).toMatch(/Canberra/);
     expect(multi).toMatchObject({ correctAnswers: [0, 2], multiple: true, duration: 30 });

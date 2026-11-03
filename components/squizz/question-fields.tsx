@@ -4,6 +4,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import {
   canBeAnonymous,
+  MAX_BLANKS,
+  parseBlanks,
   questionGroups,
   questionTypes,
   slideLayouts,
@@ -254,6 +256,76 @@ export function QuestionFields({
           )}
         </section>
       )}
+      {q.type === "fill" && <FillEditor q={q} patch={patch} />}
+      {q.type === "match" && (
+        <section className="answer-editor match-editor">
+          <h3>Les paires</h3>
+          <p className="hint">
+            Écrivez chaque élément avec celui qui lui correspond. Les éléments de droite seront mélangés pour
+            les joueurs.
+          </p>
+          {q.options.map((left, j) => (
+            <div className="option-edit match-pair" key={j}>
+              <span className="option-number">{j + 1}</span>
+              <input
+                aria-label={`Élément ${j + 1}`}
+                placeholder="Ex. Italie"
+                value={left}
+                maxLength={100}
+                required
+                onChange={(e) => patch({ options: q.options.map((v, k) => (k === j ? e.target.value : v)) })}
+              />
+              <span className="match-link" aria-hidden>
+                <i />
+              </span>
+              <input
+                aria-label={`Correspondance de l’élément ${j + 1}`}
+                placeholder="Ex. Rome"
+                value={q.targets[q.order[j]] ?? ""}
+                maxLength={100}
+                required
+                onChange={(e) =>
+                  patch({ targets: q.targets.map((v, k) => (k === q.order[j] ? e.target.value : v)) })
+                }
+              />
+              {q.options.length > 2 && (
+                <button
+                  type="button"
+                  className="text-button"
+                  aria-label={`Retirer la paire ${j + 1}`}
+                  onClick={() => {
+                    // Kept in the editor's order: target i belongs to option i.
+                    const pairs = q.options
+                      .map((o, k) => [o, q.targets[q.order[k]] ?? ""] as const)
+                      .filter((_, k) => k !== j);
+                    patch({
+                      options: pairs.map((p) => p[0]),
+                      targets: pairs.map((p) => p[1]),
+                      order: pairs.map((_, k) => k),
+                    });
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            type="button"
+            className="button small secondary"
+            disabled={q.options.length >= 6}
+            onClick={() =>
+              patch({
+                options: [...q.options, ""],
+                targets: [...q.targets, ""],
+                order: [...q.order, q.targets.length],
+              })
+            }
+          >
+            Ajouter une paire
+          </button>
+        </section>
+      )}
       {q.type === "blindtest" && (
         <p className="info-box">
           Ajoutez l’extrait plus bas : un fichier audio (MP3, M4A, OGG) ou un lien YouTube. Il est joué sur
@@ -408,6 +480,43 @@ export function QuestionFields({
         </section>
       )}
     </>
+  );
+}
+
+/** The text with its blanks between brackets, and a live look at what players will see. */
+function FillEditor({ q, patch }: { q: Question; patch: (value: Partial<Question>) => void }) {
+  const { parts, answers } = parseBlanks(q.body);
+  return (
+    <section className="answer-editor fill-editor">
+      <h3>Le texte à compléter</h3>
+      <p className="hint">
+        Mettez chaque mot à trouver entre crochets : <code>[Paris]</code>. Plusieurs réponses acceptées ?
+        Séparez-les par une barre : <code>[Rome|Roma]</code>. Majuscules et accents ne comptent pas.
+      </p>
+      <textarea
+        aria-label="Texte à trous"
+        rows={4}
+        maxLength={1000}
+        value={q.body}
+        placeholder="Ex. La capitale de la France est [Paris] et celle de l’Italie est [Rome|Roma]."
+        onChange={(e) => patch({ body: e.target.value })}
+      />
+      <p className={`fill-count ${answers.length ? "" : "empty"}`}>
+        {answers.length
+          ? `${answers.length} trou${answers.length > 1 ? "s" : ""} sur ${MAX_BLANKS} au plus`
+          : "Aucun trou pour l’instant : mettez un mot entre crochets."}
+      </p>
+      {answers.length > 0 && (
+        <p className="fill-sentence editor">
+          {parts.map((part, i) => (
+            <span key={i}>
+              {part}
+              {i < answers.length && <b title={answers[i].join(" / ")}>{answers[i][0] || "…"}</b>}
+            </span>
+          ))}
+        </p>
+      )}
+    </section>
   );
 }
 

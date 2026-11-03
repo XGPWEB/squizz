@@ -14,7 +14,7 @@ Version en ligne : voir [CHANGELOG.md](CHANGELOG.md). Historique en clair : [JOU
 
 ## Contenu d'un quiz
 
-**Questions notées** : quiz (choix parmi plusieurs réponses), vrai ou faux, réponse libre (courte réponse à saisir), curseur (nombre à deviner), réponse par pin's (placer un pin's au bon endroit sur une image), puzzle (classer les réponses dans le bon ordre).
+**Questions notées** : quiz (choix parmi plusieurs réponses), vrai ou faux, réponse libre (courte réponse à saisir), blind test, curseur (nombre à deviner), réponse par pin's (placer un pin's au bon endroit sur une image), puzzle (classer les réponses dans le bon ordre), textes à trous (mots à trouver entre crochets dans le texte : `[Paris]`, `[Rome|Roma]` ; `parseBlanks()`), appariement (relier chaque élément à sa correspondance ; `targets` et `order`, mélangés au lancement de la partie comme le puzzle).
 
 **Questions sans bonne réponse**, pour recueillir des avis : sondage (jusqu'à 6 choix), échelle (Likert ou personnalisée), échelle NPS, place le pin's (sur une image), nuage de mots, question ouverte, brainstorming (jusqu'à 3 idées par personne).
 

@@ -47,9 +47,19 @@ type AnswerRow = {
 const decode = (a: AnswerRow): AnswerPayload => (a.payload ? JSON.parse(a.payload) : { choices: [a.choice] });
 const randomInt = () => crypto.getRandomValues(new Uint32Array(1))[0];
 
-/** Shuffles puzzle options so the stored order does not expose the solution. */
+const randomOrder = (n: number) =>
+  Array.from({ length: n }, (_, i) => ({ i, key: randomInt() }))
+    .sort((a, b) => a.key - b.key)
+    .map((x) => x.i);
+
+/** Shuffles puzzle options and matching targets so the stored order does not expose the solution. */
 function shufflePuzzles(quiz: Quiz): Quiz {
   const questions = quiz.questions.map((q) => {
+    if (q.type === "match") {
+      // Players see the targets sorted by name; the stored order is shuffled so it says nothing either.
+      const mix = randomOrder(q.targets.length);
+      return { ...q, targets: mix.map((i) => q.targets[i]), order: q.order.map((t) => mix.indexOf(t)) };
+    }
     if (q.type !== "puzzle") return q;
     // Reshuffle until the stored order differs from the solution: players see this order as is.
     let shuffled = q.options.map((_, i) => i);

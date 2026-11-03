@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.18.0] — 2026-11-03
+
+### Ajouté
+- Type de question « Textes à trous » : les joueurs complètent un texte (jusqu’à 10 trous, plusieurs réponses acceptées par trou, sans tenir compte des majuscules ni des accents). Les mots à trouver ne quittent le serveur qu’à la correction ; le grand écran affiche le texte avec ses trous numérotés.
+- Type de question « Appariement » : relier de 2 à 6 éléments à leur correspondance. Les correspondances sont mélangées par le serveur et présentées par ordre alphabétique ; le grand écran montre les deux colonnes.
+- Pour les deux : correction détaillée (trou par trou, paire par paire), résultats et export Excel, import depuis le modèle Excel, vignettes dans le choix des types.
+
 ## [1.17.0] — 2026-11-03
 
 ### Ajouté
