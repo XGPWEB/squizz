@@ -69,6 +69,12 @@ model Organization {
   eventPassUntil       DateTime?
   /// Look of the games (lib/brand.ts): « SQUIZZ » (colourful) or « SOBER », with the organisation's colour,
   /// logo (a media URL of the organisation) and the « SQuizz » credit (only paid plans may hide it).
+  /// Quiz generation with the organisation's own AI account (lib/server/ai.ts): « anthropic » or « openai »,
+  /// the key encrypted with AI_KEY_SECRET (never shown again), its last 4 characters, and an optional model.
+  aiProvider           String?
+  aiKey                String?
+  aiKeyHint            String?
+  aiModel              String?
   theme                String             @default("SQUIZZ")
   brandAccent          String?
   brandLogo            String?

@@ -28,6 +28,7 @@ import { formatSize } from "@/lib/media-limits";
 import { parseCsv, readXlsx } from "@/lib/sheet";
 import { rowsToQuestions, titleFromFile, type ImportResult } from "@/lib/sheet-import";
 import { SoloLinkDialog } from "@/components/squizz/solo-link";
+import { AiDialog } from "@/components/squizz/ai-dialog";
 
 type Props = {
   quizzes: OrgQuiz[];
@@ -381,6 +382,7 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
             >
               <FileSpreadsheet size={16} /> Modèle Excel
             </a>
+            <AiDialog disabled={busy} />
             <Link className="button" href="/app/quiz/nouveau">
               <Plus size={18} /> Créer un quiz
             </Link>

@@ -59,11 +59,19 @@ export default function PolitiqueConfidentialitePage() {
         contexte de jeu. Elle informe ses participants de l’usage qui est fait de leurs réponses (par exemple
         lors d’une formation ou d’un sondage interne).
       </p>
-      <h3>2.3 Formulaire de contact</h3>
+      <h3>2.3 Génération de quiz par IA</h3>
+      <p>
+        Une organisation peut connecter son propre compte Claude (Anthropic) ou ChatGPT (OpenAI) pour générer
+        des quiz. Sa clé est chiffrée sur nos serveurs et n’est jamais réaffichée. Le texte ou le document
+        soumis par un membre est alors envoyé à ce fournisseur, avec cette clé et selon les conditions du
+        compte de l’organisation ; SQuizz ne le conserve pas, seul le quiz créé est enregistré. Rien n’est
+        envoyé à un fournisseur d’IA si l’organisation n’a pas connecté de compte.
+      </p>
+      <h3>2.4 Formulaire de contact</h3>
       <ul>
         <li>Nom, email, sujet et contenu du message que vous nous envoyez</li>
       </ul>
-      <h3>2.4 Données techniques</h3>
+      <h3>2.5 Données techniques</h3>
       <ul>
         <li>
           Adresse IP (limitation des tentatives de connexion, d’inscription et d’entrée dans les parties)
@@ -71,7 +79,7 @@ export default function PolitiqueConfidentialitePage() {
         <li>Journaux du serveur web (adresse IP, page demandée, date), conservés 14 jours</li>
         <li>Journal des actions sensibles (invitations, changements de rôle, suspensions, suppressions)</li>
       </ul>
-      <h3>2.5 Mesure d’audience (seulement si vous l’acceptez)</h3>
+      <h3>2.6 Mesure d’audience (seulement si vous l’acceptez)</h3>
       <ul>
         <li>
           Pages publiques consultées, provenance de la visite, ville approximative, type d’appareil, clics sur
@@ -141,6 +149,10 @@ export default function PolitiqueConfidentialitePage() {
           <tr>
             <td>Parties en cours, pseudos et réponses des joueurs</td>
             <td>24 heures après la création de la partie, puis suppression automatique</td>
+          </tr>
+          <tr>
+            <td>Clé du compte IA d’une organisation (chiffrée)</td>
+            <td>Jusqu’à son retrait par un administrateur ou la suppression de l’organisation</td>
           </tr>
           <tr>
             <td>Participations à un quiz en autonomie (pseudo, réponses, score)</td>
@@ -219,7 +231,12 @@ export default function PolitiqueConfidentialitePage() {
         <li>
           <strong>Google Ireland Ltd.</strong> (Irlande), avec sa maison mère Google LLC (États-Unis) — mesure
           d’audience des pages publiques (Google Analytics), uniquement si vous l’acceptez : Google reçoit
-          votre adresse IP et les informations listées au 2.5, sans partage à des fins publicitaires
+          votre adresse IP et les informations listées au 2.6, sans partage à des fins publicitaires
+        </li>
+        <li>
+          <strong>Anthropic</strong> ou <strong>OpenAI</strong> (États-Unis) — génération de quiz par IA,
+          uniquement si votre organisation connecte son propre compte : le contenu soumis leur est envoyé sous
+          le contrat qui lie votre organisation à ce fournisseur (voir 2.3)
         </li>
       </ul>
       <p>

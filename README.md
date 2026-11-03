@@ -33,6 +33,10 @@ Les types et leur validation sont définis dans `lib/question.ts`.
 | Espace organisation | `/app` : bibliothèque de quiz, éditeur, équipe, compte | Membres d'une organisation |
 | Super-admin | `/super-admin` : organisations, utilisateurs, messages de contact, journal | Pressweb |
 
+## Génération par IA
+
+`lib/ai-quiz.ts` (schéma JSON de la réponse, consignes, conversion en étapes vérifiées par `validateQuestion`) et `lib/server/ai.ts`. L'organisation connecte son propre compte (`Organization.aiProvider`, `aiKey`, `aiKeyHint`, `aiModel`) dans la fenêtre « Créer avec l'IA » de la bibliothèque (administrateurs, `PUT /api/org/ai`). La clé est chiffrée par `lib/server/secret-box.ts` (AES-256-GCM) avec `AI_KEY_SECRET` (32 octets en base64, dans `/opt/squizz-secrets.env`) : sans elle, la génération est désactivée ; si elle change, les clés enregistrées deviennent illisibles et les administrateurs doivent les recoller. `POST /api/ai/generate` appelle Claude avec le SDK officiel (`claude-opus-5-5` par défaut, sortie structurée `output_config.format`, repli serveur en cas de refus) ou ChatGPT (`/v1/chat/completions`, `response_format` `json_schema`, `gpt-5` par défaut, PDF non pris en charge), puis le client enregistre le quiz et ouvre l'éditeur (`?ok=ia`). Nginx laisse 3 minutes à `/api/ai/`.
+
 ## Quiz en autonomie
 
 `lib/server/solo.ts` : `SoloSession` (le secret du lien `/solo/<id>`, une copie du quiz, la date de fin) et `SoloRun` (une participation : étape en cours, heure de départ côté serveur pour les points de vitesse, réponses). Actions `solo` (bibliothèque), `replay` (animateur, partie terminée, `Room.replayId`) et `solo-close` sur `/api/game` ; `join`, `state`, `answer`, `next` sur `/api/solo`. À chaque participant qui termine, `saveSoloReport()` réécrit le rapport `solo-<id>`. La purge supprime les liens le lendemain de leur fin.

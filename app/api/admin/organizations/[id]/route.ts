@@ -44,7 +44,10 @@ export const GET = route<{ id: string }>(async (_, { id }) => {
     _sum: { size: true },
     _count: true,
   });
-  return { ...org, mediaBytes: media._sum.size ?? 0, mediaCount: media._count };
+  // The organisation's AI key never leaves the server, even encrypted.
+  const { aiKey, ...shown } = org;
+  void aiKey;
+  return { ...shown, mediaBytes: media._sum.size ?? 0, mediaCount: media._count };
 });
 
 const schema = z.object({

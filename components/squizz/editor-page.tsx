@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Dialog } from "radix-ui";
-import { X } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 import { QuizEditor } from "@/components/squizz/editor";
 import { newQuestion, type Question } from "@/lib/question";
 import { ApiError, gameApi, newClientKey, UncertainError, withRetry } from "@/lib/client/api";
@@ -57,10 +57,13 @@ export function EditorPage({
   userId,
   quiz,
   teammates = [],
+  generated = false,
 }: {
   userId: string;
   quiz?: Saved;
   teammates?: Teammate[];
+  /** Just written by the AI (lib/server/ai.ts): the author is asked to read it through. */
+  generated?: boolean;
 }) {
   const router = useRouter();
   const quizId = quiz?.id ?? null;
@@ -245,6 +248,15 @@ export function EditorPage({
 
   return (
     <>
+      {generated && (
+        <div className="info-box ai-generated" role="status">
+          <Sparkles size={18} aria-hidden />
+          <p>
+            <strong>Quiz généré par l’IA</strong> : relisez chaque question et sa bonne réponse avant de le
+            lancer, ajoutez des images si besoin. L’IA peut se tromper.
+          </p>
+        </div>
+      )}
       {found && (
         <div className="info-box draft-found" role="status">
           <p>

@@ -7,8 +7,15 @@ import { EditorPage } from "@/components/squizz/editor-page";
 
 export const metadata: Metadata = { title: "Modifier le quiz" };
 
-export default async function EditQuizPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditQuizPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ ok?: string }>;
+}) {
   const { id } = await params;
+  const { ok } = await searchParams;
   if (isDemo(id)) redirect("/app");
   const user = await pageUser();
   const quiz = (await findQuiz(user as Parameters<typeof findQuiz>[0], id)) as OrgQuiz | null;
@@ -18,6 +25,7 @@ export default async function EditQuizPage({ params }: { params: Promise<{ id: s
     <EditorPage
       userId={user.id}
       teammates={await teammates(user)}
+      generated={ok === "ia"}
       quiz={{
         id: quiz.id,
         title: quiz.title,

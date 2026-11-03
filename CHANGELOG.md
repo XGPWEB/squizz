@@ -2,6 +2,18 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.25.0] — 2026-11-03
+
+### Ajouté
+- Créer un quiz avec l’IA : depuis la bibliothèque, à partir d’un texte collé, d’un fichier texte ou d’un PDF (PDF avec Claude seulement). Choix du nombre de questions (5 à 20), des types (quiz, vrai ou faux, réponse libre, textes à trous, sondage, question ouverte) et du niveau. Le quiz s’ouvre dans l’éditeur, avec un bandeau invitant à le relire.
+- L’organisation utilise son propre compte Claude ou ChatGPT : un administrateur colle la clé une fois ; elle est chiffrée (AES-256-GCM, clé du serveur hors de la base) et n’est plus jamais affichée, ni dans l’espace, ni dans le super-admin. Modèle modifiable (par défaut claude-opus-5-5 ou gpt-5). 40 générations par jour et par organisation.
+
+### Données personnelles
+- Politique de confidentialité : la clé chiffrée, et l’envoi du contenu soumis au fournisseur choisi par l’organisation, sous son propre contrat.
+
+### Serveur
+- Nginx : délai de 3 minutes pour `/api/ai/` (`bash deploy.sh --nginx`). Nouvelle variable `AI_KEY_SECRET` dans `/opt/squizz-secrets.env` ; sans elle, la génération reste désactivée.
+
 ## [1.24.0] — 2026-11-03
 
 ### Ajouté

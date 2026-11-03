@@ -11,6 +11,8 @@ const labels: Record<string, string> = {
   "invitation.create": "Invitation envoyée",
   "member.update": "Membre modifié",
   "organization.appearance": "Apparence des parties modifiée",
+  "organization.ai": "Compte IA connecté ou modifié",
+  "organization.ai_removed": "Compte IA retiré",
   "member.delete": "Membre supprimé",
   "user.update": "Utilisateur modifié",
   "user.reset_link": "Lien de mot de passe créé",

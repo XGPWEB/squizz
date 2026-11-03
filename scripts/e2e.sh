@@ -46,6 +46,8 @@ unset GA_PROPERTY_ID GA_SERVICE_ACCOUNT_EMAIL GA_SERVICE_ACCOUNT_PRIVATE_KEY
 export NEXT_PUBLIC_GA_MEASUREMENT_ID=
 STRIPE_MOCK_PORT=${E2E_STRIPE_PORT:-5175}
 export STRIPE_SECRET_KEY=sk_test_mock_never_real STRIPE_WEBHOOK_SECRET=whsec_mock_never_real
+# A throwaway key to encrypt the AI keys of the test organisations (lib/server/secret-box.ts).
+export AI_KEY_SECRET="$(openssl rand -base64 32)"
 export STRIPE_API_BASE="http://127.0.0.1:$STRIPE_MOCK_PORT" STRIPE_MOCK_URL="http://127.0.0.1:$STRIPE_MOCK_PORT"
 python3 tests/stripe_mock.py "$STRIPE_MOCK_PORT" &
 STRIPE_MOCK=$!
@@ -83,7 +85,7 @@ browser_prod() {
   [ "$status" -eq 0 ] || { echo "--- serveur de production de test :"; tail -30 "$out"; }
   return "$status"
 }
-SCENARIOS=${*:-game-flow rich-game-flow fill-match wheel teams remote qa solo reports profiles sharing timeout quiz-management accounts contact super-admin game-live rights security editing email-verification transfer admins billing event-pass monitoring auth-hardening browser browser-prod}
+SCENARIOS=${*:-game-flow rich-game-flow fill-match wheel teams remote qa solo ai reports profiles sharing timeout quiz-management accounts contact super-admin game-live rights security editing email-verification transfer admins billing event-pass monitoring auth-hardening browser browser-prod}
 FAILED=0
 for t in $SCENARIOS; do
   # « browser » and « browser-prod » are the Playwright suite (tests/browser, real Chromium), on the dev
