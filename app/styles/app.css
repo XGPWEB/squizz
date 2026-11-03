@@ -1855,3 +1855,65 @@ main:focus {
     animation: none;
   }
 }
+/* Templates by usage: filter chips, cards dealt in again on each filter */
+.templates-heading {
+  flex-wrap: wrap;
+}
+.usage-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.usage-chip {
+  padding: 8px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: white;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1.6),
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.usage-chip:hover {
+  transform: translateY(-2px) rotate(-2deg);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.usage-chip.on {
+  background: var(--acid);
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-2deg);
+}
+.usage-chip:focus-visible {
+  outline: 3px solid var(--electric);
+  outline-offset: 2px;
+}
+.templates-grid > .quiz-card {
+  animation: template-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1.3) backwards;
+}
+.templates-grid > .quiz-card:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.templates-grid > .quiz-card:nth-child(3) {
+  animation-delay: 0.12s;
+}
+.templates-grid > .quiz-card:nth-child(n + 4) {
+  animation-delay: 0.18s;
+}
+@keyframes template-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) rotate(1.5deg) scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .templates-grid > .quiz-card {
+    animation: none;
+  }
+  .usage-chip,
+  .usage-chip:hover,
+  .usage-chip.on {
+    transform: none;
+  }
+}

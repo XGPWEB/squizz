@@ -19,7 +19,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import type { Quiz } from "@/lib/quizzes";
+import { USAGES, type Quiz, type Usage } from "@/lib/quizzes";
 import type { OrgQuiz } from "@/lib/server/quiz-store";
 import { gameApi, newClientKey, UncertainError, withRetry } from "@/lib/client/api";
 import { estimateLabel } from "@/lib/quiz-duration";
@@ -83,7 +83,10 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
     // `matches` only depends on `query`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quizzes, mineOnly, query, sort]);
-  const shownDemos = demos.filter(matches);
+  const shownDemos = demos.filter((q) => !q.usage && matches(q));
+  const [usage, setUsage] = useState<Usage | "all">("all");
+  const usages = USAGES.filter(([id]) => demos.some((q) => q.usage === id));
+  const shownTemplates = demos.filter((q) => q.usage && (usage === "all" || q.usage === usage) && matches(q));
 
   async function run(task: () => Promise<void>) {
     if (busy) return;
@@ -194,7 +197,9 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
         <span aria-hidden="true">{q.symbol}</span>
         <span className={`pill ${"visibility" in q ? `pill-${q.visibility.toLowerCase()}` : ""}`}>
           {!own
-            ? "SQuizz Originals"
+            ? "usage" in q && q.usage
+              ? "Modèle"
+              : "SQuizz Originals"
             : "visibility" in q && q.visibility === "PRIVATE"
               ? "Brouillon privé"
               : "visibility" in q && q.visibility === "SELECTED"
@@ -455,6 +460,36 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
             </Link>
           )}
         </div>
+      )}
+      {!mineOnly && usages.length > 0 && (
+        <>
+          <div className="section-heading templates-heading">
+            <div>
+              <p className="eyebrow">POUR CHAQUE MOMENT</p>
+              <h2>Modèles par usage</h2>
+            </div>
+            <div className="usage-chips" role="group" aria-label="Filtrer les modèles par usage">
+              {[["all", "Tous"] as const, ...usages].map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={usage === id}
+                  className={`usage-chip ${usage === id ? "on" : ""}`}
+                  onClick={() => setUsage(id)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {shownTemplates.length ? (
+            <div className="quiz-grid templates-grid" key={usage}>
+              {shownTemplates.map((q) => card(q, false))}
+            </div>
+          ) : (
+            <p className="hint library-empty">Aucun modèle ne correspond à votre recherche.</p>
+          )}
+        </>
       )}
       {!mineOnly && shownDemos.length > 0 && (
         <>

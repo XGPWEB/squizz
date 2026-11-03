@@ -117,7 +117,7 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - **Comptes** : propriété GA4 « SQuizz » et projet Google Cloud `squizz-analytics` avec son compte de service, propres à SQuizz.
 - **Mise en ligne** : 1.14.0 vérifiée en ligne (version, bandeau, ID de mesure dans les scripts, rien de chargé avant l’accord).
 
-## 3 novembre 2026 — Comparaison avec Wooclap, résultats des parties, import Excel, anonymat, nouveaux types, roue, équipes, apparence, télécommande, questions du public, autonomie, IA (versions 1.15.0 à 1.25.0)
+## 3 novembre 2026 — Comparaison avec Wooclap, résultats des parties, import Excel, anonymat, nouveaux types, roue, équipes, apparence, télécommande, questions du public, autonomie, IA, modèles par usage (versions 1.15.0 à 1.26.0)
 
 - **Comparaison avec Wooclap** : ce qui nous manque (historique et export des résultats, mode en autonomie, questions du public, IA, import Excel, quelques types de questions, réponses anonymes, personnalisation) et ce qui peut nous démarquer (mode équipes, télécommande sur téléphone, rejouer en différé, modèles par usage, interface sobre pour les entreprises). Feuille de route à suivre dans cet ordre.
 - **Résultats** : nouvel onglet de l’espace avec classement, chiffres par question, réponses de chaque joueur, export pour Excel (CSV) et impression en PDF. Le rapport est réécrit à chaque question passée, donc une partie arrêtée en route n’est pas perdue.
@@ -133,12 +133,12 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - **Questions du public** (1.23.0) : mur de questions avec votes, anonymat au choix et modération, y compris depuis la télécommande.
 - **Quiz en autonomie et rejouer en différé** (1.24.0) : un lien à faire à son rythme, et le replay d’une partie en direct en un clic. Une promesse publique de plus : les participations sont supprimées le lendemain de la fermeture du lien.
 - **Génération par IA** (1.25.0) : avec le compte Claude ou ChatGPT de l’organisation, clé chiffrée sur le serveur (choix validé). Testé sans vraie clé : une fausse clé est bien refusée par Claude ; la génération réelle reste à essayer avec une clé.
+- **Modèles par usage** (1.26.0) : cinq déroulés pour les moments de la vie d’équipe, surtout faits de questions d’avis pour ne rien affirmer qui doive être sourcé ; les deux bilans sont anonymes. La feuille de route issue de la comparaison avec Wooclap est terminée.
 - **Réussite** : calculée sur tous les joueurs de la partie (ne pas répondre compte comme une erreur), pour ne pas flatter une question où peu de monde a répondu.
 
 ## Reste à faire
 
 - Stripe : ajouter l’événement `checkout.session.expired` au webhook (facultatif).
-
 
 - **Trafic du site** : revoir le panneau du super-admin dans quelques jours, pour confirmer que les chiffres sur 7 jours se remplissent.
 - **Organisation DG** : décider du sort du quiz « Test » créé en vue admin le 5 octobre (le supprimer, ou l’exporter vers Pôle jeunesse).

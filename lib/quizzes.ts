@@ -1,5 +1,7 @@
 import { newQuestion, type Question } from "./question";
 import { managementFpt } from "./originals/management-fpt";
+import { meeting, retro, training, welcome, yearEnd, type Usage } from "./originals/templates";
+export { USAGES, type Usage } from "./originals/templates";
 export type { Question } from "./question";
 export type Quiz = {
   id: string;
@@ -9,6 +11,8 @@ export type Quiz = {
   color: string;
   desc: string;
   questions: Question[];
+  /** Templates by usage: shown apart in the library, filtered by moment. */
+  usage?: Usage;
 };
 const q = (text: string, options: string[], correct: number): Question => ({
   ...newQuestion(),
@@ -91,5 +95,55 @@ export const demos: Quiz[] = [
     color: "tangerine",
     desc: "Statut, dialogue social, entretien pro : testez votre culture de manager territorial.",
     questions: managementFpt,
+  },
+  {
+    id: "modele-accueil",
+    title: "Bienvenue dans l’équipe",
+    tag: "ACCUEIL",
+    symbol: "☀",
+    color: "green",
+    desc: "Le premier jour des nouveaux arrivants : se présenter, faire connaissance, poser ses questions.",
+    usage: "accueil",
+    questions: welcome,
+  },
+  {
+    id: "modele-reunion",
+    title: "Brise-glace de réunion",
+    tag: "RÉUNION",
+    symbol: "◐",
+    color: "purple",
+    desc: "Météo d’équipe, énergie du jour et tour de table tiré au sort pour lancer la séance.",
+    usage: "reunion",
+    questions: meeting,
+  },
+  {
+    id: "modele-formation",
+    title: "Évaluation de fin de formation",
+    tag: "FORMATION",
+    symbol: "✓",
+    color: "tangerine",
+    desc: "L’évaluation à chaud, anonyme : objectifs, utilité, recommandation et suggestions.",
+    usage: "formation",
+    questions: training,
+  },
+  {
+    id: "modele-retro",
+    title: "Rétrospective d’équipe",
+    tag: "BILAN D’ÉQUIPE",
+    symbol: "↻",
+    color: "orange",
+    desc: "Ce qui a marché, ce qui a freiné, le chantier prioritaire : un bilan anonyme et constructif.",
+    usage: "bilan",
+    questions: retro,
+  },
+  {
+    id: "modele-fin-annee",
+    title: "Spécial fin d’année",
+    tag: "CONVIVIALITÉ",
+    symbol: "❄",
+    color: "purple",
+    desc: "Un quiz léger avant les fêtes, des votes gourmands et un tirage au sort pour le cadeau.",
+    usage: "fete",
+    questions: yearEnd,
   },
 ];
