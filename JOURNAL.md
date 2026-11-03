@@ -145,6 +145,12 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - **Tests** : nouveaux scénarios pour les neuf régressions. Les navigateurs fictifs utilisent des adresses distinctes pour ne pas épuiser ensemble la limitation des connexions dans la base jetable partagée. Les règles de sécurité de l’application ne sont pas assouplies.
 - **Données** : aucune migration ajoutée. Les changements de brouillons restent compatibles avec ceux déjà gardés dans le navigateur.
 
+## 3 novembre 2026 — Barre de navigation sans onglet coupé (version 1.26.3)
+
+- **Signalement** : une capture montre « Abonnement » tronqué à côté du nom de l’organisation, du badge partenaire et du bouton de compte. Le débordement horizontal était masqué ; le seuil calculé sur la largeur de la fenêtre ne tenait pas compte de la largeur réelle de la barre.
+- **Correction** : espacement et libellés plus compacts, onglets qui gardent leur largeur et retour à la ligne lorsqu’il n’y a vraiment plus de place. Le nom de compte peut être abrégé sans agrandir indéfiniment son bouton ; tous les liens restent accessibles et conservent leur nom pour les lecteurs d’écran.
+- **Vérification** : reproduction locale avec une organisation partenaire fictive et une vue super-admin, mesures et captures avant/après. Ajout d’un scénario Chromium et WebKit à onze largeurs (320–1920 pixels), sur les deux espaces et avec le menu du compte au clavier. Aucun compte réel n’est modifié pour ces essais.
+
 ## Reste à faire
 
 - Stripe : ajouter l’événement `checkout.session.expired` au webhook (facultatif).

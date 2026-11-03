@@ -2,6 +2,14 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.26.3] — 2026-11-03
+
+### Corrigé
+
+- Navigation de l’espace : les onglets, notamment « Abonnement », ne sont plus coupés quand le nom de l’organisation, le badge partenaire et le compte prennent de la place. Barre plus compacte, retour à la ligne si nécessaire, nom de compte long contenu dans son bouton.
+- Téléphone : tous les boutons du menu restent accessibles, sans défilement horizontal caché. Le menu du compte reste dans l’écran.
+- Vérification : scénario navigateur sur onze largeurs, de 320 à 1920 pixels, dans les espaces organisation et super-admin, avec contrôle du menu du compte et de la touche Échap.
+
 ## [1.26.2] — 2026-11-03
 
 ### Corrigé

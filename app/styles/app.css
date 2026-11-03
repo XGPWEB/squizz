@@ -16,6 +16,7 @@
   flex: 1;
   min-width: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
@@ -27,22 +28,24 @@
 }
 .app-tabs {
   display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
   gap: 6px;
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 .app-tab {
   position: relative;
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
+  gap: 6px;
+  padding: 10px 10px;
+  min-height: 44px;
   border: 2px solid transparent;
   border-radius: 12px;
   color: var(--ink);
   font-weight: 800;
-  font-size: 15px;
+  font-size: 14px;
   text-decoration: none;
   white-space: nowrap;
   transition:
@@ -84,9 +87,13 @@
 }
 .app-bar-end {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
   flex-shrink: 0;
+  max-width: 100%;
+  margin-left: auto;
 }
 .org-chip {
   display: inline-flex;
@@ -130,6 +137,8 @@
 }
 .account {
   position: relative;
+  min-width: 0;
+  max-width: 100%;
 }
 .account-button {
   display: inline-flex;
@@ -139,8 +148,15 @@
   border: 2px solid var(--ink);
   border-radius: 999px;
   background: white;
+  max-width: 100%;
   font-weight: 800;
   color: var(--ink);
+}
+.account-name {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .account-button:hover {
   background: var(--acid);
@@ -262,15 +278,19 @@
   .app-bar {
     order: 3;
     flex-basis: 100%;
+    gap: 8px;
+  }
+  .app-tabs {
+    gap: 4px;
   }
   .app-tab span,
   .account-name {
     display: none;
   }
   .app-tab {
-    padding: 10px 12px;
+    padding: 10px 11px;
   }
-  /* Inside the tab: the tab row scrolls, so anything sticking out of it is cut off. */
+  /* Keep the badge inside its tab on narrow screens. */
   .tab-badge {
     position: absolute;
     top: 0;
