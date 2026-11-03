@@ -6,6 +6,7 @@ import {
   Check,
   Copy,
   Download,
+  FileSpreadsheet,
   Pencil,
   Play,
   Plus,
@@ -23,6 +24,8 @@ import { gameApi, newClientKey, UncertainError, withRetry } from "@/lib/client/a
 import { estimateLabel } from "@/lib/quiz-duration";
 import { MAX_TRANSFER_FILE_BYTES, MAX_TRANSFER_MEDIA_BYTES } from "@/lib/quiz-file";
 import { formatSize } from "@/lib/media-limits";
+import { parseCsv, readXlsx } from "@/lib/sheet";
+import { rowsToQuestions, titleFromFile, type ImportResult } from "@/lib/sheet-import";
 
 type Props = {
   quizzes: OrgQuiz[];
@@ -32,6 +35,17 @@ type Props = {
   notice: "" | "created" | "updated";
 };
 type Sort = "recent" | "title" | "oldest";
+type Imported = { id: string; title: string; count: number; notes: ImportResult["skipped"]; extra: number };
+
+const MAX_SHEET_BYTES = 5 * 1024 * 1024;
+const isSheet = (name: string) => /\.(xlsx|csv|tsv|txt)$/i.test(name);
+
+/** A CSV saved by Excel on Windows is often not UTF-8: read it as Windows-1252 when UTF-8 does not fit. */
+async function readCsv(file: File) {
+  const bytes = await file.arrayBuffer();
+  const utf8 = new TextDecoder("utf-8").decode(bytes);
+  return utf8.includes("\uFFFD") ? new TextDecoder("windows-1252").decode(bytes) : utf8;
+}
 
 /** Lowercase without accents, so « équipe » matches « equipe ». */
 const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -49,7 +63,8 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
     ),
     [query, setQuery] = useState(""),
     [sort, setSort] = useState<Sort>("recent"),
-    [mineOnly, setMineOnly] = useState(false);
+    [mineOnly, setMineOnly] = useState(false),
+    [imported, setImported] = useState<Imported | null>(null);
   const full = quota.max !== null && quota.used >= quota.max;
 
   const matches = (q: Quiz) => !query.trim() || fold(q.title).includes(fold(query.trim()));
@@ -114,6 +129,34 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
       URL.revokeObjectURL(link.href);
     });
   const picker = useRef<HTMLInputElement>(null);
+  // An Excel or CSV list of questions: read here, then saved like a quiz made in the editor.
+  const importSheet = (file: File) =>
+    run(async () => {
+      setImported(null);
+      setMessage("");
+      if (file.size > MAX_SHEET_BYTES)
+        throw new Error(`Fichier trop lourd : ${formatSize(MAX_SHEET_BYTES)} maximum pour un tableur.`);
+      const rows = /\.xlsx$/i.test(file.name)
+        ? await readXlsx(new Uint8Array(await file.arrayBuffer()))
+        : parseCsv(await readCsv(file));
+      const { questions, skipped, extra } = rowsToQuestions(rows);
+      if (!questions.length)
+        throw new Error(
+          skipped.length
+            ? `Aucune question n’a pu être importée. ${skipped
+                .slice(0, 3)
+                .map((n) => `Ligne ${n.row} : ${n.reason}.`)
+                .join(" ")}`
+            : "Aucune question trouvée dans ce fichier.",
+        );
+      const title = titleFromFile(file.name);
+      const clientKey = newClientKey();
+      const { quiz } = await withRetry(() =>
+        gameApi<{ quiz: OrgQuiz }>("save", { quiz: { title, questions }, clientKey }),
+      );
+      setImported({ id: quiz.id, title: quiz.title, count: questions.length, notes: skipped, extra });
+      router.refresh();
+    });
   const importFile = (file: File) =>
     run(async () => {
       if (file.size > MAX_TRANSFER_FILE_BYTES)
@@ -251,6 +294,44 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
           <Check size={18} /> {message}
         </div>
       )}
+      {imported && (
+        <div className="import-report" role="status">
+          <div className="import-report-head">
+            <span className="import-report-badge" aria-hidden>
+              <FileSpreadsheet size={22} />
+            </span>
+            <div>
+              <strong>
+                « {imported.title} » est importé : {imported.count} étape{imported.count > 1 ? "s" : ""}.
+              </strong>
+              <p>Ajoutez-y des images ou des vidéos et vérifiez-le dans l’éditeur avant de le lancer.</p>
+            </div>
+            <Link className="button small" href={`/app/quiz/${imported.id}`}>
+              <Pencil size={16} /> Vérifier
+            </Link>
+            <button className="text-button" onClick={() => setImported(null)} aria-label="Fermer le message">
+              <X size={16} />
+            </button>
+          </div>
+          {(imported.notes.length > 0 || imported.extra > 0) && (
+            <ul>
+              {imported.notes.map((n) => (
+                <li key={`${n.row}-${n.reason}`} className={n.kept ? "kept" : ""}>
+                  <b>Ligne {n.row}</b> {n.kept ? "gardée" : "ignorée"} : {n.reason}.
+                </li>
+              ))}
+              {imported.extra > 0 && (
+                <li>
+                  <b>
+                    {imported.extra} ligne{imported.extra > 1 ? "s" : ""}
+                  </b>{" "}
+                  en trop : un quiz compte 30 étapes au plus.
+                </li>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
       <div className="dash-heading">
         <div>
           <p className="eyebrow">VOTRE BIBLIOTHÈQUE</p>
@@ -271,22 +352,30 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
               className="button secondary"
               disabled={busy}
               onClick={() => picker.current?.click()}
-              title="Importer un fichier .squizz (quiz et images)"
+              title="Importer un fichier Excel ou CSV (une question par ligne), ou un quiz .squizz"
             >
               <Upload size={18} /> Importer
             </button>
+            <a
+              className="text-button template-link"
+              href="/api/modele-import"
+              download
+              title="Le tableur à remplir : une question par ligne"
+            >
+              <FileSpreadsheet size={16} /> Modèle Excel
+            </a>
             <Link className="button" href="/app/quiz/nouveau">
               <Plus size={18} /> Créer un quiz
             </Link>
             <input
               ref={picker}
               type="file"
-              accept=".squizz,application/json"
+              accept=".squizz,.xlsx,.csv,application/json,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               hidden
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 e.target.value = "";
-                if (file) importFile(file);
+                if (file) (isSheet(file.name) ? importSheet : importFile)(file);
               }}
             />
           </div>

@@ -117,11 +117,13 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - **Comptes** : propriété GA4 « SQuizz » et projet Google Cloud `squizz-analytics` avec son compte de service, propres à SQuizz.
 - **Mise en ligne** : 1.14.0 vérifiée en ligne (version, bandeau, ID de mesure dans les scripts, rien de chargé avant l’accord).
 
-## 3 novembre 2026 — Comparaison avec Wooclap, résultats des parties (version 1.15.0)
+## 3 novembre 2026 — Comparaison avec Wooclap, résultats des parties, import Excel (versions 1.15.0 et 1.16.0)
 
 - **Comparaison avec Wooclap** : ce qui nous manque (historique et export des résultats, mode en autonomie, questions du public, IA, import Excel, quelques types de questions, réponses anonymes, personnalisation) et ce qui peut nous démarquer (mode équipes, télécommande sur téléphone, rejouer en différé, modèles par usage, interface sobre pour les entreprises). Feuille de route à suivre dans cet ordre.
 - **Résultats** : nouvel onglet de l’espace avec classement, chiffres par question, réponses de chaque joueur, export pour Excel (CSV) et impression en PDF. Le rapport est réécrit à chaque question passée, donc une partie arrêtée en route n’est pas perdue.
 - **Une promesse publique a changé** : les pseudos et réponses étaient effacés au bout de 24 heures ; les résultats le sont maintenant au bout de 12 mois (la partie elle-même reste à 24 heures). Politique de confidentialité, CGU et FAQ réécrites en conséquence.
+- **Export Excel** : un vrai classeur .xlsx (trois onglets) plutôt qu’un CSV, écrit sans bibliothèque.
+- **Import depuis Excel ou CSV** (1.16.0) : une question par ligne, modèle à télécharger, lignes refusées expliquées. Le modèle de tableur de Kahoot est compris tel quel, pour faciliter le passage à SQuizz.
 - **Réussite** : calculée sur tous les joueurs de la partie (ne pas répondre compte comme une erreur), pour ne pas flatter une question où peu de monde a répondu.
 
 ## Reste à faire

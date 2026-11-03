@@ -1,10 +1,17 @@
 """Results kept after a game: python3 tests/reports.py (against npm run dev on :5173)."""
-import os, re, urllib.request
+import io, os, re, urllib.request, zipfile
 from helpers import BASE, client, call, request, signup
 
 
-def get(c, path):
-    return c.open(urllib.request.Request(BASE + path), timeout=60).read().decode('utf-8-sig')
+def get(c, path, raw=False):
+    body = c.open(urllib.request.Request(BASE + path), timeout=60).read()
+    return body if raw else body.decode('utf-8')
+
+
+def workbook_text(data):
+    """Every sheet of an .xlsx, as one string per sheet (cells as XML)."""
+    z = zipfile.ZipFile(io.BytesIO(data))
+    return [z.read(n).decode() for n in sorted(z.namelist()) if n.startswith('xl/worksheets/')]
 
 
 def report_ids(c):
@@ -47,11 +54,12 @@ call(chloe, 'answer', code=code, question=3, answer={'text': 'Marseille'})
 call(host, 'next', code=code, question=3)
 assert report_ids(host) == [rid], 'one report per game, rewritten as it goes'
 
-raw = get(host, f'/api/reports/{rid}')
-assert 'Bilan de formation' in raw and "'=Chloé" in raw, raw[:300]
-assert 'Capitale de la France ?;Réponse libre;Paris;3;33' in raw, raw
-lines = raw.splitlines()
-assert lines[4].startswith('1;Alice;'), lines[4]
+ranking, questions, game = workbook_text(get(host, f'/api/reports/{rid}', raw=True))
+# A nickname starting with « = » stays text: inline strings are never formulas.
+assert '<t xml:space="preserve">=Chloé</t>' in ranking and '<f>' not in ranking, ranking[:400]
+assert re.search(r'<row r="2">.*?>1</v>.*?Alice', ranking), ranking[:600]
+assert 'Capitale de la France ?' in questions and '>33</v>' in questions, questions
+assert 'Bilan de formation' in game
 page = get(host, f'/app/resultats/{rid}')
 assert 'Bilan de formation' in page and 'Classement' in page and 'arrêtée après' not in page
 

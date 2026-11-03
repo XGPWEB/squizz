@@ -1,4 +1,5 @@
-import { reportCsv } from "@/lib/report";
+import { reportSheets } from "@/lib/report";
+import { buildXlsx } from "@/lib/xlsx";
 import { route } from "@/lib/server/api";
 import { requireMember } from "@/lib/server/guard";
 import { fail } from "@/lib/server/http";
@@ -14,15 +15,15 @@ const fileName = (title: string, date: Date) =>
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "") || "partie"
-  }-${date.toISOString().slice(0, 10)}.csv`;
+  }-${date.toISOString().slice(0, 10)}.xlsx`;
 
-/** The results of a game as a CSV file for Excel. */
+/** The results of a game as an Excel workbook. */
 export const GET = route<{ id: string }>(async (_req, { id }) => {
   const report = await findReport(await requireMember(), id);
   if (!report) fail("Résultats introuvables.", 404);
-  return new Response(reportCsv(report, report.data), {
+  return new Response(buildXlsx(reportSheets(report, report.data)) as BodyInit, {
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "Content-Disposition": `attachment; filename="${fileName(report.title, report.playedAt)}"`,
       "Cache-Control": "no-store",
     },

@@ -238,9 +238,19 @@
 .menu-item.danger:hover {
   background: var(--pink);
 }
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .org-chip {
     display: none;
+  }
+}
+/* Five tabs and the account menu: below this width, only the current tab keeps its label. */
+@media (max-width: 900px) {
+  .app-tab:not(.active) span,
+  .account-name {
+    display: none;
+  }
+  .app-tab {
+    padding: 10px 12px;
   }
 }
 @media (max-width: 640px) {
@@ -1224,5 +1234,92 @@ main:focus {
 @media (max-width: 640px) {
   .report .usage-grid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Spreadsheet import: the template link and what happened to each line */
+.template-link {
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.template-link:hover {
+  text-decoration-color: var(--pink);
+}
+.import-report {
+  margin: 15px 0;
+  padding: 16px 18px;
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 5px 5px 0 var(--ink);
+  animation: import-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+@keyframes import-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) rotate(-1deg);
+  }
+}
+.import-report-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.import-report-head > div {
+  flex: 1;
+  min-width: 0;
+}
+.import-report-head p {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+.import-report-badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  background: var(--acid);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  transform: rotate(-6deg);
+  animation: import-badge 0.7s 0.2s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes import-badge {
+  from {
+    transform: rotate(-30deg) scale(0.4);
+  }
+}
+.import-report ul {
+  margin: 14px 0 0;
+  padding: 12px 14px 12px 32px;
+  background: color-mix(in srgb, var(--pink) 18%, white);
+  border: 2px dashed var(--ink);
+  border-radius: 10px;
+  font-size: 14px;
+  display: grid;
+  gap: 4px;
+}
+.import-report li.kept {
+  list-style-type: circle;
+}
+@media (max-width: 640px) {
+  .import-report-head {
+    flex-wrap: wrap;
+  }
+  .import-report-head .button {
+    order: 3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .import-report,
+  .import-report-badge {
+    animation: none;
   }
 }

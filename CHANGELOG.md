@@ -2,11 +2,22 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.16.0] — 2026-11-03
+
+### Ajouté
+- Import de questions depuis Excel (.xlsx) ou un fichier CSV, avec le bouton « Importer » de la bibliothèque : une question par ligne, tous les types sauf ceux qui demandent une image ou un extrait sonore. Le quiz prend le nom du fichier et s’ouvre ensuite dans l’éditeur pour y ajouter des médias.
+- Modèle Excel à télécharger à côté du bouton, avec un exemple par type et un mode d’emploi.
+- Le modèle de tableur de Kahoot est aussi compris (en-têtes en anglais, titre au-dessus du tableau).
+- Après l’import, chaque ligne ignorée est signalée avec son numéro et la raison.
+
+### Corrigé
+- Barre de l’espace : les onglets ne débordent plus sur écran moyen (le nom de l’organisation se masque sous 1 100 px, les onglets passent en icônes sous 900 px, sauf l’onglet ouvert).
+
 ## [1.15.0] — 2026-11-03
 
 ### Ajouté
 - Onglet « Résultats » dans l’espace : chaque partie de l’organisation garde son classement, ses chiffres question par question (réussite, réponses les plus données, moyenne, NPS) et les réponses de chaque joueur.
-- Export pour Excel (fichier CSV) et impression ou enregistrement en PDF, depuis la page d’une partie.
+- Export Excel (classeur .xlsx : classement avec toutes les réponses, chiffres par question, fiche de la partie) et impression ou enregistrement en PDF, depuis la page d’une partie.
 - Une partie arrêtée en route garde ce qui a été joué : les résultats sont enregistrés à chaque question passée.
 - Bouton « Résultats détaillés » sur l’écran de fin de partie.
 - Les résultats peuvent être supprimés par l’animateur de la partie ou un administrateur.

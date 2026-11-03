@@ -114,9 +114,18 @@ npm run dev -- --port 5173
 `lib/report.ts` (calcul, texte des réponses, CSV) et `lib/server/reports.ts` (enregistrement, lecture). À chaque « Suivant » de l'animateur, `nextQuestion()` réécrit le rapport de la partie (`GameReport`, identifiant `code-création`) avec les questions déjà passées : une partie arrêtée en route garde ce qui a été joué, une partie terminée est marquée comme telle. Une erreur à cet endroit est signalée au monitoring sans jamais bloquer la partie.
 
 - **Pages** : `/app/resultats` (toutes les parties de l'organisation) et `/app/resultats/[id]` (chiffres, classement, question par question, réponses de chaque joueur). Impression ou PDF par le navigateur (feuille de style `@media print` dans `app/styles/app.css`).
-- **Export** : `GET /api/reports/[id]` renvoie un CSV pour Excel (point-virgule, BOM UTF-8 ; un pseudo commençant par `=`, `+`, `-` ou `@` est neutralisé pour ne jamais s'exécuter comme formule). `DELETE` le supprime (animateur de la partie ou administrateur).
+- **Export** : `GET /api/reports/[id]` renvoie un classeur Excel (`reportSheets()` écrit par `lib/xlsx.ts` : onglets Classement, Questions, Partie ; les cellules sont du texte ou des nombres, jamais des formules, quel que soit le pseudo). `DELETE` le supprime (animateur de la partie ou administrateur).
 - **Réussite** : part de tous les joueurs de la partie qui ont bien répondu (sans réponse = faux).
 - **Conservation** : 12 mois (`deploy/purge.mjs`), annoncée dans la politique de confidentialité, les CGU et la FAQ. L'animateur est un lien vers son compte, vidé si le compte est supprimé (« un ancien membre »).
+
+## Import depuis Excel ou CSV
+
+Le bouton « Importer » de la bibliothèque accepte un `.squizz`, un `.xlsx` ou un `.csv`. Un tableur est lu **dans le navigateur** (`lib/sheet.ts` : CSV au séparateur deviné, première feuille d'un .xlsx dézippé avec `DecompressionStream`, CSV Windows-1252 reconnu), converti en étapes par `rowsToQuestions()` (`lib/sheet-import.ts`), puis enregistré par l'action `save` comme un quiz de l'éditeur : mêmes contrôles et mêmes quotas côté serveur.
+
+- **Colonnes** : Type, Question, Réponse 1 à 6, Bonne réponse, Temps (s), Points, Explication ; en français ou en anglais, la ligne d'en-têtes est cherchée dans les 20 premières lignes (le modèle de tableur de Kahoot fonctionne tel quel).
+- **Bonne réponse** : numéro, lettre ou texte de la réponse, plusieurs séparées par des virgules ; Vrai/Faux ; réponses acceptées séparées par `/` ; nombre à trouver pour un curseur.
+- **Lignes refusées** : signalées après l'import avec leur numéro et la raison ; au-delà de 30 étapes, le reste est compté.
+- **Modèle** : `GET /api/modele-import` (`importTemplate()`), un .xlsx écrit par `lib/xlsx.ts` (zip non compressé, en-tête en gras sur fond vert acide, figé).
 
 ## Réseau lent ou coupé
 

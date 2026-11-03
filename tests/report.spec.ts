@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { newQuestion, type Question } from "@/lib/question";
-import { buildReport, describeAnswer, overallSuccess, reportCsv, type RawAnswer } from "@/lib/report";
+import { buildReport, describeAnswer, overallSuccess, reportSheets, type RawAnswer } from "@/lib/report";
+import { readXlsx } from "@/lib/sheet";
+import { buildXlsx } from "@/lib/xlsx";
 
 const quiz: Question = {
   ...newQuestion("quiz"),
@@ -71,14 +73,24 @@ describe("rapport de partie", () => {
     expect(describeAnswer(newQuestion("brainstorm"), { ideas: ["a", "b"] })).toBe("a · b");
   });
 
-  it("exporte un CSV pour Excel sans formule exécutable", () => {
-    const csv = reportCsv(
-      { title: "Test; quiz", playedAt: new Date("2026-11-03T10:00:00Z"), hostName: "Xavier" },
+  it("exporte un classeur Excel : classement, questions, partie", async () => {
+    const sheets = reportSheets(
+      { title: "Test", playedAt: new Date("2026-11-03T10:00:00Z"), hostName: "Xavier" },
       buildReport(steps, 3, players, answers),
     );
-    expect(csv.startsWith("﻿")).toBe(true);
-    expect(csv).toContain('"Test; quiz"');
-    expect(csv).toContain("3;'=Bob;0;0;2;Milan ✘;0;Poire;0");
-    expect(csv).toContain("Q1 · Capitale de l’Italie ?;Quiz;Rome;3;67;;Rome (2), Milan (1)");
+    expect(sheets.map((s) => s.name)).toEqual(["Classement", "Questions", "Partie"]);
+    expect(sheets[0].rows[3]).toEqual([3, "=Bob", 0, 0, 2, "Milan ✘", 0, "Poire", 0]);
+    expect(sheets[1].rows[1]).toEqual([
+      "Q1 · Capitale de l’Italie ?",
+      "Quiz",
+      "Rome",
+      3,
+      67,
+      null,
+      "Rome (2), Milan (1)",
+    ]);
+    // Read back with the import reader: the file is a real workbook.
+    const rows = await readXlsx(buildXlsx(sheets));
+    expect(rows[3].slice(0, 2)).toEqual(["3", "=Bob"]);
   });
 });

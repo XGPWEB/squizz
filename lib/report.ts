@@ -6,6 +6,7 @@ import {
   type AnswerPayload,
   type Question,
 } from "./question";
+import type { Sheet } from "./xlsx";
 
 /** One answer of one player, as kept in a game report. */
 export type ReportAnswer = { text: string; outcome: "correct" | "incorrect" | "opinion"; points: number };
@@ -165,67 +166,81 @@ export function overallSuccess(data: ReportData): number | null {
     : null;
 }
 
-const cell = (value: string | number) => {
-  const text = String(value);
-  // Quoted when needed; a leading = + - @ is neutralised so a nickname cannot run as a formula in Excel.
-  const safe = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
-  return /[;"\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
-};
-const line = (values: (string | number)[]) => values.map(cell).join(";");
-
 /**
- * The report as a CSV file for Excel (semicolons and a byte-order mark, as French Excel expects): the
- * ranking with every answer, then the figures of each question.
+ * The report as an Excel workbook: the ranking with every answer, then the figures of each question.
+ * Cells are plain text or numbers, never formulas, whatever the nicknames say.
  */
-export function reportCsv(meta: { title: string; playedAt: Date; hostName: string }, data: ReportData) {
+export function reportSheets(
+  meta: { title: string; playedAt: Date; hostName: string },
+  data: ReportData,
+): Sheet[] {
   const date = meta.playedAt.toLocaleString("fr-FR", { timeZone: "Europe/Paris" });
-  const out = [
-    line([meta.title]),
-    line([`Partie du ${date}, animée par ${meta.hostName}`]),
-    "",
-    line([
-      "Rang",
-      "Pseudo",
-      "Score",
-      "Bonnes réponses",
-      "Réponses données",
-      ...data.questions.flatMap((q, i) => [`Q${i + 1} · ${q.text}`, `Q${i + 1} · points`]),
-    ]),
-    ...data.players.map((p) =>
-      line([
-        p.rank,
-        p.name,
-        p.score,
-        p.correct,
-        p.answered,
-        ...p.answers.flatMap((a) =>
-          a
-            ? [`${a.text}${a.outcome === "correct" ? " ✔" : a.outcome === "incorrect" ? " ✘" : ""}`, a.points]
-            : ["(pas de réponse)", 0],
-        ),
-      ]),
-    ),
-    "",
-    line([
-      "Question",
-      "Type",
-      "Bonne réponse",
-      "Réponses",
-      "Réussite (%)",
-      "Moyenne",
-      "Réponses les plus données",
-    ]),
-    ...data.questions.map((q, i) =>
-      line([
-        `Q${i + 1} · ${q.text}`,
-        q.typeLabel,
-        q.solution,
-        q.responses,
-        q.successRate ?? "",
-        q.average === null ? "" : Math.round(q.average * 10) / 10,
-        q.top.map((t) => `${t.label} (${t.count})`).join(", "),
-      ]),
-    ),
+  const label = (i: number, q: ReportQuestion) => `Q${i + 1} · ${q.text}`;
+  return [
+    {
+      name: "Classement",
+      widths: [8, 22, 10, 16, 16, ...data.questions.flatMap(() => [28, 8])],
+      rows: [
+        [
+          "Rang",
+          "Pseudo",
+          "Score",
+          "Bonnes réponses",
+          "Réponses données",
+          ...data.questions.flatMap((q, i) => [label(i, q), "Points"]),
+        ],
+        ...data.players.map((p) => [
+          p.rank,
+          p.name,
+          p.score,
+          p.correct,
+          p.answered,
+          ...p.answers.flatMap((a) =>
+            a
+              ? [
+                  `${a.text}${a.outcome === "correct" ? " ✔" : a.outcome === "incorrect" ? " ✘" : ""}`,
+                  a.points,
+                ]
+              : ["(pas de réponse)", 0],
+          ),
+        ]),
+      ],
+    },
+    {
+      name: "Questions",
+      widths: [46, 16, 24, 11, 13, 10, 60],
+      rows: [
+        [
+          "Question",
+          "Type",
+          "Bonne réponse",
+          "Réponses",
+          "Réussite (%)",
+          "Moyenne",
+          "Réponses les plus données",
+        ],
+        ...data.questions.map((q, i) => [
+          label(i, q),
+          q.typeLabel,
+          q.solution,
+          q.responses,
+          q.successRate,
+          q.average === null ? null : Math.round(q.average * 10) / 10,
+          q.top.map((t) => `${t.label} (${t.count})`).join(", "),
+        ]),
+      ],
+    },
+    {
+      name: "Partie",
+      widths: [22, 60],
+      rows: [
+        ["Quiz", meta.title],
+        ["Date", date],
+        ["Animée par", meta.hostName],
+        ["Joueurs", data.players.length],
+        ["Questions jouées", `${data.questions.length} sur ${data.total}`],
+        ["Réussite moyenne (%)", overallSuccess(data)],
+      ],
+    },
   ];
-  return `﻿${out.join("\r\n")}\r\n`;
 }
