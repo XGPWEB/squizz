@@ -2,6 +2,19 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.28.0] — 2026-11-03
+
+### Apparence
+
+- Le logo de l’organisation s’affiche aussi avec le style SQuizz coloré : sur un autocollant blanc à côté du logo SQuizz, en haut du grand écran et des téléphones (plus grand dans la salle d’attente). Avec le style sobre, il remplace toujours celui de SQuizz.
+- « Rejoindre une partie » ouverte par le QR code ou le lien d’invitation prend le style de la partie : avec le style sobre, vouvoiement (« À vous de jouer », « Votre pseudo »), logo de l’organisation et couleurs sobres. Un code tapé à la main garde la page SQuizz jusqu’à l’entrée dans la partie.
+- L’écran Apparence passe en trois étapes : le style, le logo (actif dans les deux styles), la couleur et la mention « SQuizz » (style sobre). L’aperçu montre le logo dans les deux styles.
+
+### Corrigé
+
+- Apparence : un logo haut débordait de son cadre et recouvrait « Couleur principale » ; il tient maintenant dans le cadre, proportions gardées.
+- Apparence : la case « Afficher « SQuizz » » prenait toute la largeur au-dessus de son texte ; elle est revenue à sa place, devant le texte.
+
 ## [1.27.2] — 2026-11-03
 
 ### Site public

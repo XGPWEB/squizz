@@ -67,8 +67,9 @@ export type Game = {
 };
 
 /**
- * The mark at the top of the game screens: the SQuizz logo, or in the sober theme the organisation's logo
- * and, unless it is hidden, a discreet « SQuizz ».
+ * The mark at the top of the game screens: the SQuizz logo, with the organisation's logo on a sticker next
+ * to it when it has one; in the sober theme, the organisation's logo and, unless it is hidden, a discreet
+ * « SQuizz ».
  */
 export function GameMark({
   brand,
@@ -79,7 +80,17 @@ export function GameMark({
   href: string | null;
   className?: string;
 }) {
-  if (brand?.theme !== "sober") return <Brand href={href} className={className} />;
+  if (brand?.theme !== "sober") {
+    if (!brand?.logo) return <Brand href={href} className={className} />;
+    return (
+      <span className={`squizz-mark ${className?.includes("brand-big") ? "big" : ""}`}>
+        <span className="squizz-mark-logo">
+          <img src={brand.logo} alt="Logo de l’organisation" />
+        </span>
+        <Brand href={href} className={className} />
+      </span>
+    );
+  }
   if (!brand.logo && !brand.credit) return null;
   return (
     <span className="sober-mark">

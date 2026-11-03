@@ -135,11 +135,13 @@ export function AppearanceManager({
               ))}
             </div>
           </section>
-          <section className={`panel ${brand.theme === "sober" ? "" : "muted-panel"}`}>
-            <h2>2. Votre logo et votre couleur</h2>
-            {brand.theme !== "sober" && (
-              <p className="hint">Le logo et la couleur s’affichent avec le style sobre.</p>
-            )}
+          <section className="panel">
+            <h2>2. Votre logo</h2>
+            <p className="hint">
+              {brand.theme === "sober"
+                ? "En haut des écrans, à la place de celui de SQuizz."
+                : "En haut des écrans, à côté de celui de SQuizz."}
+            </p>
             <div className="logo-field">
               <div className="logo-drop">
                 {brand.logo ? (
@@ -185,6 +187,12 @@ export function AppearanceManager({
                 }}
               />
             </div>
+          </section>
+          <section className={`panel ${brand.theme === "sober" ? "" : "muted-panel"}`}>
+            <h2>3. Votre couleur</h2>
+            {brand.theme !== "sober" && (
+              <p className="hint">La couleur et la mention « SQuizz » se règlent avec le style sobre.</p>
+            )}
             <fieldset className="accent-field">
               <legend>Couleur principale</legend>
               <div className="row">
@@ -240,8 +248,7 @@ export function AppearanceManager({
               Afficher « SQuizz » en bas des écrans
               {!mayHideCredit && (
                 <small className="hint">
-                  {" "}
-                  · le masquer est inclus dans les <Link href="/tarifs">offres payantes</Link>
+                  Le masquer est inclus dans les <Link href="/tarifs">offres payantes</Link>
                 </small>
               )}
             </label>
@@ -283,6 +290,14 @@ export function AppearanceManager({
               </>
             ) : (
               <>
+                {brand.logo && (
+                  <div className="mini-top">
+                    <img src={brand.logo} alt="" />
+                    <span className="mini-brand">
+                      S<span>Q</span>uizz
+                    </span>
+                  </div>
+                )}
                 <strong className="mini-title">Quel indicateur suit la fidélité de nos clients ?</strong>
                 <div className="mini-answers">
                   {["Le chiffre d’affaires", "Le score NPS", "Le taux de marge", "Le nombre de devis"].map(

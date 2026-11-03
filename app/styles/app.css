@@ -484,6 +484,57 @@ main:focus {
   border-radius: 14px;
   box-shadow: 6px 6px 0 var(--pink);
 }
+/* The colourful theme with an organisation's logo: the logo on a sticker, next to SQuizz */
+.squizz-mark {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.squizz-mark-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
+  max-width: 170px;
+  padding: 5px 10px;
+  box-sizing: border-box;
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-2deg);
+}
+.squizz-mark-logo img {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.squizz-mark.big {
+  flex-wrap: wrap;
+}
+.squizz-mark.big .squizz-mark-logo {
+  height: 84px;
+  max-width: 260px;
+  padding: 8px 14px;
+  border-width: 3px;
+  border-radius: 14px;
+  box-shadow: 6px 6px 0 var(--electric);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .squizz-mark-logo {
+    animation: mark-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  }
+}
+@keyframes mark-pop {
+  from {
+    transform: rotate(-12deg) scale(0.6);
+    opacity: 0;
+  }
+}
 .brand-live {
   animation: brand-bob 2.6s ease-in-out infinite;
 }
@@ -565,6 +616,20 @@ main:focus {
 @media (max-width: 700px) {
   .brand-big {
     font-size: 44px;
+  }
+  .squizz-mark {
+    gap: 8px;
+  }
+  .squizz-mark:not(.big) .squizz-mark-logo {
+    height: 36px;
+    max-width: 80px;
+    padding: 3px 6px;
+  }
+}
+@media (max-width: 520px) {
+  /* The host's screen opened on a phone: the buttons already fill the bar */
+  .host-top .squizz-mark-logo {
+    display: none;
   }
   .play-shell {
     padding: 14px 16px 24px;
@@ -1505,8 +1570,9 @@ main:focus {
   margin: 8px 0 20px;
 }
 .logo-drop {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: none;
   width: 170px;
   height: 70px;
@@ -1519,6 +1585,8 @@ main:focus {
   letter-spacing: 1px;
 }
 .logo-drop img {
+  display: block;
+  min-width: 0;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -1577,6 +1645,27 @@ main:focus {
   align-items: center;
   gap: 8px;
 }
+.credit-field input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--ink);
+}
+.credit-field .hint {
+  flex-basis: 100%;
+}
+.logo-field .text-button {
+  align-items: center;
+  gap: 4px;
+}
+.appearance .panel > h2 + .hint {
+  margin: -4px 0 16px;
+}
+.mini-stage.theme-squizz .mini-top img {
+  max-width: 90px;
+  max-height: 28px;
+}
 
 /* The preview: a small big screen, drawn with the theme's own colours */
 .mini-stage {
@@ -1634,6 +1723,22 @@ main:focus {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.mini-stage.theme-squizz .mini-top {
+  justify-content: space-between;
+}
+.mini-stage.theme-squizz .mini-top img {
+  padding: 2px 5px;
+  background: white;
+  border: 1.5px solid var(--ink);
+  border-radius: 5px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.mini-brand {
+  font: 900 11px Arial, sans-serif;
+}
+.mini-brand span {
+  color: var(--pink);
 }
 .mini-top img {
   max-width: 70px;
