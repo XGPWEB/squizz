@@ -19,6 +19,7 @@ import {
 import { FillSentence, MatchBoard, QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
 import { asksNothing } from "@/lib/question";
 import { Wheel } from "./wheel";
+import { QaHostButton } from "./qa";
 import { MediaView } from "@/components/squizz/media";
 import { FullscreenButton } from "@/components/squizz/fullscreen-button";
 import { gameApi as api } from "@/lib/client/api";
@@ -79,6 +80,18 @@ export function HostStage(props: Props) {
           <Timer seconds={remaining} total={game.duration} done={game.revealed} />
         )}
         <div className="host-top-side">
+          <QaHostButton
+            game={game}
+            busy={props.busy}
+            send={(action, data) =>
+              new Promise<void>((done) =>
+                props.run(async () => {
+                  await api(action, { code: game.code, ...data });
+                  done();
+                }),
+              )
+            }
+          />
           {game.phase !== "finished" && <RemoteButton game={game} origin={props.origin} />}
           <FullscreenButton />
           <GameMark brand={game.brand} href="/app" />

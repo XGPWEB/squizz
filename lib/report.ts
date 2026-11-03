@@ -47,6 +47,8 @@ export type ReportData = {
   questions: ReportQuestion[];
   players: ReportPlayer[];
   total: number;
+  /** Questions from the audience that were shown, without who asked, most supported first. */
+  qa?: { text: string; votes: number; answered: boolean }[];
   /** Team mode: the teams in ranking order. */
   teams?: { name: string; color: string; players: number; score: number; rank: number }[];
 };
@@ -275,6 +277,18 @@ export function reportSheets(
             rows: [
               ["Rang", "Équipe", "Joueurs", "Score moyen"],
               ...data.teams.map((t) => [t.rank, t.name, t.players, t.score]),
+            ],
+          },
+        ]
+      : []),
+    ...(data.qa?.length
+      ? [
+          {
+            name: "Questions du public",
+            widths: [80, 10, 12],
+            rows: [
+              ["Question", "Votes", "Répondue"],
+              ...data.qa.map((q) => [q.text, q.votes, q.answered ? "oui" : ""]),
             ],
           },
         ]

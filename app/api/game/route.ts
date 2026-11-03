@@ -24,6 +24,7 @@ import {
   nextQuestion,
   parseCode,
   closeQuestion,
+  wallAction,
   pickTeam,
   remoteHost,
   remoteToken,
@@ -40,7 +41,16 @@ type Handler = (who: string, body: Body, req: Request) => Promise<unknown>;
 /** Actions allowed over GET because they have no side effects. */
 const readOnly = new Set(["list", "state"]);
 /** What the remote control may do, as the host: follow the game and drive it (never the link itself). */
-const remoteActions = new Set(["state", "start", "next", "close", "spin", "kick"]);
+const remoteActions = new Set([
+  "state",
+  "start",
+  "next",
+  "close",
+  "spin",
+  "kick",
+  "qa-settings",
+  "qa-moderate",
+]);
 
 const actions: Record<string, Handler> = {
   // Quiz library and editing: signed-in members of an active organisation only.
@@ -103,6 +113,25 @@ const actions: Record<string, Handler> = {
   },
   shuffle: async (who, body) => {
     await shuffleTeams(await loadGame(who, parseCode(body.code), true));
+    return { ok: true };
+  },
+  "qa-ask": async (who, body, req) => {
+    // Generous for a whole room behind one address, but stops a script flooding the wall.
+    if (!(await rateLimit(`qa:${clientIp(req.headers)}`, 120, 10 * 60)).allowed)
+      fail("Trop de questions depuis votre connexion. Réessayez dans quelques minutes.", 429);
+    await wallAction(await loadGame(who, parseCode(body.code), true), "qa-ask", body);
+    return { ok: true };
+  },
+  "qa-vote": async (who, body) => {
+    await wallAction(await loadGame(who, parseCode(body.code), true), "qa-vote", body);
+    return { ok: true };
+  },
+  "qa-settings": async (who, body) => {
+    await wallAction(await loadGame(who, parseCode(body.code), true), "qa-settings", body);
+    return { ok: true };
+  },
+  "qa-moderate": async (who, body) => {
+    await wallAction(await loadGame(who, parseCode(body.code), true), "qa-moderate", body);
     return { ok: true };
   },
   remote: async (who, body) => ({

@@ -190,6 +190,23 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         </ol>
       </section>
 
+      {data.qa && data.qa.length > 0 && (
+        <section className="panel">
+          <h2>Questions du public</h2>
+          <ol className="report-qa">
+            {data.qa.map((q, i) => (
+              <li key={i}>
+                <span>{q.text}</span>
+                <b>
+                  {q.votes} vote{q.votes > 1 ? "s" : ""}
+                </b>
+                {q.answered && <small className="status on">Répondue</small>}
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       <section className="panel">
         <h2>Réponses de chaque joueur</h2>
         <div className="table-wrap">

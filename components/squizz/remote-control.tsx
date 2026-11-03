@@ -5,6 +5,7 @@ import { asksNothing } from "@/lib/question";
 import { postJson, UncertainError } from "@/lib/client/api";
 import { type Game, Leaderboard, TeamBoard } from "./game-parts";
 import { QuestionResults } from "./question-play";
+import { QaModeration } from "./qa";
 
 const subscribeHash = (change: () => void) => {
   window.addEventListener("hashchange", change);
@@ -231,6 +232,16 @@ export function RemoteControl({ code }: { code: string }) {
               )
             )}
           </>
+        )}
+        {game && (
+          <details className="remote-details" open={!!game.qa?.questions.some((q) => q.status === "pending")}>
+            <summary>
+              Questions du public
+              {game.qa?.questions.some((q) => q.status === "pending") &&
+                ` · ${game.qa.questions.filter((q) => q.status === "pending").length} à valider`}
+            </summary>
+            <QaModeration game={game} busy={busy} send={(action, data) => act(action, data)} />
+          </details>
         )}
         {game && game.phase === "finished" && (
           <>

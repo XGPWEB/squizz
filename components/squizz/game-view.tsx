@@ -22,6 +22,7 @@ import {
 } from "./game-parts";
 import { HostStage } from "./host-stage";
 import { Wheel } from "./wheel";
+import { QaPlayer } from "./qa";
 import { asksNothing } from "@/lib/question";
 import { invitationOrigin } from "@/lib/invitation";
 import { gameApi as api, getJson, UncertainError } from "@/lib/client/api";
@@ -353,6 +354,17 @@ export function GameView({ code }: { code: string }) {
             </section>
           </>
         )
+      )}
+      {game && !game.host && (
+        <QaPlayer
+          game={game}
+          busy={busy}
+          send={(action, data) =>
+            run(async () => {
+              await api(action, { code, ...data });
+            })
+          }
+        />
       )}
     </div>
   );

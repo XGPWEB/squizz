@@ -7,6 +7,7 @@ import { buildReport, type ReportData } from "@/lib/report";
 import { fail } from "./http";
 import type { SessionUser } from "./guard";
 import { normalizeQuiz } from "./quiz-store";
+import { keptQuestions } from "./qa";
 
 /** Reports are kept 12 months (deploy/purge.mjs, privacy policy). */
 export const REPORT_DAYS = 365;
@@ -39,6 +40,8 @@ export async function saveReport(code: string, played: number, finished: boolean
     room.teams,
   );
   // Linked only to a member account (a super-admin viewing the organisation is not one).
+  const qa = await keptQuestions(code);
+  if (qa.length) data.qa = qa;
   const host = await prisma.user.findFirst({
     where: { id: room.host, organizationId: room.organizationId },
     select: { id: true },

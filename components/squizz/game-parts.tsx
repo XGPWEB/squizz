@@ -43,6 +43,20 @@ export type Game = {
   receivedAt: number;
   /** The wheel of the current step, once it is on screen. */
   wheel: { entries: string[]; spin: WheelSpin | null } | null;
+  /** Questions from the audience (lib/server/qa.ts), when the wall is open or has questions. */
+  qa: {
+    open: boolean;
+    moderated: boolean;
+    questions: {
+      id: string;
+      text: string;
+      author: string | null;
+      status: "pending" | "visible" | "answered" | "hidden";
+      votes: number;
+      mine: boolean;
+      voted: boolean;
+    }[];
+  } | null;
   /** How the screens look (lib/brand.ts). */
   brand: GameBrand;
   /** Team mode: the teams in ranking order, and the player's own team. */

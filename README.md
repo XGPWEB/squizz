@@ -33,6 +33,10 @@ Les types et leur validation sont définis dans `lib/question.ts`.
 | Espace organisation | `/app` : bibliothèque de quiz, éditeur, équipe, compte | Membres d'une organisation |
 | Super-admin | `/super-admin` : organisations, utilisateurs, messages de contact, journal | Pressweb |
 
+## Questions du public
+
+`lib/server/qa.ts` : `Room.qaOpen` et `Room.qaModerated`, tables `QaQuestion` (statut `pending`, `visible`, `answered` ou `hidden` ; pseudo affiché ou `null` si anonyme) et `QaVote`, supprimées avec la partie. Le mur est lu une fois par instantané de la partie et filtré pour chaque visiteur (`wallFor`) : l'animateur voit tout, un joueur les questions validées et les siennes. Actions `qa-ask` et `qa-vote` (joueurs, limite par adresse), `qa-settings` et `qa-moderate` (animateur et télécommande). Les questions affichées vont dans le rapport (`ReportData.qa`, sans les noms).
+
 ## Télécommande
 
 Bouton « Télécommande » du grand écran : l'action `remote` (animateur) crée une fois pour toutes le secret de la partie (`Room.remoteToken`) et le QR code mène à `/telecommande/<code>#<secret>`. La page lit le secret dans le fragment et l'envoie en POST (`remote`), jamais dans une adresse ; `remoteHost()` (comparaison à temps constant) le fait parler pour l'animateur, uniquement pour `state`, `start`, `next`, `close`, `spin` et `kick`. `close` arrête une question avant la fin du temps.

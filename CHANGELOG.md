@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.23.0] — 2026-11-03
+
+### Ajouté
+- Questions du public : l’animateur ouvre le mur (bouton « Questions » du grand écran ou télécommande). Sur leur téléphone, les participants posent leurs questions, avec leur pseudo ou anonymement, et votent pour celles des autres ; elles sont classées par votes.
+- Modération au choix : chaque question attend d’être validée avant de s’afficher. L’animateur valide, masque ou marque « répondue », aussi depuis la télécommande.
+- Les questions affichées sont gardées avec les résultats de la partie (sans les noms) et dans l’export Excel. Cinq questions au plus par participant, 280 caractères chacune.
+
 ## [1.22.0] — 2026-11-03
 
 ### Ajouté

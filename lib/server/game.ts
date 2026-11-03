@@ -9,6 +9,15 @@ import { drawSpin, SPIN_MS, wheelEntries, type Spin } from "@/lib/wheel";
 import { fillTeams, MAX_TEAMS, teamStandings } from "@/lib/teams";
 import { DEFAULT_BRAND, type Brand } from "@/lib/brand";
 import {
+  askQuestion,
+  loadWall,
+  moderateQuestion,
+  voteQuestion,
+  wallFor,
+  wallSettings,
+  type WallRows,
+} from "./qa";
+import {
   aggregateAnswers,
   asksNothing,
   evaluateAnswer,
@@ -42,6 +51,8 @@ type Room = {
   spin: Spin | null;
   teams: number;
   brand: Brand;
+  qaOpen: boolean;
+  qaModerated: boolean;
 };
 type AnswerRow = {
   player: string;
@@ -226,6 +237,8 @@ type Snapshot = {
   people: ScoreRow[];
   submitted: AnswerRow[];
   everything: (AnswerRow & { question: number })[];
+  /** Questions from the audience (lib/server/qa.ts). */
+  wall: WallRows;
 };
 const snapshots = new Map<string, { at: number; value: Promise<Snapshot> }>();
 
@@ -236,7 +249,7 @@ export function invalidate(code: string) {
 
 async function readSnapshot(code: string): Promise<Snapshot> {
   const room = toRoom(await findRoom(code));
-  const [people, submitted] = await Promise.all([
+  const [people, submitted, wall] = await Promise.all([
     prisma.$queryRaw<ScoreRow[]>`
       SELECT p."id", p."name", p."team",
         COALESCE(SUM(a."points"), 0)::int AS "score",
@@ -251,6 +264,7 @@ async function readSnapshot(code: string): Promise<Snapshot> {
       where: { code, question: room.question, owner: { kicked: false } },
       select: { player: true, choice: true, points: true, payload: true, correctness: true },
     }),
+    loadWall(code),
   ]);
   const everything =
     room.phase === "finished" && isProfileQuiz(room.quiz.questions)
@@ -266,7 +280,7 @@ async function readSnapshot(code: string): Promise<Snapshot> {
           },
         })
       : [];
-  return { room, people, submitted, everything };
+  return { room, people, submitted, everything, wall };
 }
 
 /**
@@ -297,12 +311,13 @@ type GameContext = {
   me: ScoreRow | undefined;
   submitted: AnswerRow[];
   everything: Snapshot["everything"];
+  wall: WallRows;
   revealed: boolean;
 };
 
 /** `fresh` bypasses the shared snapshot: used by every action that changes the game. */
 export async function loadGame(who: string, code: string, fresh = false): Promise<GameContext> {
-  const { room, people, submitted, everything } = await snapshot(code, fresh);
+  const { room, people, submitted, everything, wall } = await snapshot(code, fresh);
   const quiz = room.quiz;
   const question = quiz.questions[room.question];
   const duration = question.duration * 1000;
@@ -322,7 +337,7 @@ export async function loadGame(who: string, code: string, fresh = false): Promis
         (asksNothing(question.type) ||
           Date.now() >= room.started + duration ||
           (people.length > 0 && submitted.length >= people.length))));
-  return { who, room, quiz, question, duration, host, people, me, submitted, everything, revealed };
+  return { who, room, quiz, question, duration, host, people, me, submitted, everything, wall, revealed };
 }
 
 export async function submitAnswer(g: GameContext, body: Body) {
@@ -355,6 +370,20 @@ export async function submitAnswer(g: GameContext, body: Body) {
 
 function requireHost(g: GameContext) {
   if (!g.host) fail("Seul l’animateur peut piloter la partie.", 403);
+}
+
+/** Questions from the audience: what a player or the host does on the wall, then everyone sees it. */
+export async function wallAction(g: GameContext, action: string, body: Body) {
+  if (action === "qa-ask" || action === "qa-vote") {
+    if (!g.me) fail("Rejoins d’abord cette partie.", 403);
+    if (action === "qa-ask") await askQuestion(g.room, g.who, g.me.name, body);
+    else await voteQuestion(g.room, g.who, body);
+  } else {
+    requireHost(g);
+    if (action === "qa-settings") await wallSettings(g.room, body);
+    else await moderateQuestion(g.room, body);
+  }
+  invalidate(g.room.code);
 }
 
 /** The secret of the remote control link of a game, created the first time the host asks for it. */
@@ -595,6 +624,11 @@ export function gameState(g: GameContext) {
       : null,
     aggregate:
       revealed && !asksNothing(question.type) ? aggregateAnswers(question, g.submitted.map(decode)) : null,
+    /** Questions from the audience: whether the wall is open, and what this visitor may see of it. */
+    qa:
+      room.qaOpen || g.wall.length
+        ? { open: room.qaOpen, moderated: room.qaModerated, questions: wallFor(g.wall, g.who, g.host) }
+        : null,
     /** Team mode: the teams in ranking order (scores as everyone sees them now), and the player's own. */
     teams: room.teams
       ? {
