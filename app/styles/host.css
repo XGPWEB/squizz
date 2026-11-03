@@ -1235,3 +1235,159 @@
 .team-column .kick {
   flex: none;
 }
+
+/* Remote control: the button on the big screen and the page on the host's phone */
+.host-remote {
+  white-space: nowrap;
+}
+@media (max-width: 900px) {
+  .host-remote span {
+    display: none;
+  }
+}
+.remote-modal-body {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.remote-modal-body p {
+  max-width: 460px;
+  margin: 0;
+}
+.remote {
+  display: grid;
+  gap: 18px;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 8px 4px 40px;
+}
+.remote-head {
+  display: grid;
+  gap: 4px;
+  text-align: center;
+}
+.remote-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font: 700 11px monospace;
+  letter-spacing: 1px;
+  background: var(--ink);
+  color: var(--acid);
+  border-radius: 999px;
+}
+.remote-head strong {
+  font-size: 20px;
+}
+.remote-head small {
+  color: #55514b;
+}
+.remote-stat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.remote-stat b {
+  font:
+    400 44px/1 Anton,
+    sans-serif;
+}
+.remote-players {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  max-height: 40vh;
+  overflow: auto;
+}
+.remote-players li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  font-weight: 700;
+}
+.remote-main {
+  width: 100%;
+  min-height: 64px;
+  font-size: 19px;
+}
+.remote-question {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.25;
+  text-align: center;
+}
+.remote-live {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 14px 16px 18px;
+  overflow: hidden;
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+}
+.remote-live > div {
+  display: grid;
+  justify-items: center;
+}
+.remote-live b {
+  font:
+    400 40px/1 Anton,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.remote-live span {
+  font-size: 13px;
+}
+.remote-live i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 5px;
+  background: var(--electric);
+  transition: width 0.4s ease;
+}
+.remote-ready {
+  margin: 30px 0;
+  font:
+    400 32px/1.2 Anton,
+    sans-serif;
+  text-align: center;
+}
+.remote-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 10px 0;
+}
+.theme-sober .remote-tag {
+  background: var(--s-soft);
+  color: var(--s-muted);
+  font: 600 10px/1.2 inherit;
+  letter-spacing: 0.16em;
+}
+.theme-sober .remote-stat b,
+.theme-sober .remote-live b,
+.theme-sober .remote-ready {
+  --s-font: var(--s-tight);
+  font-weight: 600;
+}
+.theme-sober .remote-players li,
+.theme-sober .remote-live {
+  border: 1px solid var(--s-line);
+  font-weight: 500;
+}
+.theme-sober .remote-live i {
+  height: 2px;
+  background: var(--brand);
+}

@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.22.0] — 2026-11-03
+
+### Ajouté
+- Télécommande : un bouton sur le grand écran affiche un QR code secret ; scanné avec le téléphone de l’animateur (sans se connecter), il permet de lancer le quiz, suivre les réponses et le chrono, arrêter une question avant la fin du temps, passer à la suite, lancer la roue, voir les réponses et le classement, retirer un joueur.
+- Le secret passe après le « # » du lien (jamais dans les journaux du serveur) et n’ouvre que ces commandes, pour cette partie seulement.
+
 ## [1.21.1] — 2026-11-03
 
 ### Thème sobre

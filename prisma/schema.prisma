@@ -220,6 +220,8 @@ model Room {
   maxPlayers     Int
   /// Idempotency key sent when launching: a retried launch returns the same game instead of a second one.
   clientKey      String?
+  /// Remote control (phone of the host): the secret of the link shown on the big screen, created on demand.
+  remoteToken    String?
   /// The organisation's look when the game was launched (lib/brand.ts), so a change never alters it mid-game.
   brand          Json?
   /// Team mode (lib/teams.ts): the number of teams, 0 when everyone plays alone.

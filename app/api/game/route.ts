@@ -23,7 +23,10 @@ import {
   loadGame,
   nextQuestion,
   parseCode,
+  closeQuestion,
   pickTeam,
+  remoteHost,
+  remoteToken,
   setTeams,
   shuffleTeams,
   spinWheel,
@@ -36,6 +39,8 @@ type Handler = (who: string, body: Body, req: Request) => Promise<unknown>;
 
 /** Actions allowed over GET because they have no side effects. */
 const readOnly = new Set(["list", "state"]);
+/** What the remote control may do, as the host: follow the game and drive it (never the link itself). */
+const remoteActions = new Set(["state", "start", "next", "close", "spin", "kick"]);
 
 const actions: Record<string, Handler> = {
   // Quiz library and editing: signed-in members of an active organisation only.
@@ -100,6 +105,13 @@ const actions: Record<string, Handler> = {
     await shuffleTeams(await loadGame(who, parseCode(body.code), true));
     return { ok: true };
   },
+  remote: async (who, body) => ({
+    token: await remoteToken(await loadGame(who, parseCode(body.code), true)),
+  }),
+  close: async (who, body) => {
+    await closeQuestion(await loadGame(who, parseCode(body.code), true), body);
+    return { ok: true };
+  },
   spin: async (who, body) => {
     await spinWheel(await loadGame(who, parseCode(body.code), true), body);
     return { ok: true };
@@ -126,6 +138,12 @@ async function handle(req: Request) {
     if (!handler) fail("Action inconnue.");
     known = action;
     if (req.method !== "POST" && !readOnly.has(action)) fail("Méthode non autorisée.", 405);
+    // The host's phone, through the secret link shown on the big screen (POST only: no secret in an URL).
+    if (body.remote !== undefined) {
+      if (req.method !== "POST" || !remoteActions.has(action))
+        fail("Action impossible depuis la télécommande.", 403);
+      return reply(await handler(await remoteHost(parseCode(body.code), body.remote), body, req));
+    }
     return reply(await handler(who.id, body, req));
   } catch (error) {
     // Ordinary refusals (full game, wrong code, limit reached…) are answers, not alerts.

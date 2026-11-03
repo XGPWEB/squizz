@@ -117,7 +117,7 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - **Comptes** : propriété GA4 « SQuizz » et projet Google Cloud `squizz-analytics` avec son compte de service, propres à SQuizz.
 - **Mise en ligne** : 1.14.0 vérifiée en ligne (version, bandeau, ID de mesure dans les scripts, rien de chargé avant l’accord).
 
-## 3 novembre 2026 — Comparaison avec Wooclap, résultats des parties, import Excel, anonymat, nouveaux types, roue, équipes (versions 1.15.0 à 1.20.0)
+## 3 novembre 2026 — Comparaison avec Wooclap, résultats des parties, import Excel, anonymat, nouveaux types, roue, équipes, apparence, télécommande (versions 1.15.0 à 1.22.0)
 
 - **Comparaison avec Wooclap** : ce qui nous manque (historique et export des résultats, mode en autonomie, questions du public, IA, import Excel, quelques types de questions, réponses anonymes, personnalisation) et ce qui peut nous démarquer (mode équipes, télécommande sur téléphone, rejouer en différé, modèles par usage, interface sobre pour les entreprises). Feuille de route à suivre dans cet ordre.
 - **Résultats** : nouvel onglet de l’espace avec classement, chiffres par question, réponses de chaque joueur, export pour Excel (CSV) et impression en PDF. Le rapport est réécrit à chaque question passée, donc une partie arrêtée en route n’est pas perdue.
@@ -128,6 +128,8 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - **Textes à trous et appariement** (1.18.0) : deux nouveaux types notés, joués de bout en bout sur téléphone et grand écran. Les mots à trouver ne partent vers les téléphones qu’à la correction ; les paires sont mélangées par le serveur.
 - **Roue de tirage au sort** (1.19.0) : tirée par le serveur, jouée à l’identique sur tous les écrans. Nouvelle colonne `Room.spin`.
 - **Mode équipes** (1.20.0) : 2 à 6 équipes aux couleurs de la charte, choix sur le téléphone ou répartition au hasard, score à la moyenne des joueurs, podium des équipes.
+- **Apparence des parties** (1.21.0 et 1.21.1) : page « Apparence », thème sobre des écrans de jeu (fond clair, Inter, logo et couleur de l’organisation), validé sur maquette. Correction de la mention de conservation du formulaire pour rejoindre une partie.
+- **Télécommande** (1.22.0) : l’animateur pilote la partie depuis son téléphone grâce à un QR code secret, sans se connecter.
 - **Réussite** : calculée sur tous les joueurs de la partie (ne pas répondre compte comme une erreur), pour ne pas flatter une question où peu de monde a répondu.
 
 ## Reste à faire

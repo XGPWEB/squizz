@@ -6,6 +6,7 @@ import { useState } from "react";
 import {
   BarChart3,
   Copy,
+  Gauge,
   Lock,
   Play,
   Shuffle,
@@ -78,6 +79,7 @@ export function HostStage(props: Props) {
           <Timer seconds={remaining} total={game.duration} done={game.revealed} />
         )}
         <div className="host-top-side">
+          {game.phase !== "finished" && <RemoteButton game={game} origin={props.origin} />}
           <FullscreenButton />
           <GameMark brand={game.brand} href="/app" />
         </div>
@@ -115,6 +117,72 @@ function Timer({ seconds, total, done }: { seconds: number; total: number; done:
     >
       <span>{done ? "0" : seconds}</span>
     </div>
+  );
+}
+
+/**
+ * Shows the secret link of the remote control as a QR code: the host scans it with their phone to drive
+ * the game from anywhere in the room. Whoever has the link can drive the game, so it is never shown to
+ * the players' screens and only opens on demand.
+ */
+function RemoteButton({ game, origin }: { game: Game; origin: string }) {
+  const [link, setLink] = useState(""),
+    [open, setOpen] = useState(false),
+    [error, setError] = useState("");
+  const show = async () => {
+    setOpen(true);
+    if (link) return;
+    try {
+      const { token } = await api<{ token: string }>("remote", { code: game.code });
+      setLink(`${origin}/telecommande/${game.code}#${token}`);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  };
+  return (
+    <>
+      <button type="button" className="button secondary small host-remote" onClick={show}>
+        <Gauge size={16} /> <span>Télécommande</span>
+      </button>
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className={`host-overlay ${themeOf(game)}`} />
+          <Dialog.Content
+            className={`host-modal remote-modal ${themeOf(game)}`}
+            style={brandStyle(game)}
+            aria-describedby="remote-help"
+          >
+            <div className="host-modal-head">
+              <Dialog.Title className="host-modal-title">Piloter depuis votre téléphone</Dialog.Title>
+              <Dialog.Close className="host-modal-close" aria-label="Fermer">
+                <X size={22} />
+              </Dialog.Close>
+            </div>
+            <div className="host-modal-body remote-modal-body">
+              {error ? (
+                <p className="error">{error}</p>
+              ) : link ? (
+                <div className="qr-sticker">
+                  <QRCodeSVG value={link} size={240} level="M" marginSize={3} title="Télécommande" />
+                </div>
+              ) : (
+                <p className="hint">Préparation du lien…</p>
+              )}
+              <p id="remote-help">
+                Scannez ce code avec l’appareil photo de votre téléphone : vous pourrez lancer le quiz, passer
+                à la suite, arrêter une question, lancer la roue et retirer un joueur, depuis n’importe où
+                dans la salle.
+              </p>
+              <p className="hint">
+                Toute personne qui scanne ce code peut piloter la partie : ouvrez-le avant de projeter
+                l’écran, ou refermez-le dès que votre téléphone affiche la télécommande. Il ne sert que pour
+                cette partie.
+              </p>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </>
   );
 }
 

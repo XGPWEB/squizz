@@ -33,6 +33,10 @@ Les types et leur validation sont définis dans `lib/question.ts`.
 | Espace organisation | `/app` : bibliothèque de quiz, éditeur, équipe, compte | Membres d'une organisation |
 | Super-admin | `/super-admin` : organisations, utilisateurs, messages de contact, journal | Pressweb |
 
+## Télécommande
+
+Bouton « Télécommande » du grand écran : l'action `remote` (animateur) crée une fois pour toutes le secret de la partie (`Room.remoteToken`) et le QR code mène à `/telecommande/<code>#<secret>`. La page lit le secret dans le fragment et l'envoie en POST (`remote`), jamais dans une adresse ; `remoteHost()` (comparaison à temps constant) le fait parler pour l'animateur, uniquement pour `state`, `start`, `next`, `close`, `spin` et `kick`. `close` arrête une question avant la fin du temps.
+
 ## Mode équipes
 
 Activé dans la salle d'attente (`Room.teams`, de 2 à 6, 0 sinon ; actions `teams`, `team` du joueur, `shuffle`). L'équipe de chaque joueur est `Player.team`. Au lancement, `fillTeams()` (`lib/teams.ts`) place ceux qui n'ont pas choisi dans les équipes les moins remplies. Le score d'une équipe est la moyenne de ses joueurs (`teamStandings()`), envoyée dans l'état de la partie et gardée dans les résultats.

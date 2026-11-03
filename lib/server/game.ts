@@ -357,6 +357,55 @@ function requireHost(g: GameContext) {
   if (!g.host) fail("Seul l’animateur peut piloter la partie.", 403);
 }
 
+/** The secret of the remote control link of a game, created the first time the host asks for it. */
+export async function remoteToken(g: GameContext) {
+  requireHost(g);
+  const existing = await prisma.room.findUnique({
+    where: { code: g.room.code },
+    select: { remoteToken: true },
+  });
+  if (existing?.remoteToken) return existing.remoteToken;
+  const token = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) =>
+    b.toString(16).padStart(2, "0"),
+  ).join("");
+  // Two first requests at once: the first one written wins, both get it.
+  await prisma.room.updateMany({
+    where: { code: g.room.code, remoteToken: null },
+    data: { remoteToken: token },
+  });
+  return (await prisma.room.findUnique({ where: { code: g.room.code }, select: { remoteToken: true } }))!
+    .remoteToken!;
+}
+
+/**
+ * Who a remote control speaks for: the host of the game, when the link's secret is the right one. Only
+ * the host's controls accept it (lib/server/game.ts actions listed in app/api/game/route.ts).
+ */
+export async function remoteHost(code: string, token: unknown) {
+  if (typeof token !== "string" || !/^[a-f0-9]{32}$/.test(token)) fail("Lien de télécommande invalide.", 403);
+  const room = await prisma.room.findUnique({ where: { code }, select: { host: true, remoteToken: true } });
+  const a = new TextEncoder().encode(room?.remoteToken ?? "");
+  const b = new TextEncoder().encode(token);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < Math.min(a.length, b.length); i++) diff |= a[i] ^ b[i];
+  if (!room || diff) fail("Lien de télécommande invalide ou expiré.", 403);
+  return room.host;
+}
+
+/** The host ends the current question now, without waiting for the timer: the correction shows. */
+export async function closeQuestion(g: GameContext, body: Body) {
+  requireHost(g);
+  const { room, question, duration } = g;
+  if (g.revealed || body.question !== room.question) return; // already over
+  if (room.phase !== "question" || asksNothing(question.type)) fail("Il n’y a pas de question à arrêter.");
+  if (Date.now() < room.started) fail("La question commence dans un instant.");
+  await prisma.room.updateMany({
+    where: { code: room.code, phase: "question", question: room.question },
+    data: { started: BigInt(Date.now() - duration - 1) },
+  });
+  invalidate(room.code);
+}
+
 /** Team mode, in the lobby: the host sets the number of teams (0 to play alone). */
 export async function setTeams(g: GameContext, count: unknown) {
   requireHost(g);
