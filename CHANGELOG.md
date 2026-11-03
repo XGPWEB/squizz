@@ -2,6 +2,18 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.15.0] — 2026-11-03
+
+### Ajouté
+- Onglet « Résultats » dans l’espace : chaque partie de l’organisation garde son classement, ses chiffres question par question (réussite, réponses les plus données, moyenne, NPS) et les réponses de chaque joueur.
+- Export pour Excel (fichier CSV) et impression ou enregistrement en PDF, depuis la page d’une partie.
+- Une partie arrêtée en route garde ce qui a été joué : les résultats sont enregistrés à chaque question passée.
+- Bouton « Résultats détaillés » sur l’écran de fin de partie.
+- Les résultats peuvent être supprimés par l’animateur de la partie ou un administrateur.
+
+### Données personnelles
+- Les résultats (pseudos, réponses, scores) sont gardés 12 mois puis supprimés automatiquement ; la partie elle-même reste effacée au bout de 24 heures. Politique de confidentialité, CGU et FAQ mises à jour.
+
 ## [1.14.6] — 2026-11-01
 
 ### Site

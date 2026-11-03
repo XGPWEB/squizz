@@ -48,6 +48,10 @@ export default function PolitiqueConfidentialitePage() {
       <ul>
         <li>Le pseudo qu’il choisit (aucun nom, email ni téléphone n’est demandé)</li>
         <li>Ses réponses et son score pendant la partie</li>
+        <li>
+          Les résultats de la partie (pseudo, réponses, score et rang), gardés pour l’organisation qui l’anime
+          afin qu’elle puisse les consulter et les exporter
+        </li>
         <li>Un identifiant anonyme aléatoire (cookie) pour le reconnaître pendant la partie</li>
       </ul>
       <p>
@@ -135,8 +139,14 @@ export default function PolitiqueConfidentialitePage() {
         </thead>
         <tbody>
           <tr>
-            <td>Parties, pseudos et réponses des joueurs</td>
+            <td>Parties en cours, pseudos et réponses des joueurs</td>
             <td>24 heures après la création de la partie, puis suppression automatique</td>
+          </tr>
+          <tr>
+            <td>Résultats d’une partie (pseudos, réponses, scores)</td>
+            <td>
+              12 mois après la partie, puis suppression automatique ; l’organisation peut les supprimer avant
+            </td>
           </tr>
           <tr>
             <td>Comptes, quiz et médias d’une organisation active</td>
@@ -251,9 +261,9 @@ export default function PolitiqueConfidentialitePage() {
       <p>
         Depuis <strong>Mon compte</strong>, vous pouvez vous-même exporter vos données (format JSON) et
         supprimer votre compte. Pour toute autre demande, écrivez-nous à <Mail email={c.dpo.email} /> : nous
-        répondons sous un mois. Les joueurs n’ont pas de compte : leurs données sont effacées automatiquement
-        24 heures après la partie ; pour une demande avant ce délai, adressez-vous à l’organisation qui anime
-        la partie ou à nous.
+        répondons sous un mois. Les joueurs n’ont pas de compte : la partie est effacée automatiquement 24
+        heures après, et ses résultats (pseudos et réponses) 12 mois après ; pour une demande avant ce délai,
+        adressez-vous à l’organisation qui anime la partie, qui peut supprimer ces résultats, ou à nous.
       </p>
 
       <h2 id="cookies">8. Cookies</h2>

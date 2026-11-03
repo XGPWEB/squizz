@@ -15,6 +15,8 @@ const startedAt = new Date();
 async function run() {
   // Games, players and answers: 24 hours (players and answers follow by cascade).
   report.parties = (await prisma.room.deleteMany({ where: { created: { lt: BigInt(now - DAY) } } })).count;
+  // Results kept after the game (nicknames and answers): 12 months.
+  report.resultats = (await prisma.gameReport.deleteMany({ where: { playedAt: { lt: ago(365) } } })).count;
   // Sensitive-action log: 12 months.
   report.journal = (await prisma.auditLog.deleteMany({ where: { createdAt: { lt: ago(365) } } })).count;
   // Contact form messages: 3 years after receipt.

@@ -14,6 +14,8 @@ import {
   type Question,
 } from "@/lib/question";
 import { fail, validated, type Body } from "./http";
+import { errorMessage, reportAlert } from "./monitoring";
+import { saveReport } from "./reports";
 import { normalizeQuiz } from "./quiz-store";
 
 export const ROOM_TTL = 24 * 60 * 60 * 1000;
@@ -368,6 +370,15 @@ export async function nextQuestion(g: GameContext, body: Body) {
     },
   });
   invalidate(room.code);
+  // The results so far are kept: a failure there is reported but never blocks the game.
+  await saveReport(room.code, room.question + 1, last).catch((e) =>
+    reportAlert({
+      type: "server",
+      message: errorMessage(e),
+      path: "/api/game",
+      context: { action: "report" },
+    }),
+  );
   return last ? 0 : READY_MS;
 }
 

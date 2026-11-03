@@ -225,8 +225,8 @@ export default function CGUPage() {
         </li>
       </ul>
       <p>
-        Les données concernées sont les pseudos, réponses et scores des joueurs (conservés 24 heures) et les
-        nom, email et rôle des membres (conservés tant que l’organisation existe).
+        Les données concernées sont les pseudos, réponses et scores des joueurs (partie conservée 24 heures,
+        résultats 12 mois) et les nom, email et rôle des membres (conservés tant que l’organisation existe).
       </p>
 
       <h2>10. Modifications des CGU/CGV</h2>

@@ -77,6 +77,7 @@ model Organization {
   media       Media[]
   auditLogs   AuditLog[]
   eventPasses EventPass[]
+  reports     GameReport[]
 }
 
 /// One paid event pass. Keyed by the Stripe Checkout session that paid for it, so a payment reported twice
@@ -119,6 +120,7 @@ model User {
   invitationsBy      Invitation[]
   passwordResets     PasswordResetToken[]
   emailVerifications EmailVerificationToken[]
+  reports            GameReport[]
 
   @@index([organizationId])
 }
@@ -245,6 +247,29 @@ model Answer {
 
   @@id([code, player, question])
   @@index([code, question])
+}
+
+/// Results of a game, kept after the game itself is purged (24 h): written each time the host moves on, so a
+/// game stopped half-way keeps what was played. Pseudonymous (nicknames only), deleted after 12 months.
+model GameReport {
+  /// The game's code and creation time: codes are reused once a game is purged.
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// The quiz played (may have been changed or deleted since: the report keeps its own copy of the questions).
+  quizId         String
+  title          String
+  /// Who launched the game; emptied if that account is deleted.
+  hostId         String?
+  host           User?        @relation(fields: [hostId], references: [id], onDelete: SetNull)
+  playedAt       DateTime
+  finished       Boolean      @default(false)
+  players        Int
+  /// lib/report.ts: questions played, their results and every player's answers.
+  data           Json
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, playedAt])
 }
 
 model Media {

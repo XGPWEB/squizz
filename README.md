@@ -109,6 +109,15 @@ npm run dev -- --port 5173
 - **Export / import** (`lib/server/quiz-transfer.ts`) : « Exporter » sur une carte télécharge un fichier `.squizz` (le quiz et les médias de l'organisation qu'il utilise, en base64 ; les liens externes et les illustrations des Originals restent des liens). « Importer » crée un nouveau quiz à partir de ce fichier, avec les mêmes contrôles que l'éditeur et l'envoi de photo (format réel des fichiers, poids, quotas de quiz et de médias). Tout est vérifié avant d'enregistrer quoi que ce soit : un import refusé ne laisse ni quiz ni fichier. Le même plafond s'applique des deux côtés (`lib/quiz-file.ts`) : 14 Mo de médias par quiz, soit un fichier de 20 Mo au plus ; au-delà, l'export est refusé avec une explication.
 - **Bibliothèque** : recherche par titre (sans tenir compte des accents), tri (dernière modification, titre, ancienneté), filtre « Mes quiz », durée estimée à partir des réglages réels (`lib/quiz-duration.ts`, indicative).
 
+## Résultats des parties
+
+`lib/report.ts` (calcul, texte des réponses, CSV) et `lib/server/reports.ts` (enregistrement, lecture). À chaque « Suivant » de l'animateur, `nextQuestion()` réécrit le rapport de la partie (`GameReport`, identifiant `code-création`) avec les questions déjà passées : une partie arrêtée en route garde ce qui a été joué, une partie terminée est marquée comme telle. Une erreur à cet endroit est signalée au monitoring sans jamais bloquer la partie.
+
+- **Pages** : `/app/resultats` (toutes les parties de l'organisation) et `/app/resultats/[id]` (chiffres, classement, question par question, réponses de chaque joueur). Impression ou PDF par le navigateur (feuille de style `@media print` dans `app/styles/app.css`).
+- **Export** : `GET /api/reports/[id]` renvoie un CSV pour Excel (point-virgule, BOM UTF-8 ; un pseudo commençant par `=`, `+`, `-` ou `@` est neutralisé pour ne jamais s'exécuter comme formule). `DELETE` le supprime (animateur de la partie ou administrateur).
+- **Réussite** : part de tous les joueurs de la partie qui ont bien répondu (sans réponse = faux).
+- **Conservation** : 12 mois (`deploy/purge.mjs`), annoncée dans la politique de confidentialité, les CGU et la FAQ. L'animateur est un lien vers son compte, vidé si le compte est supprimé (« un ancien membre »).
+
 ## Réseau lent ou coupé
 
 Toutes les actions ont un délai maximal (15 s ; 2 min pour l'import d'un média) et libèrent leur bouton avec un message clair. Quand la réponse se perd, le résultat est **incertain** (`UncertainError` dans `lib/client/api.ts`) :

@@ -422,6 +422,9 @@ function ProfileFinale({ game }: { game: Game }) {
           {voters > 1 ? "s" : ""} sur {game.players.length} · un bilan du groupe, aucun résultat individuel
         </span>
         <div className="row">
+          <Link className="button secondary" href="/app/resultats">
+            <BarChart3 size={18} /> Résultats détaillés
+          </Link>
           <Link className="button host-primary" href="/app">
             Retour à mes quiz
           </Link>
@@ -466,6 +469,9 @@ function Finale({ game }: { game: Game }) {
           <button className="button secondary" onClick={() => setFull(true)}>
             <Trophy size={18} /> Classement complet
           </button>
+          <Link className="button secondary" href="/app/resultats">
+            <BarChart3 size={18} /> Résultats détaillés
+          </Link>
           <Link className="button host-primary" href="/app">
             Retour à mes quiz
           </Link>

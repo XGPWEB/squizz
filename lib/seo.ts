@@ -27,7 +27,7 @@ export const ADVANTAGES = [
   },
   {
     title: "Données hébergées en Europe",
-    text: "Serveur à Francfort (Allemagne), conformité RGPD, parties et réponses des joueurs supprimées automatiquement après 24 heures.",
+    text: "Serveur à Francfort (Allemagne), conformité RGPD, parties supprimées après 24 heures et leurs résultats après 12 mois, automatiquement.",
   },
   {
     title: "Essai gratuit, puis sans engagement",
@@ -94,8 +94,8 @@ export const FAQ: { q: string; a: string }[] = [
   {
     q: "Où sont hébergées les données et que deviennent-elles ?",
     a:
-      "Sur un serveur situé à Francfort (Allemagne, Union européenne). Les parties, pseudos et réponses sont supprimés automatiquement " +
-      "24 heures après la partie. SQuizz respecte le RGPD : chaque utilisateur peut exporter ou supprimer son compte.",
+      "Sur un serveur situé à Francfort (Allemagne, Union européenne). Les parties sont supprimées automatiquement " +
+      "24 heures après, et leurs résultats (pseudos, réponses, scores) 12 mois après. SQuizz respecte le RGPD : chaque utilisateur peut exporter ou supprimer son compte.",
   },
   {
     q: "Peut-on utiliser SQuizz pour un seul événement, sans abonnement ?",

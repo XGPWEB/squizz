@@ -6,6 +6,7 @@ import { openCookiePreferences } from "@/components/site/cookie-consent";
 import { useEffect, useRef, useState } from "react";
 import {
   Activity,
+  BarChart3,
   Building2,
   ChevronDown,
   Cookie,
@@ -81,6 +82,7 @@ export function AppBar(p: Props) {
     p.area === "app"
       ? [
           { href: "/app", label: "Mes quiz", icon: LayoutGrid, exact: true },
+          { href: "/app/resultats", label: "Résultats", icon: BarChart3 },
           { href: "/app/equipe", label: p.canTeam ? "Équipe" : "Organisation", icon: Users },
           ...(p.canTeam ? [{ href: "/app/abonnement", label: "Abonnement", icon: CreditCard }] : []),
           ...(p.isSuperAdmin && !p.viewingAs
