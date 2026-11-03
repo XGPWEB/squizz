@@ -945,3 +945,12 @@ body:has(.theme-sober) {
 .theme-sober .personal-result.group-profile {
   border-left-color: var(--brand);
 }
+.theme-sober .match-row.wrong select {
+  background: #fbeceb;
+}
+.theme-sober .team-podium .podium-step,
+.theme-sober .team-podium .place-1 .podium-step,
+.theme-sober .team-podium .place-3 .podium-step {
+  background: var(--team);
+  color: white;
+}

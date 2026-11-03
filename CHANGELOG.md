@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.21.1] — 2026-11-03
+
+### Thème sobre
+- Podium des équipes à la couleur de chaque équipe, comme leurs étiquettes.
+- Appariement : une paire fausse sur fond rose pâle, plus sur le rose vif du thème coloré.
+
 ## [1.21.0] — 2026-11-03
 
 ### Ajouté
