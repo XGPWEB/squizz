@@ -5,6 +5,7 @@ import { ArrowLeft, Check, Lock, Minus, X } from "lucide-react";
 import { pageUser } from "@/lib/server/guard";
 import { findReport } from "@/lib/server/reports";
 import { overallSuccess } from "@/lib/report";
+import { teamName } from "@/lib/teams";
 import { ReportActions } from "./report-actions";
 
 export const metadata: Metadata = { title: "Résultats de la partie" };
@@ -76,6 +77,24 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         )}
       </div>
 
+      {data.teams && (
+        <section className="panel">
+          <h2>Les équipes</h2>
+          <ol className="report-teams">
+            {data.teams.map((t) => (
+              <li key={t.name} className={`team-${t.color}`}>
+                <span className={`rank-chip r${Math.min(t.rank, 4)}`}>{t.rank}</span>
+                <strong>{t.name}</strong>
+                <small>
+                  {t.players} joueur{t.players > 1 ? "s" : ""}
+                </small>
+                <b>{t.score.toLocaleString("fr-FR")} pts de moyenne</b>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
       <section className="panel">
         <h2>{scored ? "Classement" : "Participants"}</h2>
         <div className="table-wrap">
@@ -84,6 +103,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               <tr>
                 {scored && <th>Rang</th>}
                 <th>Pseudo</th>
+                {data.teams && <th>Équipe</th>}
                 {scored && <th>Score</th>}
                 {scored && <th>Bonnes réponses</th>}
                 <th>Réponses données</th>
@@ -100,6 +120,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                   <td>
                     <strong>{p.name}</strong>
                   </td>
+                  {data.teams && <td>{p.team === null || p.team === undefined ? "—" : teamName(p.team)}</td>}
                   {scored && <td>{p.score.toLocaleString("fr-FR")}</td>}
                   {scored && (
                     <td>

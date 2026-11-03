@@ -20,7 +20,7 @@ type Member = SessionUser & { organizationId: string };
 export async function saveReport(code: string, played: number, finished: boolean) {
   const room = await prisma.room.findUnique({
     where: { code },
-    include: { players: { where: { kicked: false }, select: { id: true, name: true } } },
+    include: { players: { where: { kicked: false }, select: { id: true, name: true, team: true } } },
   });
   if (!room) return;
   const answers = await prisma.answer.findMany({
@@ -36,6 +36,7 @@ export async function saveReport(code: string, played: number, finished: boolean
       ...a,
       payload: (a.payload ? JSON.parse(a.payload) : { choices: [a.choice] }) as AnswerPayload,
     })),
+    room.teams,
   );
   // Linked only to a member account (a super-admin viewing the organisation is not one).
   const host = await prisma.user.findFirst({

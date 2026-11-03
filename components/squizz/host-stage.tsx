@@ -3,7 +3,18 @@ import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog } from "radix-ui";
 import { useState } from "react";
-import { BarChart3, Copy, Lock, Play, Smartphone, SkipForward, Trophy, Users, X } from "lucide-react";
+import {
+  BarChart3,
+  Copy,
+  Lock,
+  Play,
+  Shuffle,
+  Smartphone,
+  SkipForward,
+  Trophy,
+  Users,
+  X,
+} from "lucide-react";
 import { Brand } from "@/components/site/brand";
 import { FillSentence, MatchBoard, QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
 import { asksNothing } from "@/lib/question";
@@ -12,7 +23,17 @@ import { MediaView } from "@/components/squizz/media";
 import { FullscreenButton } from "@/components/squizz/fullscreen-button";
 import { gameApi as api } from "@/lib/client/api";
 import { leadingProfiles } from "@/lib/profiles";
-import { type Game, Leaderboard, Podium, ProfileSpread } from "./game-parts";
+import {
+  type Game,
+  Leaderboard,
+  Podium,
+  ProfileSpread,
+  TeamBoard,
+  TeamPodium,
+  TeamTag,
+  teamVerdict,
+} from "./game-parts";
+import { MAX_TEAMS, TEAMS } from "@/lib/teams";
 
 /** Question types whose answers the projected screen can show as they are (the tiles, the slide, the map). */
 const SHOWN_AS_IS = ["quiz", "truefalse", "poll", "slide", "pin", "pinpoll"];
@@ -97,11 +118,32 @@ function Timer({ seconds, total, done }: { seconds: number; total: number; done:
   );
 }
 
+/** Removes a player from the lobby, after a confirmation: they cannot come back. */
+function KickButton({ name, busy, onKick }: { name: string; busy: boolean; onKick: (name: string) => void }) {
+  return (
+    <button
+      className="kick"
+      disabled={busy}
+      aria-label={`Retirer ${name} de la partie`}
+      title="Retirer ce joueur"
+      onClick={() => {
+        if (confirm(`Retirer ${name} de la partie ? Ce joueur ne pourra pas revenir.`)) onKick(name);
+      }}
+    >
+      <X size={14} />
+    </button>
+  );
+}
+
 function Lobby({ game, busy, run, settle, joinUrl, origin, onError }: Props) {
   const [copied, setCopied] = useState(false),
     [name, setName] = useState("");
   const address = origin.replace(/^https?:\/\//, "");
   const hostPlays = game.players.some((p) => p.me);
+  const kick = (name: string) =>
+    run(async () => {
+      await api("kick", { code: game.code, name });
+    });
   return (
     <>
       <div className="host-main host-lobby">
@@ -152,28 +194,83 @@ function Lobby({ game, busy, run, settle, joinUrl, origin, onError }: Props) {
               <small> / {game.maxPlayers} max.</small>
             </span>
           </div>
-          {game.players.length ? (
+          <div className="team-controls" role="group" aria-label="Mode équipes">
+            <span className="eyebrow">ÉQUIPES</span>
+            {[0, ...Array.from({ length: MAX_TEAMS - 1 }, (_, i) => i + 2)].map((n) => (
+              <button
+                key={n}
+                type="button"
+                className={(game.teams?.count ?? 0) === n ? "on" : ""}
+                aria-pressed={(game.teams?.count ?? 0) === n}
+                disabled={busy}
+                onClick={() =>
+                  run(async () => {
+                    await api("teams", { code: game.code, count: n });
+                  })
+                }
+              >
+                {n ? n : "Seul"}
+              </button>
+            ))}
+            {game.teams && (
+              <button
+                type="button"
+                className="team-shuffle"
+                disabled={busy || !game.players.length}
+                onClick={() =>
+                  run(async () => {
+                    await api("shuffle", { code: game.code });
+                  })
+                }
+              >
+                <Shuffle size={15} /> Répartir au hasard
+              </button>
+            )}
+          </div>
+          {game.teams && game.players.length > 0 && (
+            <div className="team-columns">
+              {[...Array.from({ length: game.teams.count }, (_, i) => i), null].map((team) => {
+                const members = game.players.filter((p) => (p.team ?? null) === team);
+                if (team === null && !members.length) return null;
+                return (
+                  <div
+                    key={team ?? "none"}
+                    className={`team-column ${team === null ? "" : `team-${TEAMS[team]?.color ?? "electric"}`}`}
+                  >
+                    {team === null ? (
+                      <span className="team-tag none">Sans équipe</span>
+                    ) : (
+                      <TeamTag team={team} />
+                    )}
+                    <small>{members.length}</small>
+                    <ul>
+                      {members.map((p) => (
+                        <li key={p.name}>
+                          <span>
+                            {p.name}
+                            {p.me ? " (vous)" : ""}
+                          </span>
+                          {!p.me && <KickButton name={p.name} busy={busy} onKick={kick} />}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {game.teams && game.players.length > 0 ? (
+            <p className="hint team-hint">
+              Chacun choisit son équipe sur son téléphone. Au lancement, ceux qui n’ont pas choisi rejoignent
+              les équipes les moins remplies.
+            </p>
+          ) : game.players.length ? (
             <div className="host-chips">
               {game.players.map((p) => (
                 <span className="player" key={p.name}>
                   {p.name}
                   {p.me ? " (vous)" : ""}
-                  {!p.me && (
-                    <button
-                      className="kick"
-                      disabled={busy}
-                      aria-label={`Retirer ${p.name} de la partie`}
-                      title="Retirer ce joueur"
-                      onClick={() => {
-                        if (confirm(`Retirer ${p.name} de la partie ? Ce joueur ne pourra pas revenir.`))
-                          run(async () => {
-                            await api("kick", { code: game.code, name: p.name });
-                          });
-                      }}
-                    >
-                      <X size={14} />
-                    </button>
-                  )}
+                  {!p.me && <KickButton name={p.name} busy={busy} onKick={kick} />}
                 </span>
               ))}
             </div>
@@ -391,6 +488,8 @@ function Question({ game, busy, run, settle, remaining }: Props) {
             <div className="host-modal-body" key={tab}>
               {tab === "results" ? (
                 <QuestionResults question={q} aggregate={game.aggregate} players={game.players.length} host />
+              ) : game.teams ? (
+                <TeamBoard standings={game.teams.standings} />
               ) : (
                 <Leaderboard players={game.players.slice(0, 5)} />
               )}
@@ -407,7 +506,11 @@ function Question({ game, busy, run, settle, remaining }: Props) {
                 </button>
               ) : (
                 <span className="hint">
-                  {game.players.length > 5 ? `Top 5 sur ${game.players.length} joueurs` : ""}
+                  {game.teams
+                    ? "Score d’une équipe : la moyenne de ses joueurs"
+                    : game.players.length > 5
+                      ? `Top 5 sur ${game.players.length} joueurs`
+                      : ""}
                 </span>
               )}
               <button className="button host-primary" disabled={busy} onClick={next}>
@@ -489,9 +592,13 @@ function Finale({ game }: { game: Game }) {
         <span className="sticker pink-sticker">FIN DU GAME</span>
         <h1>Place aux légendes.</h1>
         <p className="handnote">
-          {tie ? "Ex æquo au sommet. Bien joué !" : `${game.players[0]?.name} prend la couronne !`}
+          {game.teams
+            ? teamVerdict(game.teams.standings)
+            : tie
+              ? "Ex æquo au sommet. Bien joué !"
+              : `${game.players[0]?.name} prend la couronne !`}
         </p>
-        <Podium players={game.players} />
+        {game.teams ? <TeamPodium standings={game.teams.standings} /> : <Podium players={game.players} />}
       </div>
       <footer className="host-bottom">
         <span className="hint">
@@ -520,6 +627,7 @@ function Finale({ game }: { game: Game }) {
               </Dialog.Close>
             </div>
             <div className="host-modal-body">
+              {game.teams && <TeamBoard standings={game.teams.standings} />}
               <Leaderboard players={game.players} />
             </div>
           </Dialog.Content>

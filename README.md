@@ -33,6 +33,10 @@ Les types et leur validation sont définis dans `lib/question.ts`.
 | Espace organisation | `/app` : bibliothèque de quiz, éditeur, équipe, compte | Membres d'une organisation |
 | Super-admin | `/super-admin` : organisations, utilisateurs, messages de contact, journal | Pressweb |
 
+## Mode équipes
+
+Activé dans la salle d'attente (`Room.teams`, de 2 à 6, 0 sinon ; actions `teams`, `team` du joueur, `shuffle`). L'équipe de chaque joueur est `Player.team`. Au lancement, `fillTeams()` (`lib/teams.ts`) place ceux qui n'ont pas choisi dans les équipes les moins remplies. Le score d'une équipe est la moyenne de ses joueurs (`teamStandings()`), envoyée dans l'état de la partie et gardée dans les résultats.
+
 ## Rôles
 
 | Rôle | Peut |

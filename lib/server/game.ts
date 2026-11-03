@@ -6,6 +6,7 @@ import { orgLimits } from "@/lib/plans";
 import { isProfileQuiz, profileResults } from "@/lib/profiles";
 import type { Quiz } from "@/lib/quizzes";
 import { drawSpin, SPIN_MS, wheelEntries, type Spin } from "@/lib/wheel";
+import { fillTeams, MAX_TEAMS, teamStandings } from "@/lib/teams";
 import {
   aggregateAnswers,
   asksNothing,
@@ -38,6 +39,7 @@ type Room = {
   created: number;
   maxPlayers: number;
   spin: Spin | null;
+  teams: number;
 };
 type AnswerRow = {
   player: string;
@@ -231,14 +233,14 @@ async function readSnapshot(code: string): Promise<Snapshot> {
   const room = toRoom(await findRoom(code));
   const [people, submitted] = await Promise.all([
     prisma.$queryRaw<ScoreRow[]>`
-      SELECT p."id", p."name",
+      SELECT p."id", p."name", p."team",
         COALESCE(SUM(a."points"), 0)::int AS "score",
         COALESCE(SUM(CASE WHEN a."question" < ${room.question} THEN a."points" ELSE 0 END), 0)::int AS "priorScore",
         COALESCE(SUM(CASE WHEN COALESCE(a."correctness", CASE WHEN a."points" > 0 THEN 1 ELSE 0 END) = 1
           THEN 1 ELSE 0 END), 0)::int AS "correctCount"
       FROM "Player" p LEFT JOIN "Answer" a ON a."code" = p."code" AND a."player" = p."id"
       WHERE p."code" = ${code} AND NOT p."kicked"
-      GROUP BY p."id", p."name"
+      GROUP BY p."id", p."name", p."team"
       ORDER BY "score" DESC, p."name" ASC`,
     prisma.answer.findMany({
       where: { code, question: room.question, owner: { kicked: false } },
@@ -350,12 +352,66 @@ function requireHost(g: GameContext) {
   if (!g.host) fail("Seul l’animateur peut piloter la partie.", 403);
 }
 
+/** Team mode, in the lobby: the host sets the number of teams (0 to play alone). */
+export async function setTeams(g: GameContext, count: unknown) {
+  requireHost(g);
+  if (g.room.phase !== "lobby") fail("Les équipes se forment avant le lancement.");
+  const teams = Number(count);
+  if (!Number.isInteger(teams) || !(teams === 0 || (teams >= 2 && teams <= MAX_TEAMS)))
+    fail(`Choisissez de 2 à ${MAX_TEAMS} équipes.`);
+  await prisma.$transaction([
+    prisma.room.updateMany({ where: { code: g.room.code, phase: "lobby" }, data: { teams } }),
+    // Players of a team that no longer exists choose again (or are placed at the start).
+    prisma.player.updateMany({
+      where: { code: g.room.code, team: { gte: teams } },
+      data: { team: null },
+    }),
+  ]);
+  invalidate(g.room.code);
+}
+
+/** Team mode, in the lobby: a player joins a team. */
+export async function pickTeam(g: GameContext, team: unknown) {
+  if (!g.me) fail("Rejoins d’abord cette partie.", 403);
+  if (g.room.phase !== "lobby") fail("Les équipes sont faites : la partie a commencé.");
+  const index = Number(team);
+  if (!g.room.teams || !Number.isInteger(index) || index < 0 || index >= g.room.teams)
+    fail("Équipe inconnue.");
+  await prisma.player.updateMany({ where: { code: g.room.code, id: g.who }, data: { team: index } });
+  invalidate(g.room.code);
+}
+
+/** Team mode, in the lobby: the host deals every player into balanced teams at random. */
+export async function shuffleTeams(g: GameContext) {
+  requireHost(g);
+  if (g.room.phase !== "lobby" || !g.room.teams) fail("Activez d’abord le mode équipes.");
+  const order = randomOrder(g.people.length).map((i) => g.people[i]);
+  await prisma.$transaction(
+    order.map((p, i) =>
+      prisma.player.updateMany({ where: { code: g.room.code, id: p.id }, data: { team: i % g.room.teams } }),
+    ),
+  );
+  invalidate(g.room.code);
+}
+
 export async function startGame(g: GameContext) {
   requireHost(g);
   // A start sent twice (retry after a lost response): the game is already running, nothing to do.
   if (g.room.phase === "question" && g.room.question === 0) return Math.max(0, g.room.started - Date.now());
   if (g.room.phase !== "lobby") fail("La partie a déjà commencé.");
   if (!g.people.length) fail("Attends au moins un joueur.");
+  if (g.room.teams) {
+    // Whoever has not chosen goes to the emptiest team.
+    const placed = fillTeams(
+      g.room.teams,
+      g.people.map((p) => ({ id: p.id, team: p.team ?? null })),
+    );
+    await prisma.$transaction(
+      [...placed].map(([id, team]) =>
+        prisma.player.updateMany({ where: { code: g.room.code, id, team: null }, data: { team } }),
+      ),
+    );
+  }
   await prisma.room.updateMany({
     where: { code: g.room.code, phase: "lobby" },
     data: { phase: "question", started: BigInt(Date.now() + READY_MS) },
@@ -483,6 +539,22 @@ export function gameState(g: GameContext) {
       : null,
     aggregate:
       revealed && !asksNothing(question.type) ? aggregateAnswers(question, g.submitted.map(decode)) : null,
+    /** Team mode: the teams in ranking order (scores as everyone sees them now), and the player's own. */
+    teams: room.teams
+      ? {
+          count: room.teams,
+          standings: teamStandings(
+            room.teams,
+            g.people.map((p) => ({
+              team: p.team ?? null,
+              score: revealed ? p.score : p.priorScore,
+              priorScore: p.priorScore,
+            })),
+            revealed && room.question > 0 && room.phase !== "lobby",
+          ),
+          mine: g.me?.team ?? null,
+        }
+      : null,
     /** The wheel of the current step: its entries, and the last spin with how far into it we are. */
     wheel:
       question.type === "wheel" && room.phase === "question" && startsIn === 0

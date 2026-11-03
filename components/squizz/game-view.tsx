@@ -14,6 +14,10 @@ import {
   Podium,
   ProfileSpread,
   ProfileStep,
+  TeamBoard,
+  TeamPodium,
+  TeamTag,
+  teamVerdict,
 } from "./game-parts";
 import { HostStage } from "./host-stage";
 import { Wheel } from "./wheel";
@@ -170,7 +174,19 @@ export function GameView({ code }: { code: string }) {
           onError={setError}
         />
       ) : game && game.phase === "lobby" ? (
-        <PlayerWaiting game={game} />
+        <PlayerWaiting
+          game={game}
+          busy={busy}
+          onPickTeam={(team) =>
+            run(async () => {
+              await settle(
+                () => api("team", { code, team }),
+                (g) => g.teams?.mine === team,
+                "Choix d’équipe non confirmé : vérifie ta connexion, puis touche à nouveau.",
+              );
+            })
+          }
+        />
       ) : (
         game && (
           <>
@@ -204,15 +220,21 @@ export function GameView({ code }: { code: string }) {
                     <span className="sticker pink-sticker">FIN DU GAME</span>
                     <h1>Place aux légendes.</h1>
                     <p className="handnote">
-                      {game.players.filter((p) => p.rank === 1).length > 1
-                        ? "Ex æquo au sommet. Bien joué !"
-                        : `${game.players[0]?.name} prend la couronne !`}
+                      {game.teams
+                        ? teamVerdict(game.teams.standings)
+                        : game.players.filter((p) => p.rank === 1).length > 1
+                          ? "Ex æquo au sommet. Bien joué !"
+                          : `${game.players[0]?.name} prend la couronne !`}
                     </p>
                   </div>
-                  <Podium players={game.players} />
+                  {game.teams ? (
+                    <TeamPodium standings={game.teams.standings} mine={game.teams.mine} />
+                  ) : (
+                    <Podium players={game.players} />
+                  )}
                   {game.personal && <PersonalResult game={game} final />}
                   <div className="section-heading">
-                    <h2>Tout le classement</h2>
+                    <h2>{game.teams ? "Les joueurs" : "Tout le classement"}</h2>
                     <span className="eyebrow">
                       {game.total} QUESTIONS · {game.players.length} JOUEURS
                     </span>
@@ -319,6 +341,9 @@ export function GameView({ code }: { code: string }) {
                       {!silent && !game.profileQuiz && (
                         <>
                           <h2 style={{ marginTop: 24 }}>Qui mène le jeu ?</h2>
+                          {game.teams && (
+                            <TeamBoard standings={game.teams.standings} mine={game.teams.mine} />
+                          )}
                           <Leaderboard players={game.players} />
                         </>
                       )}
@@ -336,7 +361,15 @@ export function GameView({ code }: { code: string }) {
 }
 
 /** What a player sees once registered, until the host starts the quiz. */
-function PlayerWaiting({ game }: { game: Game }) {
+function PlayerWaiting({
+  game,
+  busy,
+  onPickTeam,
+}: {
+  game: Game;
+  busy: boolean;
+  onPickTeam: (team: number) => void;
+}) {
   const me = game.players.find((p) => p.me);
   const others = game.players.length - (me ? 1 : 0);
   return (
@@ -356,6 +389,34 @@ function PlayerWaiting({ game }: { game: Game }) {
               <i>.</i>
             </span>
           </p>
+          {game.teams && (
+            <section className="team-picker" aria-label="Choisis ton équipe">
+              <h2>{game.teams.mine === null ? "Choisis ton équipe" : "Ton équipe"}</h2>
+              <div>
+                {Array.from({ length: game.teams.count }, (_, team) => {
+                  const size = game.players.filter((p) => p.team === team).length;
+                  return (
+                    <button
+                      key={team}
+                      type="button"
+                      disabled={busy}
+                      aria-pressed={game.teams!.mine === team}
+                      className={game.teams!.mine === team ? "on" : ""}
+                      onClick={() => onPickTeam(team)}
+                    >
+                      <TeamTag team={team} />
+                      <small>
+                        {size} joueur{size > 1 ? "s" : ""}
+                      </small>
+                    </button>
+                  );
+                })}
+              </div>
+              {game.teams.mine === null && (
+                <p className="hint">Sinon, l’animateur te placera au lancement.</p>
+              )}
+            </section>
+          )}
           <p className="hint">
             {others === 0
               ? "Tu es le premier joueur arrivé."

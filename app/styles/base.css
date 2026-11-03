@@ -1219,3 +1219,183 @@ footer {
     animation: none;
   }
 }
+
+/* Team mode: one colour per team, from the SQuizz palette */
+.team-electric {
+  --team: var(--electric);
+  --team-ink: white;
+}
+.team-acid {
+  --team: var(--acid);
+  --team-ink: var(--ink);
+}
+.team-pink {
+  --team: var(--pink);
+  --team-ink: var(--ink);
+}
+.team-orange {
+  --team: var(--orange);
+  --team-ink: var(--ink);
+}
+.team-ink {
+  --team: var(--ink);
+  --team-ink: var(--acid);
+}
+.team-cloud {
+  --team: white;
+  --team-ink: var(--ink);
+}
+.team-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  font:
+    400 15px/1.3 Anton,
+    sans-serif;
+  letter-spacing: 0.3px;
+  color: var(--team-ink, var(--ink));
+  background: var(--team, white);
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: rotate(-1.5deg);
+  white-space: nowrap;
+}
+.team-tag.small {
+  padding: 1px 7px;
+  font-size: 13px;
+}
+.team-tag.none {
+  background: var(--cream);
+  border-style: dashed;
+  box-shadow: none;
+  transform: none;
+}
+.team-board {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 18px;
+  display: grid;
+  gap: 10px;
+}
+.team-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1.4fr) minmax(60px, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: white;
+  border: 2px solid var(--ink);
+  border-left: 12px solid var(--team);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--ink);
+  animation: team-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+.team-row.is-mine {
+  outline: 3px solid var(--team);
+  outline-offset: 2px;
+}
+.team-row .rank {
+  font:
+    400 26px/1 Anton,
+    sans-serif;
+}
+.team-row-name {
+  display: grid;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.team-row-name small {
+  font-weight: 400;
+  font-size: 12px;
+}
+.team-row-bar {
+  height: 12px;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.team-row-bar i {
+  display: block;
+  height: 100%;
+  background: var(--team);
+  transform-origin: left;
+  animation: team-bar 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.team-row > b {
+  white-space: nowrap;
+}
+@keyframes team-in {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+}
+@keyframes team-bar {
+  from {
+    transform: scaleX(0);
+  }
+}
+.team-podium .podium-step {
+  background: var(--team);
+  color: var(--team-ink);
+}
+.team-line {
+  margin: 8px 0 0;
+  font-weight: 700;
+}
+.team-picker {
+  margin: 20px 0 6px;
+}
+.team-picker h2 {
+  margin: 0 0 10px;
+  font-size: 22px;
+}
+.team-picker > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.team-picker button {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  font: inherit;
+  color: var(--ink);
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.team-picker button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.team-picker button.on {
+  background: var(--acid);
+  box-shadow: 4px 4px 0 var(--ink);
+  transform: rotate(-1deg);
+}
+.team-picker button small {
+  font-size: 12px;
+}
+@media (max-width: 560px) {
+  .team-row {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+  }
+  .team-row-bar,
+  .team-row .movement {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-row,
+  .team-row-bar i {
+    animation: none;
+  }
+}

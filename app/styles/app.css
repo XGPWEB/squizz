@@ -320,7 +320,8 @@ body {
     opacity: 0;
   }
 }
-.player .kick {
+.player .kick,
+.team-column .kick {
   display: inline-grid;
   place-items: center;
   width: 22px;
@@ -332,7 +333,8 @@ body {
   background: white;
   vertical-align: middle;
 }
-.player .kick:hover {
+.player .kick:hover,
+.team-column .kick:hover {
   background: var(--pink);
 }
 .button.danger-button:hover:not(:disabled) {
@@ -1334,4 +1336,30 @@ main:focus {
 .report-grid th svg {
   margin-left: 3px;
   vertical-align: -1px;
+}
+.report-teams {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.report-teams li {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: white;
+  border: 2px solid var(--ink);
+  border-left: 14px solid var(--team);
+  border-radius: 12px;
+}
+.report-teams small {
+  color: #55554f;
+}
+@media (max-width: 640px) {
+  .report-teams li {
+    grid-template-columns: auto 1fr;
+  }
 }

@@ -9,6 +9,7 @@ import {
   type Question,
 } from "./question";
 import type { Sheet } from "./xlsx";
+import { teamName, teamStandings } from "./teams";
 
 /** One answer of one player, as kept in a game report. */
 export type ReportAnswer = { text: string; outcome: "correct" | "incorrect" | "opinion"; points: number };
@@ -33,6 +34,8 @@ export type ReportQuestion = {
 };
 export type ReportPlayer = {
   name: string;
+  /** Team mode: the player's team (from 0). */
+  team?: number | null;
   rank: number;
   score: number;
   correct: number;
@@ -40,7 +43,13 @@ export type ReportPlayer = {
   /** In the order of `questions`; null when the player did not answer. */
   answers: (ReportAnswer | null)[];
 };
-export type ReportData = { questions: ReportQuestion[]; players: ReportPlayer[]; total: number };
+export type ReportData = {
+  questions: ReportQuestion[];
+  players: ReportPlayer[];
+  total: number;
+  /** Team mode: the teams in ranking order. */
+  teams?: { name: string; color: string; players: number; score: number; rank: number }[];
+};
 
 /** What `buildReport` reads from the database: the answers of the questions played. */
 export type RawAnswer = {
@@ -108,8 +117,9 @@ const outcomeOf = (a: RawAnswer): ReportAnswer["outcome"] => {
 export function buildReport(
   steps: Question[],
   played: number,
-  players: { id: string; name: string }[],
+  players: { id: string; name: string; team?: number | null }[],
   answers: RawAnswer[],
+  teamCount = 0,
 ): ReportData {
   const kept = steps
     .map((q, index) => ({ q, index }))
@@ -160,6 +170,7 @@ export function buildReport(
     });
     return {
       name: p.name,
+      ...(teamCount ? { team: p.team ?? null } : {}),
       score: list.reduce((sum, a) => sum + (a?.points ?? 0), 0),
       correct: list.filter((a) => a?.outcome === "correct").length,
       answered: list.filter(Boolean).length,
@@ -169,6 +180,14 @@ export function buildReport(
   rows.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, "fr"));
   return {
     total: steps.filter((q) => !asksNothing(q.type)).length,
+    ...(teamCount
+      ? {
+          teams: teamStandings(
+            teamCount,
+            rows.map((p) => ({ team: p.team ?? null, score: p.score })),
+          ).map(({ name, color, players, score, rank }) => ({ name, color, players, score, rank })),
+        }
+      : {}),
     questions,
     players: rows.map((p) => ({ ...p, rank: rows.findIndex((o) => o.score === p.score) + 1 })),
   };
@@ -200,6 +219,7 @@ export function reportSheets(
         [
           "Rang",
           "Pseudo",
+          ...(data.teams ? ["Équipe"] : []),
           "Score",
           "Bonnes réponses",
           "Réponses données",
@@ -208,6 +228,7 @@ export function reportSheets(
         ...data.players.map((p) => [
           p.rank,
           p.name,
+          ...(data.teams ? [p.team === null || p.team === undefined ? "" : teamName(p.team)] : []),
           p.score,
           p.correct,
           p.answered,
@@ -246,6 +267,18 @@ export function reportSheets(
         ]),
       ],
     },
+    ...(data.teams
+      ? [
+          {
+            name: "Équipes",
+            widths: [8, 24, 10, 16],
+            rows: [
+              ["Rang", "Équipe", "Joueurs", "Score moyen"],
+              ...data.teams.map((t) => [t.rank, t.name, t.players, t.score]),
+            ],
+          },
+        ]
+      : []),
     {
       name: "Partie",
       widths: [22, 60],

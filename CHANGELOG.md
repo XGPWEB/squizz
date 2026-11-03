@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.20.0] — 2026-11-03
+
+### Ajouté
+- Mode équipes : dans la salle d’attente, l’animateur choisit de 2 à 6 équipes aux couleurs de SQuizz (Éclairs, Citrons, Flamants, Mandarines, Corbeaux, Nuages). Chaque joueur choisit la sienne sur son téléphone, ou l’animateur les répartit au hasard ; au lancement, ceux qui n’ont pas choisi rejoignent les équipes les moins remplies.
+- Score d’une équipe : la moyenne de ses joueurs, pour comparer des équipes de tailles différentes. Classement des équipes après chaque question (places gagnées ou perdues), podium des équipes à la fin, équipe et rang sur le téléphone de chaque joueur.
+- Résultats et export Excel : l’équipe de chaque joueur et un classement des équipes.
+
 ## [1.19.0] — 2026-11-03
 
 ### Ajouté

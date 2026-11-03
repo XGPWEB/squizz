@@ -2,6 +2,7 @@ import { Trophy } from "lucide-react";
 import { type PublicQuestion, type Aggregate, type AnswerPayload } from "@/lib/question";
 import { leadingProfiles, type ProfileShare } from "@/lib/profiles";
 import type { WheelSpin } from "./wheel";
+import { TEAMS, teamName, type TeamStanding } from "@/lib/teams";
 
 export type RankedPlayer = {
   name: string;
@@ -10,6 +11,7 @@ export type RankedPlayer = {
   rank: number;
   movement: number | null;
   correctCount?: number;
+  team?: number | null;
 };
 export type Game = {
   code: string;
@@ -39,7 +41,89 @@ export type Game = {
   receivedAt: number;
   /** The wheel of the current step, once it is on screen. */
   wheel: { entries: string[]; spin: WheelSpin | null } | null;
+  /** Team mode: the teams in ranking order, and the player's own team. */
+  teams: { count: number; standings: TeamStanding[]; mine: number | null } | null;
 };
+
+/** A team's colour badge with its name. */
+export function TeamTag({ team, small = false }: { team: number; small?: boolean }) {
+  return (
+    <span className={`team-tag team-${TEAMS[team]?.color ?? "electric"} ${small ? "small" : ""}`}>
+      {teamName(team)}
+    </span>
+  );
+}
+
+/** The teams in ranking order: average score, size and places won or lost. */
+export function TeamBoard({ standings, mine }: { standings: TeamStanding[]; mine?: number | null }) {
+  const best = Math.max(1, ...standings.map((t) => t.score));
+  return (
+    <ol className="team-board">
+      {standings.map((t, i) => (
+        <li
+          key={t.index}
+          className={`team-row team-${t.color} ${t.index === mine ? "is-mine" : ""}`}
+          style={{ "--i": i } as React.CSSProperties}
+        >
+          <strong className="rank">{t.rank}</strong>
+          <span className="team-row-name">
+            {t.name}
+            {t.index === mine ? " (ton équipe)" : ""}
+            <small>
+              {t.players} joueur{t.players > 1 ? "s" : ""}
+            </small>
+          </span>
+          <span className="team-row-bar" aria-hidden>
+            <i style={{ width: `${(100 * t.score) / best}%` }} />
+          </span>
+          {t.movement !== null && (
+            <span
+              className={`movement ${t.movement > 0 ? "up" : t.movement < 0 ? "down" : "same"}`}
+              aria-label={
+                t.movement === 0
+                  ? "Même place"
+                  : `${t.movement > 0 ? "Gagne" : "Perd"} ${Math.abs(t.movement)} place${Math.abs(t.movement) > 1 ? "s" : ""}`
+              }
+            >
+              {t.movement > 0 ? `▲ ${t.movement}` : t.movement < 0 ? `▼ ${-t.movement}` : "="}
+            </span>
+          )}
+          <b>{t.score.toLocaleString("fr-FR")} pts</b>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** The final podium of the teams. */
+export function TeamPodium({ standings, mine }: { standings: TeamStanding[]; mine?: number | null }) {
+  const top = standings.filter((t) => t.rank <= 3);
+  const order = top.length >= 2 ? [top[1], top[0], ...top.slice(2)] : top;
+  return (
+    <div className="podium team-podium" aria-label="Podium des équipes">
+      {order.map((t) => (
+        <div key={t.index} className={`podium-player place-${Math.min(t.rank, 3)} team-${t.color}`}>
+          <span className="podium-name">
+            {t.rank === 1 && <Trophy size={30} />} {t.name}
+          </span>
+          <div className="podium-step">
+            <strong>{t.rank}</strong>
+            <span>{t.score.toLocaleString("fr-FR")} pts</span>
+            {t.index === mine && <b>TON ÉQUIPE !</b>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** How a team mode game ended, in one line. */
+export function teamVerdict(standings: TeamStanding[]) {
+  const winners = standings.filter((t) => t.rank === 1);
+  return winners.length > 1
+    ? `Égalité au sommet : ${winners.map((t) => t.name).join(" et ")} !`
+    : `Victoire des ${winners[0]?.name.replace(/^Les /, "") ?? ""} !`;
+}
 
 export function Leaderboard({ players }: { players: Game["players"] }) {
   return (
@@ -126,6 +210,15 @@ export function PersonalResult({ game, final = false }: { game: Game; final?: bo
                   : "Tu gardes ta place. Garde le rythme !"}
         </span>
         {!final && <p className="rank-copy">{rankMessage(p.rank, game.players)}</p>}
+        {game.teams && game.teams.mine !== null && (
+          <p className="team-line">
+            <TeamTag team={game.teams.mine} small />{" "}
+            {(() => {
+              const t = game.teams.standings.find((s) => s.index === game.teams!.mine);
+              return t ? `${t.rank}${t.rank === 1 ? "re" : "e"} sur ${game.teams.count}` : "";
+            })()}
+          </p>
+        )}
       </div>
       <div className="place-sticker">
         <strong>#{p.rank}</strong>

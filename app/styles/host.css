@@ -1152,3 +1152,86 @@
   height: 100%;
   min-height: 0;
 }
+
+/* Team mode in the lobby */
+.team-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.team-controls .eyebrow {
+  margin-right: 4px;
+}
+.team-controls button {
+  min-width: 40px;
+  padding: 6px 10px;
+  font:
+    700 15px Arial,
+    sans-serif;
+  color: var(--ink);
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.team-controls button.on {
+  background: var(--acid);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.team-controls .team-shuffle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  background: var(--pink);
+}
+.team-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 6px 8px 2px;
+}
+.team-column {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-content: start;
+  gap: 8px;
+  padding: 10px;
+  background: white;
+  border: 2px solid var(--ink);
+  border-top: 8px solid var(--team, var(--cream));
+  border-radius: 12px;
+}
+.team-column > small {
+  align-self: center;
+  font:
+    400 22px/1 Anton,
+    sans-serif;
+}
+.team-column ul {
+  grid-column: 1 / -1;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.team-column li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-weight: 700;
+  font-size: clamp(14px, 1.9vh, 18px);
+  animation: chip-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1.6) both;
+  overflow-wrap: anywhere;
+}
+.team-hint {
+  margin: 0;
+}
+.team-column .kick {
+  flex: none;
+}

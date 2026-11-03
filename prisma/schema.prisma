@@ -214,6 +214,8 @@ model Room {
   maxPlayers     Int
   /// Idempotency key sent when launching: a retried launch returns the same game instead of a second one.
   clientKey      String?
+  /// Team mode (lib/teams.ts): the number of teams, 0 when everyone plays alone.
+  teams          Int          @default(0)
   /// Last spin of the wheel of fortune on the current step (lib/wheel.ts): what was drawn and when.
   spin           Json?
 
@@ -229,6 +231,8 @@ model Player {
   name   String
   /// Removed by the host: excluded from the game and cannot join again.
   kicked Boolean @default(false)
+  /// Team mode: the player's team (from 0), chosen in the lobby or given at the start.
+  team   Int?
   room   Room    @relation(fields: [code], references: [code], onDelete: Cascade)
 
   answers Answer[]

@@ -22,6 +22,9 @@ import {
   loadGame,
   nextQuestion,
   parseCode,
+  pickTeam,
+  setTeams,
+  shuffleTeams,
   spinWheel,
   startGame,
   submitAnswer,
@@ -82,6 +85,18 @@ const actions: Record<string, Handler> = {
   next: async (who, body) => {
     const startsIn = await nextQuestion(await loadGame(who, parseCode(body.code), true), body);
     return { ok: true, startsIn };
+  },
+  teams: async (who, body) => {
+    await setTeams(await loadGame(who, parseCode(body.code), true), body.count);
+    return { ok: true };
+  },
+  team: async (who, body) => {
+    await pickTeam(await loadGame(who, parseCode(body.code), true), body.team);
+    return { ok: true };
+  },
+  shuffle: async (who, body) => {
+    await shuffleTeams(await loadGame(who, parseCode(body.code), true));
+    return { ok: true };
   },
   spin: async (who, body) => {
     await spinWheel(await loadGame(who, parseCode(body.code), true), body);
