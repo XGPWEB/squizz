@@ -14,17 +14,17 @@ import {
   Podium,
   ProfileSpread,
   ProfileStep,
+  GameMark,
   TeamBoard,
   TeamPodium,
   TeamTag,
-  teamVerdict,
+  finaleWords,
 } from "./game-parts";
 import { HostStage } from "./host-stage";
 import { Wheel } from "./wheel";
 import { asksNothing } from "@/lib/question";
 import { invitationOrigin } from "@/lib/invitation";
 import { gameApi as api, getJson, UncertainError } from "@/lib/client/api";
-import { Brand } from "@/components/site/brand";
 
 const LOST = "Connexion perdue, reconnexion…";
 
@@ -139,8 +139,12 @@ export function GameView({ code }: { code: string }) {
     ? Math.max(0, Math.ceil((game.remaining - Math.max(0, elapsed - game.startsIn)) / 1000))
     : 0;
   const joinUrl = `${origin}/jouer?code=${code}`;
+  const brand = game?.brand;
   return (
-    <>
+    <div
+      className={`game-theme theme-${brand?.theme ?? "squizz"}`}
+      style={brand ? ({ "--brand": brand.accent } as React.CSSProperties) : undefined}
+    >
       {error && (
         <div className="error" role="alert">
           {error}{" "}
@@ -191,7 +195,7 @@ export function GameView({ code }: { code: string }) {
         game && (
           <>
             <div className="play-top">
-              <Brand href={null} />
+              <GameMark brand={game.brand} href={null} />
             </div>
             <section className={`panel game-panel ${game.phase === "finished" ? "final-panel" : ""}`}>
               {game.phase === "finished" && game.profileQuiz ? (
@@ -217,15 +221,9 @@ export function GameView({ code }: { code: string }) {
               ) : game.phase === "finished" ? (
                 <>
                   <div className="center final-heading">
-                    <span className="sticker pink-sticker">FIN DU GAME</span>
-                    <h1>Place aux légendes.</h1>
-                    <p className="handnote">
-                      {game.teams
-                        ? teamVerdict(game.teams.standings)
-                        : game.players.filter((p) => p.rank === 1).length > 1
-                          ? "Ex æquo au sommet. Bien joué !"
-                          : `${game.players[0]?.name} prend la couronne !`}
-                    </p>
+                    <span className="sticker pink-sticker">{finaleWords(game).tag}</span>
+                    <h1>{finaleWords(game).title}</h1>
+                    <p className="handnote">{finaleWords(game).verdict}</p>
                   </div>
                   {game.teams ? (
                     <TeamPodium standings={game.teams.standings} mine={game.teams.mine} />
@@ -356,7 +354,7 @@ export function GameView({ code }: { code: string }) {
           </>
         )
       )}
-    </>
+    </div>
   );
 }
 
@@ -374,11 +372,13 @@ function PlayerWaiting({
   const others = game.players.length - (me ? 1 : 0);
   return (
     <div className="play-waiting" role="status" aria-live="polite">
-      <Brand href={null} className="brand-live brand-big" />
+      <GameMark brand={game.brand} href={null} className="brand-live brand-big" />
       {me ? (
         <>
           <h1>
-            C’est bon, <span>{me.name}</span> !
+            {game.brand?.theme === "sober" ? "Bienvenue, " : "C’est bon, "}
+            <span>{me.name}</span>
+            {game.brand?.theme === "sober" ? "." : " !"}
           </h1>
           <p className="lead">Tu es bien inscrit·e à la partie.</p>
           <p className="play-waiting-note">

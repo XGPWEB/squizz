@@ -1,6 +1,7 @@
 import { demos } from "@/lib/quizzes";
 import { identity, identityHeaders, lightIdentity } from "@/lib/identity";
 import { orgLimits } from "@/lib/plans";
+import { brandOf } from "@/lib/brand";
 import { assertSameOrigin, fail, HttpError, readBody, type Body } from "@/lib/server/http";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { requireMember } from "@/lib/server/guard";
@@ -62,7 +63,8 @@ const actions: Record<string, Handler> = {
     const quiz = await findQuiz(user, body.quizId);
     if (!quiz) fail("Quiz introuvable.", 404);
     const max = orgLimits(user.organization).maxPlayersPerGame;
-    return { code: await createRoom(user.id, user.organizationId, quiz, max, body.clientKey) };
+    const brand = brandOf(user.organization);
+    return { code: await createRoom(user.id, user.organizationId, quiz, max, body.clientKey, brand) };
   },
   // Playing: anyone with the code, signed in or not.
   join: async (who, body, req) => {

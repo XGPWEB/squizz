@@ -67,6 +67,12 @@ model Organization {
   wantedOffer          String?
   /// Event pass (one-off payment, lib/plans.ts): its limits apply until this date, whatever `plan` says.
   eventPassUntil       DateTime?
+  /// Look of the games (lib/brand.ts): « SQUIZZ » (colourful) or « SOBER », with the organisation's colour,
+  /// logo (a media URL of the organisation) and the « SQuizz » credit (only paid plans may hide it).
+  theme                String             @default("SQUIZZ")
+  brandAccent          String?
+  brandLogo            String?
+  brandCredit          Boolean            @default(true)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 
@@ -214,6 +220,8 @@ model Room {
   maxPlayers     Int
   /// Idempotency key sent when launching: a retried launch returns the same game instead of a second one.
   clientKey      String?
+  /// The organisation's look when the game was launched (lib/brand.ts), so a change never alters it mid-game.
+  brand          Json?
   /// Team mode (lib/teams.ts): the number of teams, 0 when everyone plays alone.
   teams          Int          @default(0)
   /// Last spin of the wheel of fortune on the current step (lib/wheel.ts): what was drawn and when.

@@ -10,6 +10,7 @@ const labels: Record<string, string> = {
   "organization.delete": "Organisation supprimée",
   "invitation.create": "Invitation envoyée",
   "member.update": "Membre modifié",
+  "organization.appearance": "Apparence des parties modifiée",
   "member.delete": "Membre supprimé",
   "user.update": "Utilisateur modifié",
   "user.reset_link": "Lien de mot de passe créé",

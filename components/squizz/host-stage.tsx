@@ -15,7 +15,6 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { Brand } from "@/components/site/brand";
 import { FillSentence, MatchBoard, QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
 import { asksNothing } from "@/lib/question";
 import { Wheel } from "./wheel";
@@ -28,10 +27,11 @@ import {
   Leaderboard,
   Podium,
   ProfileSpread,
+  GameMark,
   TeamBoard,
   TeamPodium,
   TeamTag,
-  teamVerdict,
+  finaleWords,
 } from "./game-parts";
 import { MAX_TEAMS, TEAMS } from "@/lib/teams";
 
@@ -79,7 +79,7 @@ export function HostStage(props: Props) {
         )}
         <div className="host-top-side">
           <FullscreenButton />
-          <Brand href="/app" />
+          <GameMark brand={game.brand} href="/app" />
         </div>
       </header>
       {game.phase === "lobby" ? (
@@ -117,6 +117,11 @@ function Timer({ seconds, total, done }: { seconds: number; total: number; done:
     </div>
   );
 }
+
+/** The pop-up windows open outside the game's frame: they carry its theme themselves. */
+const themeOf = (game: Game) => (game.brand?.theme === "sober" ? "theme-sober" : "");
+const brandStyle = (game: Game) =>
+  game.brand?.theme === "sober" ? ({ "--brand": game.brand.accent } as React.CSSProperties) : undefined;
 
 /** Removes a player from the lobby, after a confirmation: they cannot come back. */
 function KickButton({ name, busy, onKick }: { name: string; busy: boolean; onKick: (name: string) => void }) {
@@ -457,8 +462,12 @@ function Question({ game, busy, run, settle, remaining }: Props) {
       </footer>
       <Dialog.Root open={open} onOpenChange={(o) => !o && setClosedAt(game.index)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="host-overlay" />
-          <Dialog.Content className="host-modal" aria-describedby={undefined}>
+          <Dialog.Overlay className={`host-overlay ${themeOf(game)}`} />
+          <Dialog.Content
+            className={`host-modal ${themeOf(game)}`}
+            style={brandStyle(game)}
+            aria-describedby={undefined}
+          >
             <div className="host-modal-head">
               <div className="host-tabs" role="tablist">
                 <button
@@ -571,7 +580,6 @@ function ProfileFinale({ game }: { game: Game }) {
 
 function Finale({ game }: { game: Game }) {
   const [full, setFull] = useState(false);
-  const tie = game.players.filter((p) => p.rank === 1).length > 1;
   return (
     <>
       <div className="host-main host-finale">
@@ -589,15 +597,9 @@ function Finale({ game }: { game: Game }) {
             />
           ))}
         </div>
-        <span className="sticker pink-sticker">FIN DU GAME</span>
-        <h1>Place aux légendes.</h1>
-        <p className="handnote">
-          {game.teams
-            ? teamVerdict(game.teams.standings)
-            : tie
-              ? "Ex æquo au sommet. Bien joué !"
-              : `${game.players[0]?.name} prend la couronne !`}
-        </p>
+        <span className="sticker pink-sticker">{finaleWords(game).tag}</span>
+        <h1>{finaleWords(game).title}</h1>
+        <p className="handnote">{finaleWords(game).verdict}</p>
         {game.teams ? <TeamPodium standings={game.teams.standings} /> : <Podium players={game.players} />}
       </div>
       <footer className="host-bottom">
@@ -618,8 +620,12 @@ function Finale({ game }: { game: Game }) {
       </footer>
       <Dialog.Root open={full} onOpenChange={setFull}>
         <Dialog.Portal>
-          <Dialog.Overlay className="host-overlay" />
-          <Dialog.Content className="host-modal" aria-describedby={undefined}>
+          <Dialog.Overlay className={`host-overlay ${themeOf(game)}`} />
+          <Dialog.Content
+            className={`host-modal ${themeOf(game)}`}
+            style={brandStyle(game)}
+            aria-describedby={undefined}
+          >
             <div className="host-modal-head">
               <Dialog.Title className="host-modal-title">Tout le classement</Dialog.Title>
               <Dialog.Close className="host-modal-close" aria-label="Fermer">

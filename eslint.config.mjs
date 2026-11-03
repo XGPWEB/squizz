@@ -26,9 +26,14 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ["components/squizz/media.tsx", "components/squizz/question-play.tsx"],
+    files: [
+      "components/squizz/media.tsx",
+      "components/squizz/question-play.tsx",
+      "components/squizz/game-parts.tsx",
+      "app/app/apparence/appearance-manager.tsx",
+    ],
     rules: {
-      // Quiz media are uploaded files or arbitrary https links added by authors: next/image cannot
+      // Quiz media and organisation logos are uploaded files or arbitrary https links: next/image cannot
       // optimise unknown remote hosts, and these images are not the page's LCP.
       "@next/next/no-img-element": "off",
     },

@@ -2,6 +2,15 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.21.0] — 2026-11-03
+
+### Ajouté
+- Page « Apparence » (administrateurs) : style SQuizz coloré ou sobre pour les parties, logo de l’organisation, couleur principale (assombrie automatiquement si elle n’est pas lisible), mention « SQuizz » masquable sur les offres payantes. Aperçu en direct.
+- Thème sobre des écrans de jeu : fond clair, filets fins, polices Inter et Inter Tight, logo de l’organisation, animations discrètes ; textes de fin neutres. Une partie garde l’apparence de son lancement.
+
+### Corrigé
+- Formulaire « Rejoindre une partie » : la mention de conservation annonçait encore 24 à 48 heures ; les résultats sont gardés 12 mois depuis la 1.15.0.
+
 ## [1.20.0] — 2026-11-03
 
 ### Ajouté

@@ -69,11 +69,13 @@ async function run() {
   for (const m of candidates) byOrg.set(m.organizationId, [...(byOrg.get(m.organizationId) ?? []), m.id]);
   let unused = 0;
   for (const [organizationId, ids] of byOrg) {
-    const [quizzes, rooms] = await Promise.all([
+    // The organisation's logo is a media file too.
+    const [quizzes, rooms, org] = await Promise.all([
       prisma.quiz.findMany({ where: { organizationId }, select: { questions: true } }),
-      prisma.room.findMany({ where: { organizationId }, select: { quiz: true } }),
+      prisma.room.findMany({ where: { organizationId }, select: { quiz: true, brand: true } }),
+      prisma.organization.findUnique({ where: { id: organizationId }, select: { brandLogo: true } }),
     ]);
-    const used = JSON.stringify([quizzes, rooms]);
+    const used = JSON.stringify([quizzes, rooms, org]);
     for (const id of ids)
       if (!used.includes(id)) {
         await prisma.media.delete({ where: { id } });

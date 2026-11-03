@@ -14,6 +14,7 @@ import {
   History,
   LayoutGrid,
   LogOut,
+  Palette,
   Mail,
   Shield,
   UserRound,
@@ -84,6 +85,7 @@ export function AppBar(p: Props) {
           { href: "/app", label: "Mes quiz", icon: LayoutGrid, exact: true },
           { href: "/app/resultats", label: "Résultats", icon: BarChart3 },
           { href: "/app/equipe", label: p.canTeam ? "Équipe" : "Organisation", icon: Users },
+          ...(p.canTeam ? [{ href: "/app/apparence", label: "Apparence", icon: Palette }] : []),
           ...(p.canTeam ? [{ href: "/app/abonnement", label: "Abonnement", icon: CreditCard }] : []),
           ...(p.isSuperAdmin && !p.viewingAs
             ? [{ href: "/super-admin", label: "Super-admin", icon: Shield }]

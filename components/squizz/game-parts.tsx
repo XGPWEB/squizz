@@ -3,6 +3,8 @@ import { type PublicQuestion, type Aggregate, type AnswerPayload } from "@/lib/q
 import { leadingProfiles, type ProfileShare } from "@/lib/profiles";
 import type { WheelSpin } from "./wheel";
 import { TEAMS, teamName, type TeamStanding } from "@/lib/teams";
+import type { Brand as GameBrand } from "@/lib/brand";
+import { Brand } from "@/components/site/brand";
 
 export type RankedPlayer = {
   name: string;
@@ -41,9 +43,54 @@ export type Game = {
   receivedAt: number;
   /** The wheel of the current step, once it is on screen. */
   wheel: { entries: string[]; spin: WheelSpin | null } | null;
+  /** How the screens look (lib/brand.ts). */
+  brand: GameBrand;
   /** Team mode: the teams in ranking order, and the player's own team. */
   teams: { count: number; standings: TeamStanding[]; mine: number | null } | null;
 };
+
+/**
+ * The mark at the top of the game screens: the SQuizz logo, or in the sober theme the organisation's logo
+ * and, unless it is hidden, a discreet « SQuizz ».
+ */
+export function GameMark({
+  brand,
+  href,
+  className,
+}: {
+  brand: GameBrand | undefined;
+  href: string | null;
+  className?: string;
+}) {
+  if (brand?.theme !== "sober") return <Brand href={href} className={className} />;
+  if (!brand.logo && !brand.credit) return null;
+  return (
+    <span className="sober-mark">
+      {brand.logo && <img src={brand.logo} alt="Logo de l’organisation" />}
+      {brand.logo && brand.credit && <i aria-hidden />}
+      {brand.credit && <small>SQUIZZ</small>}
+    </span>
+  );
+}
+
+/** The words that close a game: festive with the SQuizz theme, neutral with the sober one. */
+export function finaleWords(game: Game) {
+  const sober = game.brand?.theme === "sober";
+  const tie = game.players.filter((p) => p.rank === 1).length > 1;
+  return {
+    tag: sober ? "FIN DE LA PARTIE" : "FIN DU GAME",
+    title: sober ? "Résultats" : "Place aux légendes.",
+    verdict: game.teams
+      ? teamVerdict(game.teams.standings)
+      : tie
+        ? sober
+          ? "Égalité en tête."
+          : "Ex æquo au sommet. Bien joué !"
+        : sober
+          ? `${game.players[0]?.name} termine en tête.`
+          : `${game.players[0]?.name} prend la couronne !`,
+  };
+}
 
 /** A team's colour badge with its name. */
 export function TeamTag({ team, small = false }: { team: number; small?: boolean }) {

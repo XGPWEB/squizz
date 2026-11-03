@@ -7,6 +7,7 @@ import { isProfileQuiz, profileResults } from "@/lib/profiles";
 import type { Quiz } from "@/lib/quizzes";
 import { drawSpin, SPIN_MS, wheelEntries, type Spin } from "@/lib/wheel";
 import { fillTeams, MAX_TEAMS, teamStandings } from "@/lib/teams";
+import { DEFAULT_BRAND, type Brand } from "@/lib/brand";
 import {
   aggregateAnswers,
   asksNothing,
@@ -40,6 +41,7 @@ type Room = {
   maxPlayers: number;
   spin: Spin | null;
   teams: number;
+  brand: Brand;
 };
 type AnswerRow = {
   player: string;
@@ -97,6 +99,7 @@ export async function createRoom(
   quiz: Quiz,
   maxPlayers: number,
   key?: unknown,
+  brand: Brand = DEFAULT_BRAND,
 ): Promise<string> {
   await purgeExpiredRooms();
   // A launch retried after a lost response returns the game created the first time.
@@ -123,6 +126,7 @@ export async function createRoom(
           created: BigInt(Date.now()),
           maxPlayers,
           clientKey,
+          brand: brand as unknown as Prisma.InputJsonValue,
         },
       });
       return code;
@@ -166,6 +170,7 @@ function toRoom(found: Awaited<ReturnType<typeof findRoom>>): Room {
     quiz: normalizeQuiz(row.quiz as unknown as Quiz),
     phase: row.phase as Room["phase"],
     spin: (row.spin as Spin | null) ?? null,
+    brand: (row.brand as Brand | null) ?? DEFAULT_BRAND,
     started: Number(row.started),
     created: Number(row.created),
   };
@@ -507,6 +512,8 @@ export function gameState(g: GameContext) {
     code: room.code,
     host: g.host,
     title: quiz.title,
+    /** How the screens look: the organisation's theme, colour and logo when the game was launched. */
+    brand: room.brand,
     phase: room.phase,
     index: room.question,
     total: quiz.questions.length,

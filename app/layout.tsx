@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import "@fontsource/anton/latin-400.css";
 import "@fontsource/permanent-marker/latin-400.css";
+// The sober theme of the games (lib/brand.ts); a font file is only downloaded where it is used.
+import "@fontsource-variable/inter/wght.css";
+import "@fontsource-variable/inter-tight/wght.css";
 import "./globals.css";
 import { CookieConsent } from "@/components/site/cookie-consent";
 

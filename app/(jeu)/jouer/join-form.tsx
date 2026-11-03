@@ -77,8 +77,9 @@ export function JoinForm({ initialCode }: { initialCode: string }) {
           </button>
         </form>
         <p className="hint play-privacy">
-          Pour jouer, SQuizz retient seulement ton pseudo et un cookie technique anonyme, effacés au bout de
-          24 à 48 heures. <Link href="/confidentialite#cookies">En savoir plus</Link>
+          Pour jouer, SQuizz retient seulement ton pseudo, tes réponses et un cookie technique anonyme. La
+          partie est effacée sous 48 heures ; ses résultats sont gardés 12 mois au plus pour l’organisation
+          qui l’anime. <Link href="/confidentialite">En savoir plus</Link>
         </p>
       </section>
     </div>
