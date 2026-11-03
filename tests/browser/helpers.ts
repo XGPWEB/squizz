@@ -86,6 +86,9 @@ export async function confirm(request: APIRequestContext, link: string) {
 
 /** Signs in through the plain « Connexion » page (no link followed). */
 export async function signIn(page: Page, account: Account) {
+  // Each fictitious browser is its own device: dev and production share a test database,
+  // so their sign-ins must not exhaust the same real production IP limit.
+  await page.setExtraHTTPHeaders({ "X-Real-IP": `2001:db8:${hex(2)}:${hex(2)}::1` });
   await page.goto("/connexion");
   await page.getByLabel("Email").fill(account.email);
   await page.locator('input[name="password"]').fill(account.password);

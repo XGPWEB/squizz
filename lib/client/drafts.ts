@@ -10,6 +10,8 @@ export type Visibility = "PRIVATE" | "SELECTED" | "TEAM";
 export type Draft = {
   title: string;
   questions: Question[];
+  /** A new step being written, not yet added to the quiz (it may still be incomplete). */
+  pendingStep?: Question | null;
   /** Who sees the quiz, when the person editing decides it (drafts from before this existed have none). */
   visibility?: Visibility;
   sharedWith?: string[];

@@ -1,6 +1,6 @@
 """Self-paced links and replays: python3 tests/solo.py (npm run dev on :5173)."""
 import re, time
-from helpers import BASE, client, call, request, signup
+from helpers import BASE, client, call, request, signup, sql
 
 def solo(c, action, expect=200, **data):
     return request(c, 'POST', '/api/solo', dict(action=action, **data), expect)
@@ -55,10 +55,40 @@ page = host.open(f'{BASE}/app/resultats/solo-{sid}').read().decode()
 assert 'Ana' in page and 'Bob' in page and 'en autonomie' in page
 
 # Closed: nobody new can play it; another organisation cannot close it.
+unfinished = client()
+solo(unfinished, 'join', id=sid, name='En cours')
 stranger, _, _ = signup()
 call(stranger, 'solo-close', expect=404, id=sid)
 call(host, 'solo-close', id=sid)
 solo(client(), 'join', expect=400, id=sid, name='Chloé')
+solo(unfinished, 'answer', expect=400, id=sid, question=0, answer={'choices': [1]})
+solo(unfinished, 'next', expect=400, id=sid, question=0)
+closed = solo(unfinished, 'state', id=sid)
+assert closed['phase'] == 'join' and not closed['open'], closed
+assert solo(ana, 'state', id=sid)['phase'] == 'finished'  # completed results remain readable
+
+# Expiration also stops a participant who already entered.
+expired = call(host, 'solo', quizId=qid, days=1)['id']
+late = client()
+solo(late, 'join', id=expired, name='En retard')
+sql(f'''UPDATE "SoloSession" SET "expiresAt" = (now() AT TIME ZONE 'UTC') - interval '1 second' WHERE id = '{expired}' ''')
+solo(late, 'answer', expect=400, id=expired, question=0, answer={'choices': [1]})
+solo(late, 'next', expect=400, id=expired, question=0)
+assert not solo(late, 'state', id=expired)['open']
+
+# A self-paced blind test plays the extract without revealing the answer or its caption.
+music, _, _ = signup()
+blind = call(music, 'save', quiz={'title': 'Blind test autonome', 'questions': [
+    {'type': 'blindtest', 'text': 'Quel titre ?', 'accepted': ['La Bohème'], 'duration': 30,
+     'media': [{'kind': 'audio', 'url': 'https://example.test/extrait.mp3', 'caption': 'La Bohème'}]}
+]})['quiz']['id']
+blind_id = call(music, 'solo', quizId=blind, days=1)['id']
+listener = client()
+s = solo(listener, 'join', id=blind_id, name='Mélomane')
+assert len(s['question']['media']) == 1 and s['question']['media'][0]['kind'] == 'audio', s
+assert not s['question']['media'][0]['caption'] and 'accepted' not in s['question'], s
+s = solo(listener, 'answer', id=blind_id, question=0, answer={'text': 'La Bohème'})
+assert s['revealed'] and s['question']['media'][0]['caption'] == 'La Bohème', s
 
 # Replay after a live game: opened by the host, shown on the players' phones.
 code = call(host, 'create', quizId=qid)['code']

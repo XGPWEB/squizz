@@ -52,7 +52,8 @@ export function CookieSettingsLink({
 }
 
 /** Pages where a banner would get in the way of a live game: consent is asked on the video itself there. */
-const inGame = (path: string) => path.startsWith("/jouer") || path.startsWith("/partie");
+const inGame = (path: string) =>
+  ["/jouer", "/partie", "/solo/", "/telecommande/"].some((prefix) => path.startsWith(prefix));
 
 /**
  * Information banner on the first visit (accept, refuse and customise with the same prominence, no

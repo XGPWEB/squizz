@@ -57,3 +57,11 @@ test("même contenu malgré un ordre de clés différent", () => {
   expect(sameContent({ title: "A", questions: [q] }, { title: "A", questions: [reordered] })).toBe(true);
   expect(sameContent({ title: "A", questions: [q] }, { title: "B", questions: [q] })).toBe(false);
 });
+
+test("garde aussi une étape incomplète qui n’a pas encore été ajoutée au quiz", () => {
+  const s = memoryStore();
+  const pendingStep = { ...newQuestion(), text: "Étape à finir", options: ["Réponse en cours", ""] };
+  saveDraft("alice", "quiz1", { ...draft("Quiz enregistré"), pendingStep }, s);
+  expect(loadDraft("alice", "quiz1", s)?.pendingStep).toEqual(pendingStep);
+  expect(loadDraft("bob", "quiz1", s)).toBeNull();
+});

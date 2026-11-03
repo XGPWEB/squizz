@@ -41,7 +41,8 @@ export function QaPlayer({ game, send, busy }: { game: Game; send: Send; busy: b
   const [open, setOpen] = useState(false),
     [text, setText] = useState(""),
     [anonymous, setAnonymous] = useState(false),
-    [sent, setSent] = useState(false);
+    [sent, setSent] = useState(false),
+    [error, setError] = useState("");
   const say = useSay();
   const qa = game.qa;
   if (!qa?.open && !qa?.questions.some((q) => q.mine)) return null;
@@ -73,10 +74,16 @@ export function QaPlayer({ game, send, busy }: { game: Game; send: Send; busy: b
               className="qa-form"
               onSubmit={async (e) => {
                 e.preventDefault();
-                if (!text.trim()) return;
-                await send("qa-ask", { text, anonymous });
-                setText("");
-                setSent(true);
+                if (busy || !text.trim()) return;
+                setError("");
+                setSent(false);
+                try {
+                  await send("qa-ask", { text, anonymous });
+                  setText("");
+                  setSent(true);
+                } catch (e) {
+                  setError((e as Error).message);
+                }
               }}
             >
               <label>
@@ -88,6 +95,7 @@ export function QaPlayer({ game, send, busy }: { game: Game; send: Send; busy: b
                   onChange={(e) => {
                     setText(e.target.value);
                     setSent(false);
+                    setError("");
                   }}
                   placeholder="Ex. Pourra-t-on avoir le support après la séance ?"
                 />
@@ -108,6 +116,11 @@ export function QaPlayer({ game, send, busy }: { game: Game; send: Send; busy: b
                   Envoyer
                 </button>
               </div>
+              {error && (
+                <p className="error" role="alert">
+                  {error}
+                </p>
+              )}
               {sent && (
                 <p className="hint" role="status">
                   {qa.moderated

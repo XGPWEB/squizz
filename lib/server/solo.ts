@@ -9,6 +9,7 @@ import {
   asksNothing,
   evaluateAnswer,
   isScored,
+  isSoundtrack,
   publicQuestion,
   type AnswerPayload,
 } from "@/lib/question";
@@ -86,10 +87,13 @@ async function openSession(id: unknown) {
   return { ...session, quiz: normalizeQuiz(session.quiz as unknown as Quiz) };
 }
 const isOpen = (s: { expiresAt: Date; closedAt: Date | null }) => !s.closedAt && s.expiresAt > new Date();
+const requireOpen = (s: Parameters<typeof isOpen>[0]) => {
+  if (!isOpen(s)) fail("Ce quiz en autonomie est fermé.");
+};
 
 export async function soloJoin(who: string, id: unknown, rawName: unknown) {
   const session = await openSession(id);
-  if (!isOpen(session)) fail("Ce quiz en autonomie est fermé.");
+  requireOpen(session);
   const name = String(rawName || "").trim();
   if (name.length < 1 || name.length > MAX_NAME) fail(`Choisis un pseudo de 1 à ${MAX_NAME} caractères.`);
   const mine = await prisma.soloRun.findUnique({
@@ -141,12 +145,21 @@ export async function soloState(who: string, id: unknown) {
       players: finished.length,
     };
   }
+  if (!base.open) return { ...base, phase: "join" as const };
   const question = session.quiz.questions[run.index];
   const mine = answers.find((a) => a.question === run.index);
   const duration = question.duration * 1000;
   const elapsed = Date.now() - Number(run.startedAt);
   const timedOut = !asksNothing(question.type) && !mine && elapsed > duration + GRACE_MS;
   const revealed = !!mine || timedOut || asksNothing(question.type);
+  const visible = publicQuestion(question, revealed, run.index, true);
+  if (question.type === "blindtest" && !revealed) {
+    // Play the extract without sending its caption or unrelated pictures that give the answer away.
+    visible.media = visible.media
+      .filter(isSoundtrack)
+      .slice(0, 1)
+      .map((m) => ({ ...m, caption: "" }));
+  }
   return {
     ...base,
     phase: "question" as const,
@@ -156,7 +169,7 @@ export async function soloState(who: string, id: unknown) {
     duration: question.duration,
     remaining: revealed ? 0 : Math.max(0, duration - elapsed),
     revealed,
-    question: publicQuestion(question, revealed, run.index, false),
+    question: visible,
     myAnswer: mine ? { answer: mine.payload, points: mine.points, outcome: outcomeOf(mine) } : null,
     timedOut,
     // The group's answers so far, once this player has seen the correction (opinions in particular).
@@ -181,6 +194,7 @@ async function groupAnswers(
 
 export async function soloAnswer(who: string, id: unknown, body: Body) {
   const session = await openSession(id);
+  requireOpen(session);
   const run = await runOf(session.id, who);
   if (!run) fail("Choisis d’abord un pseudo.", 403);
   if (body.question !== run.index) return; // an answer sent again after moving on
@@ -204,18 +218,25 @@ export async function soloAnswer(who: string, id: unknown, body: Body) {
     correctness: result.correct === null ? -1 : result.correct ? 1 : 0,
   };
   // Only if nothing changed meanwhile (an answer sent twice at once counts once).
-  await prisma.soloRun.updateMany({
-    where: { id: run.id, index: run.index, answers: { equals: run.answers as Prisma.InputJsonValue } },
+  const changed = await prisma.soloRun.updateMany({
+    where: {
+      id: run.id,
+      index: run.index,
+      answers: { equals: run.answers as Prisma.InputJsonValue },
+      session: { closedAt: null, expiresAt: { gt: new Date() } },
+    },
     data: {
       answers: [...answers, entry] as unknown as Prisma.InputJsonValue,
       score: { increment: points },
     },
   });
+  if (!changed.count) requireOpen(await openSession(session.id));
 }
 
 /** The next step (the clock starts now), or the end, which writes the results. */
 export async function soloNext(who: string, id: unknown, body: Body) {
   const session = await openSession(id);
+  requireOpen(session);
   const run = await runOf(session.id, who);
   if (!run) fail("Choisis d’abord un pseudo.", 403);
   if (body.question !== run.index || run.finishedAt) return; // pressed twice
@@ -224,15 +245,16 @@ export async function soloNext(who: string, id: unknown, body: Body) {
   const over = Date.now() - Number(run.startedAt) > question.duration * 1000 + GRACE_MS;
   if (!asksNothing(question.type) && !answered && !over) fail("Réponds d’abord à cette question.");
   const last = run.index + 1 >= session.quiz.questions.length;
-  await prisma.soloRun.updateMany({
-    where: { id: run.id, index: run.index },
+  const changed = await prisma.soloRun.updateMany({
+    where: { id: run.id, index: run.index, session: { closedAt: null, expiresAt: { gt: new Date() } } },
     data: {
       index: run.index + 1,
       startedAt: BigInt(Date.now()),
       ...(last ? { finishedAt: new Date() } : {}),
     },
   });
-  if (last) await saveSoloReport(session.id);
+  if (!changed.count) requireOpen(await openSession(session.id));
+  if (last && changed.count) await saveSoloReport(session.id);
 }
 
 /** The host closes a link early; it can no longer be played (its results stay). */

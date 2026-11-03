@@ -137,6 +137,14 @@ Nuage de mots, blind test, Pack Événement, page Monitoring du super-admin, par
 - **Vouvoiement du thème sobre** (1.26.1) : les joueurs d’une organisation en thème sobre sont vouvoyés, avec des messages de classement plus neutres. Le lien « Modèle Excel », peu parlant dans la barre, n’apparaît plus que dans le compte rendu d’un import qui a ignoré des lignes.
 - **Réussite** : calculée sur tous les joueurs de la partie (ne pas répondre compte comme une erreur), pour ne pas flatter une question où peu de monde a répondu.
 
+## 3 novembre 2026 — Corrections après l’audit des nouvelles fonctionnalités (version 1.26.2)
+
+- **Neuf défauts confirmés corrigés** : passage à la correction après expiration du chrono autonome, conservation des médias et logos des liens autonomes pendant la purge, lecteur des blind tests en autonomie, blocage des réponses et de la suite après fermeture ou expiration du lien, reprise réseau bornée avec un bouton pour réessayer, brouillon d’une étape encore dans l’assistant, refus d’une question du public sans effacer la saisie ni annoncer un succès, reprise de la sauvegarde d’un quiz IA sans le régénérer, moyenne de réussite incluant les questions sans réponse.
+- **Complément trouvé pendant les vérifications** : le bandeau de cookies ne recouvre plus les commandes des pages d’autonomie et de télécommande ; le consentement YouTube reste demandé sur le lecteur.
+- **Vérifications locales** : 117 tests unitaires, les 28 scénarios d’intégration validés, 24 parcours navigateur en développement et 24 sur le build de production, dans Chromium et WebKit. Dernier contrôle de l’éditeur sur un nouveau build : les deux navigateurs passent. Types, lint et formatage réussis. Les services IA sont simulés dans ces tests ; aucun paiement réel ni accès aux données de production pendant les corrections.
+- **Tests** : nouveaux scénarios pour les neuf régressions. Les navigateurs fictifs utilisent des adresses distinctes pour ne pas épuiser ensemble la limitation des connexions dans la base jetable partagée. Les règles de sécurité de l’application ne sont pas assouplies.
+- **Données** : aucune migration ajoutée. Les changements de brouillons restent compatibles avec ceux déjà gardés dans le navigateur.
+
 ## Reste à faire
 
 - Stripe : ajouter l’événement `checkout.session.expired` au webhook (facultatif).

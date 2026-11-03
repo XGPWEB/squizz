@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Dialog } from "radix-ui";
 import { Sparkles, X } from "lucide-react";
 import { QuizEditor } from "@/components/squizz/editor";
@@ -71,6 +71,7 @@ export function EditorPage({
     [questions, setQuestions] = useState<Question[]>(() =>
       quiz ? structuredClone(quiz.questions) : [newQuestion()],
     ),
+    [pendingStep, setPendingStep] = useState<Question | null>(null),
     // What the server has: the draft is « dirty » when it differs from this.
     [baseline, setBaseline] = useState(() =>
       quiz ? { title: quiz.title, questions: quiz.questions } : { title: "", questions: [newQuestion()] },
@@ -90,8 +91,23 @@ export function EditorPage({
     [found, setFound] = useState<Draft | null>(null),
     [conflict, setConflict] = useState<Conflict | null>(null);
   const leaving = useRef(false);
+  const waitingForRestore = useRef(false);
   const canShare = !quiz || quiz.canManage;
-  const dirty = !sameContent({ title, questions }, baseline) || !sameSharing(sharing, savedSharing);
+  const dirty =
+    !!pendingStep || !sameContent({ title, questions }, baseline) || !sameSharing(sharing, savedSharing);
+  const keepDraft = useCallback(
+    () =>
+      saveDraft(userId, quizId, {
+        title,
+        questions,
+        pendingStep,
+        ...(canShare ? sharing : {}),
+        baseVersion: version,
+        clientKey,
+        savedAt: Date.now(),
+      }),
+    [userId, quizId, title, questions, pendingStep, canShare, sharing, version, clientKey],
+  );
 
   // A draft left by a previous visit (same account, same quiz), different from what is saved.
   useEffect(() => {
@@ -100,34 +116,30 @@ export function EditorPage({
     const sharingKept =
       !d.visibility ||
       sameSharing({ visibility: d.visibility, sharedWith: d.sharedWith ?? [] }, savedSharing);
-    if (sameContent(d, baseline) && sharingKept) clearDraft(userId, quizId);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount
-    else setFound(d);
+    if (sameContent(d, baseline) && sharingKept && !d.pendingStep) clearDraft(userId, quizId);
+    else {
+      waitingForRestore.current = true;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is only readable after mount
+      setFound(d);
+    }
     // Only on opening the editor.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, quizId]);
 
   // Keeps the work in this browser one second after the last change.
   useEffect(() => {
-    if (found || leaving.current) return; // never overwrite a draft not yet restored or dismissed
+    if (waitingForRestore.current || found || leaving.current) return;
     if (!dirty) {
       clearDraft(userId, quizId);
       return;
     }
     const timer = setTimeout(() => {
-      const ok = saveDraft(userId, quizId, {
-        title,
-        questions,
-        ...(canShare ? sharing : {}),
-        baseVersion: version,
-        clientKey,
-        savedAt: Date.now(),
-      });
+      const ok = keepDraft();
       setDraftAt(ok ? Date.now() : null);
       setState((s) => (s === "saving" ? s : ok ? "draft" : "unsaved"));
     }, 1000);
     return () => clearTimeout(timer);
-  }, [title, questions, sharing, canShare, dirty, found, userId, quizId, version, clientKey]);
+  }, [dirty, found, keepDraft, userId, quizId]);
 
   // Warns before leaving with changes not saved on the server (reload, closing the tab, links in the app).
   useEffect(() => {
@@ -135,6 +147,7 @@ export function EditorPage({
     const message = "Des modifications ne sont pas enregistrées. Quitter quand même ?";
     const onUnload = (e: BeforeUnloadEvent) => {
       if (leaving.current) return;
+      if (!found) keepDraft(); // also keep the last keystroke before the autosave delay
       e.preventDefault();
       e.returnValue = message;
     };
@@ -145,7 +158,7 @@ export function EditorPage({
       if (!confirm(`${message}\nVotre brouillon reste gardé sur cet appareil.`)) {
         e.preventDefault();
         e.stopPropagation();
-      }
+      } else if (!found) keepDraft();
     };
     window.addEventListener("beforeunload", onUnload);
     document.addEventListener("click", onClick, true);
@@ -153,11 +166,13 @@ export function EditorPage({
       window.removeEventListener("beforeunload", onUnload);
       document.removeEventListener("click", onClick, true);
     };
-  }, [dirty]);
+  }, [dirty, found, keepDraft]);
 
   function restore(d: Draft) {
+    waitingForRestore.current = false;
     setTitle(d.title);
     setQuestions(d.questions);
+    setPendingStep(d.pendingStep ?? null);
     if (canShare && d.visibility) setSharing({ visibility: d.visibility, sharedWith: d.sharedWith ?? [] });
     setVersion(d.baseVersion);
     if (d.clientKey) setClientKey(d.clientKey);
@@ -166,6 +181,7 @@ export function EditorPage({
     setDraftAt(d.savedAt);
   }
   function dismiss() {
+    waitingForRestore.current = false;
     clearDraft(userId, quizId);
     setFound(null);
   }
@@ -179,6 +195,12 @@ export function EditorPage({
 
   async function save(options: { force?: boolean; asCopy?: boolean } = {}) {
     if (busy) return;
+    if (pendingStep) {
+      setError(
+        "Une étape est en cours de création : ajoutez-la au quiz ou abandonnez-la avant d’enregistrer.",
+      );
+      return;
+    }
     setBusy(true);
     setError("");
     setState("saving");
@@ -221,6 +243,7 @@ export function EditorPage({
       return;
     setTitle(c.title);
     setQuestions(structuredClone(c.questions));
+    setPendingStep(null);
     setBaseline({ title: c.title, questions: c.questions });
     if (c.visibility) {
       const theirs = { visibility: c.visibility, sharedWith: c.sharedWith ?? [] };
@@ -290,6 +313,8 @@ export function EditorPage({
         questions={questions}
         setTitle={setTitle}
         setQuestions={setQuestions}
+        pendingStep={pendingStep}
+        setPendingStep={setPendingStep}
         sharing={sharing}
         setSharing={canShare ? setSharing : undefined}
         teammates={teammates}

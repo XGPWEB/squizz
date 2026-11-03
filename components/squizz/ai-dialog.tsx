@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { FileText, KeyRound, Sparkles, Trash2, X } from "lucide-react";
 import { AI_COUNTS, AI_LEVELS, AI_MAX_PDF, AI_MAX_TEXT, AI_TYPES, type AiType } from "@/lib/ai-quiz";
 import type { Question } from "@/lib/question";
-import { gameApi, getJson, newClientKey, postJson } from "@/lib/client/api";
+import { gameApi, getJson, newClientKey, postJson, withRetry } from "@/lib/client/api";
 
 type Settings = {
   ready: boolean;
@@ -16,6 +16,7 @@ type Settings = {
   canEdit: boolean;
 };
 const NAMES = { anthropic: "Claude", openai: "ChatGPT" } as const;
+type Generated = { quiz: { title: string; questions: Question[] }; clientKey: string };
 
 const toBase64 = async (file: File) => {
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -136,6 +137,7 @@ export function AiDialog({ disabled }: { disabled: boolean }) {
     [types, setTypes] = useState<AiType[]>(["quiz", "truefalse"]),
     [level, setLevel] = useState("medium"),
     [topic, setTopic] = useState(""),
+    [pending, setPending] = useState<Generated | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const picker = useRef<HTMLInputElement>(null);
@@ -147,27 +149,31 @@ export function AiDialog({ disabled }: { disabled: boolean }) {
     }
   };
   const generate = async () => {
+    if (busy) return;
     setBusy(true);
     setError("");
     try {
-      let pdf: string | null = null;
-      let source = text;
-      if (file) {
-        if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-          if (file.size > AI_MAX_PDF) throw new Error("Document PDF trop lourd : 10 Mo au plus.");
-          pdf = await toBase64(file);
-        } else source = `${await file.text()}\n${text}`.trim();
+      let draft = pending;
+      if (!draft) {
+        let pdf: string | null = null;
+        let source = text;
+        if (file) {
+          if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+            if (file.size > AI_MAX_PDF) throw new Error("Document PDF trop lourd : 10 Mo au plus.");
+            pdf = await toBase64(file);
+          } else source = `${await file.text()}\n${text}`.trim();
+        }
+        const result = await postJson<{ title: string; questions: Question[]; dropped: number }>(
+          "/api/ai/generate",
+          { text: source.slice(0, AI_MAX_TEXT), pdf, count, types, level, topic },
+          "POST",
+          190_000,
+        );
+        draft = { quiz: { title: result.title, questions: result.questions }, clientKey: newClientKey() };
+        setPending(draft);
       }
-      const result = await postJson<{ title: string; questions: Question[]; dropped: number }>(
-        "/api/ai/generate",
-        { text: source.slice(0, AI_MAX_TEXT), pdf, count, types, level, topic },
-        "POST",
-        190_000,
-      );
-      const { quiz } = await gameApi<{ quiz: { id: string } }>("save", {
-        quiz: { title: result.title, questions: result.questions },
-        clientKey: newClientKey(),
-      });
+      const saved = draft;
+      const { quiz } = await withRetry(() => gameApi<{ quiz: { id: string } }>("save", saved));
       router.push(`/app/quiz/${quiz.id}?ok=ia`);
     } catch (e) {
       setError((e as Error).message);
@@ -225,7 +231,29 @@ export function AiDialog({ disabled }: { disabled: boolean }) {
                 }}
               />
             )}
-            {settings?.ready && connected && (
+            {pending && (
+              <div className="ai-form">
+                <p className="info-box">
+                  « {pending.quiz.title} » est généré ({pending.quiz.questions.length} questions). Le quiz
+                  reste disponible dans cette fenêtre : réessayez l’enregistrement sans relancer l’IA.
+                </p>
+                <button className="button ai-go" disabled={busy} onClick={() => void generate()}>
+                  {busy ? "Enregistrement…" : "Réessayer l’enregistrement"}
+                </button>
+                <button
+                  className="text-button"
+                  disabled={busy}
+                  onClick={() => {
+                    if (!confirm("Abandonner le quiz généré ? Son contenu sera perdu.")) return;
+                    setPending(null);
+                    setError("");
+                  }}
+                >
+                  Abandonner le quiz généré
+                </button>
+              </div>
+            )}
+            {settings?.ready && connected && !pending && (
               <form
                 method="post"
                 className={`ai-form ${busy ? "busy" : ""}`}
@@ -351,7 +379,7 @@ export function AiDialog({ disabled }: { disabled: boolean }) {
                 )}
               </form>
             )}
-            {error && !connected && (
+            {error && (!connected || pending) && (
               <p className="error" role="alert">
                 {error}
               </p>

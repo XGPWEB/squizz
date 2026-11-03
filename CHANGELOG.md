@@ -2,6 +2,19 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.26.2] — 2026-11-03
+
+### Corrigé
+
+- Autonomie : le chrono passe à la correction même sans réponse, y compris pendant la marge réseau du serveur. Une coupure réseau termine la tentative avec un bouton pour réessayer, sans boucle de requêtes.
+- Autonomie : les blind tests proposent leur extrait sans dévoiler sa légende ; un lien fermé ou expiré bloque aussi les participants déjà entrés. Les résultats déjà terminés restent consultables.
+- Médias : la purge conserve les images, sons et logos référencés par les instantanés autonomes encore présents.
+- Éditeur : une étape en cours de création rejoint le brouillon local et la protection de sortie ; elle peut être restaurée après rechargement, même avant son ajout au quiz. L’enregistrement demande de terminer ou d’abandonner cette étape.
+- Questions du public : un refus conserve la saisie et son message d’erreur, sans annoncer un envoi réussi.
+- IA : un échec de sauvegarde garde le quiz généré dans la fenêtre et permet de reprendre son enregistrement avec la même clé anti-doublon, sans nouvelle génération.
+- Résultats : la réussite moyenne inclut les questions sans aucune réponse, dans la page et l’export Excel.
+- Cookies : le bandeau ne recouvre plus les commandes d’un quiz autonome ou d’une télécommande ; l’accord YouTube reste demandé sur le lecteur.
+
 ## [1.26.1] — 2026-11-03
 
 ### Modifié

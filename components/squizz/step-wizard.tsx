@@ -49,6 +49,8 @@ const GROUP_ICONS = {
  */
 export function StepWizard({
   open,
+  draft,
+  onDraftChange: setDraft,
   number,
   profileNames,
   onClose,
@@ -56,6 +58,8 @@ export function StepWizard({
   onBusy,
 }: {
   open: boolean;
+  draft: Question | null;
+  onDraftChange: React.Dispatch<React.SetStateAction<Question | null>>;
   /** Position the new step will take in the quiz (1-based). */
   number: number;
   /** Set in a profile quiz: scored questions are not offered, polls can point to these profiles. */
@@ -64,19 +68,20 @@ export function StepWizard({
   onAdd: (step: Question) => void;
   onBusy: (busy: boolean) => void;
 }) {
-  const [draft, setDraft] = useState<Question | null>(null),
-    // The step as it was before a change of type dropped part of it.
-    [before, setBefore] = useState<Question | null>(null),
-    [step, setStep] = useState<Step>("type"),
+  // The step as it was before a change of type dropped part of it.
+  const [before, setBefore] = useState<Question | null>(null),
+    [chosenStep, setStep] = useState<Step | null>(null),
     [error, setError] = useState(""),
     [uploading, setUploading] = useState(false);
   const steps: Step[] = ["type", "content", "preview"];
+  const step = chosenStep ?? (draft ? "content" : "type");
   const at = steps.indexOf(step);
-  const patch = (value: Partial<Question>) => setDraft((d) => (d ? { ...d, ...value } : d));
+  const patch = (value: Partial<Question>) =>
+    setDraft((current) => (current ? { ...current, ...value } : null));
   const reset = () => {
     setDraft(null);
     setBefore(null);
-    setStep("type");
+    setStep(null);
     setError("");
   };
   const undoType = () => {

@@ -67,6 +67,16 @@ describe("rapport de partie", () => {
     expect(overallSuccess(r)).toBe(50); // (67 + 33) / 2
   });
 
+  it("inclut les questions sans réponse dans la moyenne et l’export", () => {
+    const r = buildReport([quiz, quiz], 2, [players[0]], [answers[0]]);
+    expect(r.questions.map((q) => q.successRate)).toEqual([100, 0]);
+    expect(overallSuccess(r)).toBe(50);
+    const sheets = reportSheets({ title: "Test", playedAt: new Date(), hostName: "Test" }, r);
+    expect(sheets.at(-1)?.rows.at(-1)).toEqual(["Réussite moyenne (%)", 50]);
+    expect(overallSuccess(buildReport([quiz], 1, players, []))).toBe(0);
+    expect(overallSuccess(buildReport([poll], 1, players, []))).toBeNull();
+  });
+
   it("décrit chaque type de réponse en mots", () => {
     expect(describeAnswer(slider, { value: 1969 })).toBe("1\u202f969");
     expect(describeAnswer({ ...quiz, type: "puzzle" }, { order: [2, 0] })).toBe("Naples → Rome");

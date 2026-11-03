@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Trophy } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { asksNothing, type Aggregate, type AnswerPayload, type PublicQuestion } from "@/lib/question";
@@ -49,8 +49,11 @@ export function SoloPlay({ id }: { id: string }) {
     [name, setName] = useState(""),
     [receivedAt, setReceivedAt] = useState(0),
     [now, setNow] = useState(0);
+  const calling = useRef(false);
 
   async function call(action: string, data: Record<string, unknown> = {}) {
+    if (calling.current) return;
+    calling.current = true;
     setBusy(true);
     setError("");
     try {
@@ -58,17 +61,36 @@ export function SoloPlay({ id }: { id: string }) {
       setState(next);
       setReceivedAt(Date.now());
     } catch (e) {
-      // A lost answer: reading the state again shows whether it went through.
-      if (e instanceof UncertainError) await call("state").catch(() => null);
-      else setError((e as Error).message);
+      // Read once after a failed action, never recursively after a failed state request.
+      let recovered = false;
+      if (action !== "state") {
+        try {
+          const fresh = await postJson<State>("/api/solo", { action: "state", id });
+          setState(fresh);
+          setReceivedAt(Date.now());
+          recovered =
+            action === "join"
+              ? fresh.phase !== "join"
+              : fresh.phase === "finished" ||
+                (fresh.phase === "question" &&
+                  (fresh.index !== data.question || (action === "answer" && !!fresh.myAnswer)));
+        } catch {
+          // The retry button remains available even when both requests fail.
+        }
+      }
+      if (!(e instanceof UncertainError) || !recovered) setError((e as Error).message);
     } finally {
+      calling.current = false;
       setBusy(false);
     }
   }
   useEffect(() => {
-    void call("state");
+    const initial = setTimeout(() => void call("state"), 0);
     const tick = setInterval(() => setNow(Date.now()), 250);
-    return () => clearInterval(tick);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(tick);
+    };
     // Once, when the page opens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -77,9 +99,12 @@ export function SoloPlay({ id }: { id: string }) {
   const left = q ? Math.max(0, q.remaining - Math.max(0, now - receivedAt)) : 0;
   // The time is up on this phone: the server confirms and shows the correction.
   useEffect(() => {
-    if (q && !q.revealed && left === 0 && receivedAt && !busy) void call("state");
+    if (!q || q.revealed || left !== 0 || !receivedAt || busy || error) return;
+    // During the server's network grace period, zero seconds need not mean revealed yet.
+    const timer = setTimeout(() => void call("state"), 300);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [left === 0, q?.index, q?.revealed]);
+  }, [left === 0, q?.index, q?.revealed, receivedAt, busy, error]);
 
   const brand = state?.brand;
   const say = sayFor(brand?.theme);
@@ -94,7 +119,10 @@ export function SoloPlay({ id }: { id: string }) {
         </div>
         {error && (
           <div className="error" role="alert">
-            {error}
+            {error}{" "}
+            <button className="text-button" disabled={busy} onClick={() => call("state")}>
+              Réessayer
+            </button>
           </div>
         )}
         {!state && !error && (

@@ -122,14 +122,18 @@ export function GameView({ code }: { code: string }) {
       if (!fresh || !done(fresh)) throw new Error(message);
     }
   }
-  async function run(task: () => Promise<void>) {
-    if (busy) return;
+  async function run(task: () => Promise<void>, propagate = false) {
+    if (busy) {
+      if (propagate) throw new Error("Une action est déjà en cours. Réessayez dans un instant.");
+      return;
+    }
     setError("");
     setBusy(true);
     try {
       await task();
     } catch (e) {
       setError((e as Error).message);
+      if (propagate) throw e;
     } finally {
       setBusy(false);
     }
@@ -375,7 +379,7 @@ export function GameView({ code }: { code: string }) {
             send={(action, data) =>
               run(async () => {
                 await api(action, { code, ...data });
-              })
+              }, true)
             }
           />
         )}

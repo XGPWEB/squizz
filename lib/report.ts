@@ -197,7 +197,7 @@ export function buildReport(
 
 /** Average success rate of the scored questions, in % (null when there were none). */
 export function overallSuccess(data: ReportData): number | null {
-  const scored = data.questions.filter((q) => q.successRate !== null && q.responses);
+  const scored = data.questions.filter((q) => q.successRate !== null);
   return scored.length
     ? Math.round(scored.reduce((sum, q) => sum + q.successRate!, 0) / scored.length)
     : null;

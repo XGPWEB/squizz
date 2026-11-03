@@ -84,6 +84,8 @@ export function QuizEditor({
   questions,
   setTitle,
   setQuestions,
+  pendingStep,
+  setPendingStep,
   sharing,
   setSharing,
   teammates = [],
@@ -100,6 +102,8 @@ export function QuizEditor({
   questions: Question[];
   setTitle: (s: string) => void;
   setQuestions: (q: Question[]) => void;
+  pendingStep: Question | null;
+  setPendingStep: React.Dispatch<React.SetStateAction<Question | null>>;
   /** Who sees the quiz in the team; `setSharing` is only given to the person who decides it. */
   sharing?: { visibility: Visibility; sharedWith: string[] };
   setSharing?: (s: { visibility: Visibility; sharedWith: string[] }) => void;
@@ -203,6 +207,12 @@ export function QuizEditor({
     setPicker(false);
   };
   function submit() {
+    if (pendingStep) {
+      setPicker(true);
+      return onError(
+        "Une étape est en cours de création : ajoutez-la au quiz ou abandonnez-la avant d’enregistrer.",
+      );
+    }
     for (let i = 0; i < questions.length; i++) {
       try {
         validateQuestion(questions[i]);
@@ -504,6 +514,8 @@ export function QuizEditor({
           </div>
           <StepWizard
             open={picker}
+            draft={pendingStep}
+            onDraftChange={setPendingStep}
             number={questions.length + 1}
             profileNames={profileQuiz ? profileNames : undefined}
             onClose={() => setPicker(false)}

@@ -65,7 +65,7 @@ async function run() {
     })
   ).count;
 
-  // Media no longer used by any quiz or live game of its organisation, after a 7-day grace period: editor
+  // Media no longer used by any quiz, live game or retained self-paced link, after a 7-day grace period: editor
   // drafts are kept 7 days in the browser (DRAFT_DAYS in lib/client/drafts.ts) and must keep their files.
   const candidates = await prisma.media.findMany({
     where: { createdAt: { lt: ago(7) } },
@@ -76,12 +76,13 @@ async function run() {
   let unused = 0;
   for (const [organizationId, ids] of byOrg) {
     // The organisation's logo is a media file too.
-    const [quizzes, rooms, org] = await Promise.all([
+    const [quizzes, rooms, solos, org] = await Promise.all([
       prisma.quiz.findMany({ where: { organizationId }, select: { questions: true } }),
       prisma.room.findMany({ where: { organizationId }, select: { quiz: true, brand: true } }),
+      prisma.soloSession.findMany({ where: { organizationId }, select: { quiz: true, brand: true } }),
       prisma.organization.findUnique({ where: { id: organizationId }, select: { brandLogo: true } }),
     ]);
-    const used = JSON.stringify([quizzes, rooms, org]);
+    const used = JSON.stringify([quizzes, rooms, solos, org]);
     for (const id of ids)
       if (!used.includes(id)) {
         await prisma.media.delete({ where: { id } });
