@@ -1,10 +1,11 @@
-import { Trophy } from "lucide-react";
+import { Lock, Trophy } from "lucide-react";
 import { type PublicQuestion, type Aggregate, type AnswerPayload } from "@/lib/question";
 import { leadingProfiles, type ProfileShare } from "@/lib/profiles";
 import type { WheelSpin } from "./wheel";
 import { TEAMS, teamName, type TeamStanding } from "@/lib/teams";
 import type { Brand as GameBrand } from "@/lib/brand";
 import { Brand } from "@/components/site/brand";
+import { useSay, type Say } from "./voice";
 
 export type RankedPlayer = {
   name: string;
@@ -119,6 +120,7 @@ export function TeamTag({ team, small = false }: { team: number; small?: boolean
 
 /** The teams in ranking order: average score, size and places won or lost. */
 export function TeamBoard({ standings, mine }: { standings: TeamStanding[]; mine?: number | null }) {
+  const say = useSay();
   const best = Math.max(1, ...standings.map((t) => t.score));
   return (
     <ol className="team-board">
@@ -131,7 +133,7 @@ export function TeamBoard({ standings, mine }: { standings: TeamStanding[]; mine
           <strong className="rank">{t.rank}</strong>
           <span className="team-row-name">
             {t.name}
-            {t.index === mine ? " (ton équipe)" : ""}
+            {t.index === mine ? say(" (ton équipe)", " (votre équipe)") : ""}
             <small>
               {t.players} joueur{t.players > 1 ? "s" : ""}
             </small>
@@ -189,13 +191,14 @@ export function teamVerdict(standings: TeamStanding[]) {
 }
 
 export function Leaderboard({ players }: { players: Game["players"] }) {
+  const say = useSay();
   return (
     <ol className="leaderboard">
       {players.map((p) => (
         <li key={p.name} className={`score-row ${p.me ? "is-me" : ""}`}>
           <span>
             <strong className="rank">{p.rank}</strong> {p.name}
-            {p.me ? " (toi)" : ""}
+            {p.me ? say(" (toi)", " (vous)") : ""}
           </span>
           <span className="score-end">
             {p.movement !== null && (
@@ -220,39 +223,54 @@ export function Leaderboard({ players }: { players: Game["players"] }) {
 }
 
 /** A word for the player according to where they stand in the ranking, between two questions. */
-export function rankMessage(rank: number, players: Pick<RankedPlayer, "rank">[]) {
+export function rankMessage(rank: number, players: Pick<RankedPlayer, "rank">[], say: Say = (t) => t) {
   const count = players.length;
   const tied = players.filter((p) => p.rank === rank).length > 1;
   const last = Math.max(...players.map((p) => p.rank));
-  if (count < 2) return "Tu ouvres le bal : aux autres de te rattraper !";
+  if (count < 2) return say("Tu ouvres le bal : aux autres de te rattraper !", "Vous ouvrez le classement.");
   if (rank === 1)
     return tied
-      ? "En tête, à égalité : ça va se jouer à un cheveu !"
-      : "Tu mènes la danse : tout le monde te court après !";
-  if (rank === 2) return "Dauphin du leader : une bonne réponse et tu passes devant.";
-  if (rank === 3) return "Sur le podium ! Accroche-toi, ça pousse derrière.";
-  if (rank === last) return "Dernière place pour l’instant… la remontada commence maintenant !";
-  return `En embuscade à la ${rank}e place : un bon coup et tu grimpes.`;
+      ? say("En tête, à égalité : ça va se jouer à un cheveu !", "En tête, à égalité.")
+      : say("Tu mènes la danse : tout le monde te court après !", "Vous êtes en tête du classement.");
+  if (rank === 2)
+    return say(
+      "Dauphin du leader : une bonne réponse et tu passes devant.",
+      "Deuxième place : une bonne réponse peut vous faire passer devant.",
+    );
+  if (rank === 3)
+    return say("Sur le podium ! Accroche-toi, ça pousse derrière.", "Troisième place, sur le podium.");
+  if (rank === last)
+    return say(
+      "Dernière place pour l’instant… la remontada commence maintenant !",
+      "Dernière place pour l’instant : rien n’est joué.",
+    );
+  return say(
+    `En embuscade à la ${rank}e place : un bon coup et tu grimpes.`,
+    `${rank}e place : chaque bonne réponse vous fait progresser.`,
+  );
 }
 
 export function PersonalResult({ game, final = false }: { game: Game; final?: boolean }) {
   const p = game.personal;
+  const say = useSay();
   if (!p) return null;
   const message =
     p.outcome === "correct"
       ? "Bien joué !"
       : p.outcome === "opinion"
-        ? "Ta voix compte !"
+        ? say("Ta voix compte !", "Votre avis compte.")
         : p.outcome === "incorrect"
-          ? "Raté… mais rien n’est joué !"
-          : "Le chrono t’a devancé !";
+          ? say("Raté… mais rien n’est joué !", "Mauvaise réponse : rien n’est joué.")
+          : say("Le chrono t’a devancé !", "Temps écoulé.");
   return (
     <div
       className={`personal-result ${p.outcome === "correct" || p.outcome === "opinion" || final ? "won" : "missed"}`}
       role="status"
     >
       <div>
-        <p className="eyebrow">{final ? "TON RÉSULTAT FINAL" : "TON RÉSULTAT"}</p>
+        <p className="eyebrow">
+          {final ? say("TON RÉSULTAT FINAL", "VOTRE RÉSULTAT FINAL") : say("TON RÉSULTAT", "VOTRE RÉSULTAT")}
+        </p>
         <h2>{final ? `${p.correctCount} / ${game.totalScored} bonnes réponses` : message}</h2>
         <p>
           {final
@@ -267,12 +285,18 @@ export function PersonalResult({ game, final = false }: { game: Game; final?: bo
             : p.movement === null
               ? "Le classement est lancé."
               : p.movement > 0
-                ? `Tu gagnes ${p.movement} place${p.movement > 1 ? "s" : ""} !`
+                ? say(
+                    `Tu gagnes ${p.movement} place${p.movement > 1 ? "s" : ""} !`,
+                    `Vous gagnez ${p.movement} place${p.movement > 1 ? "s" : ""}.`,
+                  )
                 : p.movement < 0
-                  ? `Tu recules de ${-p.movement} place${p.movement < -1 ? "s" : ""}. À toi de rebondir !`
-                  : "Tu gardes ta place. Garde le rythme !"}
+                  ? say(
+                      `Tu recules de ${-p.movement} place${p.movement < -1 ? "s" : ""}. À toi de rebondir !`,
+                      `Vous reculez de ${-p.movement} place${p.movement < -1 ? "s" : ""}.`,
+                    )
+                  : say("Tu gardes ta place. Garde le rythme !", "Vous gardez votre place.")}
         </span>
-        {!final && <p className="rank-copy">{rankMessage(p.rank, game.players)}</p>}
+        {!final && <p className="rank-copy">{rankMessage(p.rank, game.players, say)}</p>}
         {game.teams && game.teams.mine !== null && (
           <p className="team-line">
             <TeamTag team={game.teams.mine} small />{" "}
@@ -285,7 +309,7 @@ export function PersonalResult({ game, final = false }: { game: Game; final?: bo
       </div>
       <div className="place-sticker">
         <strong>#{p.rank}</strong>
-        <span>TA PLACE</span>
+        <span>{say("TA PLACE", "VOTRE PLACE")}</span>
         <small>SUR {game.players.length}</small>
       </div>
     </div>
@@ -295,15 +319,19 @@ export function PersonalResult({ game, final = false }: { game: Game; final?: bo
 /** After a question of a profile quiz: the answer is in, nothing to win or lose. */
 export function ProfileStep({ game }: { game: Game }) {
   const answered = game.personal?.outcome === "opinion";
+  const say = useSay();
   return (
     <div className={`personal-result profile-step ${answered ? "won" : "missed"}`} role="status">
       <div>
         <p className="eyebrow">QUIZ À PROFILS</p>
-        <h2>{answered ? "C’est noté !" : "Le chrono t’a devancé !"}</h2>
+        <h2>{answered ? "C’est noté !" : say("Le chrono t’a devancé !", "Temps écoulé.")}</h2>
         <p>
           {answered
             ? "Pas de bonne ni de mauvaise réponse : le profil du groupe se dessine."
-            : "Ta voix manquera au profil du groupe sur cette question."}
+            : say(
+                "Ta voix manquera au profil du groupe sur cette question.",
+                "Votre avis manquera au profil du groupe sur cette question.",
+              )}
         </p>
         <span className="movement-copy">Le profil du groupe sera révélé à la fin.</span>
       </div>
@@ -386,5 +414,19 @@ export function Podium({ players }: { players: RankedPlayer[] }) {
         </div>
       ))}
     </div>
+  );
+}
+
+/** Above an anonymous question on the phone: nobody will know who answered what. */
+export function AnonymousBadge() {
+  const say = useSay();
+  return (
+    <p className="anonymous-badge">
+      <Lock size={15} aria-hidden />{" "}
+      {say(
+        "Réponse anonyme : personne ne saura ce que tu as répondu.",
+        "Réponse anonyme : personne ne saura ce que vous avez répondu.",
+      )}
+    </p>
   );
 }

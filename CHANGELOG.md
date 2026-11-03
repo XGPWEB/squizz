@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.26.1] — 2026-11-03
+
+### Modifié
+
+- Thème sobre : les joueurs sont vouvoyés sur leur téléphone (salle d’attente, consignes, résultat, classement, questions du public, autonomie), avec des messages plus neutres entre deux questions. Le thème SQuizz garde le tutoiement.
+- Le lien « Modèle Excel » quitte la barre de la bibliothèque : il apparaît dans le compte rendu d’un import quand des lignes ont été ignorées.
+
 ## [1.26.0] — 2026-11-03
 
 ### Ajouté

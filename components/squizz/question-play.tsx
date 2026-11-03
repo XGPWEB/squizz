@@ -16,6 +16,7 @@ import {
 } from "@/lib/question";
 import { MediaView, PinImage } from "./media";
 import { WordCloud } from "./word-cloud";
+import { useSay } from "./voice";
 export function QuestionPlay({
   question: q,
   disabled,
@@ -40,6 +41,7 @@ export function QuestionPlay({
     [ideas, setIdeas] = useState(["", "", ""]),
     [blanks, setBlanks] = useState<string[]>(() => (q.fillParts ?? [""]).slice(1).map(() => "")),
     [matches, setMatches] = useState<(number | null)[]>(() => q.options.map(() => null));
+  const say = useSay();
   const pinMedia = ["pin", "pinpoll"].includes(q.type) ? q.media.find((m) => m.kind === "image") : undefined;
   const selected = submitted?.choices ?? choices;
   const locked = disabled || !!submitted;
@@ -63,8 +65,11 @@ export function QuestionPlay({
         <>
           <p className="hint center">
             {q.multiple
-              ? "Plusieurs choix possibles. Sélectionne tes réponses, puis valide."
-              : "Sélectionne une réponse."}
+              ? say(
+                  "Plusieurs choix possibles. Sélectionne tes réponses, puis valide.",
+                  "Plusieurs choix possibles. Sélectionnez vos réponses, puis validez.",
+                )
+              : say("Sélectionne une réponse.", "Sélectionnez une réponse.")}
             {q.points === "double" ? " · Points doubles !" : q.points === "none" ? " · Sans points" : ""}
           </p>
           <div className="answers">
@@ -107,12 +112,12 @@ export function QuestionPlay({
         >
           <label>
             {q.type === "wordcloud"
-              ? "Ton mot ou ta courte expression"
+              ? say("Ton mot ou ta courte expression", "Votre mot ou votre courte expression")
               : q.type === "open"
-                ? "Ton avis"
+                ? say("Ton avis", "Votre avis")
                 : q.type === "blindtest"
                   ? "Le titre ou l’artiste"
-                  : "Ta réponse"}
+                  : say("Ta réponse", "Votre réponse")}
             {q.type === "open" ? (
               <textarea
                 rows={4}
@@ -151,7 +156,7 @@ export function QuestionPlay({
             step={q.step}
             disabled={locked}
             onValueChange={(v) => setValue(v[0])}
-            aria-label="Ta valeur"
+            aria-label={say("Ta valeur", "Votre valeur")}
           />
           <div className="row spaced scale-ends">
             <span>
@@ -189,7 +194,12 @@ export function QuestionPlay({
       )}
       {pinMedia && (
         <section className="pin-answer">
-          <p className="hint">Touche l’image pour placer ton repère, puis valide.</p>
+          <p className="hint">
+            {say(
+              "Touche l’image pour placer ton repère, puis valide.",
+              "Touchez l’image pour placer votre repère, puis validez.",
+            )}
+          </p>
           <PinImage
             media={pinMedia}
             value={submitted?.x !== undefined ? { x: submitted.x, y: submitted.y! } : pin}
@@ -205,7 +215,12 @@ export function QuestionPlay({
       )}
       {q.type === "puzzle" && (
         <section className="puzzle-answer">
-          <p className="hint">Remets les éléments dans l’ordre avec les flèches, puis valide.</p>
+          <p className="hint">
+            {say(
+              "Remets les éléments dans l’ordre avec les flèches, puis valide.",
+              "Remettez les éléments dans l’ordre avec les flèches, puis validez.",
+            )}
+          </p>
           {(submitted?.order ?? order).map((id, i) => (
             <div className="puzzle-piece" key={id}>
               <b>{i + 1}</b>
@@ -253,7 +268,9 @@ export function QuestionPlay({
             send({ blanks });
           }}
         >
-          <p className="hint center">Complète le texte, puis valide.</p>
+          <p className="hint center">
+            {say("Complète le texte, puis valide.", "Complétez le texte, puis validez.")}
+          </p>
           <FillSentence
             parts={q.fillParts ?? []}
             values={submitted?.blanks ?? blanks}
@@ -270,7 +287,12 @@ export function QuestionPlay({
       )}
       {q.type === "match" && (
         <section className="match-answer">
-          <p className="hint center">Relie chaque élément à celui qui lui correspond, puis valide.</p>
+          <p className="hint center">
+            {say(
+              "Relie chaque élément à celui qui lui correspond, puis valide.",
+              "Reliez chaque élément à celui qui lui correspond, puis validez.",
+            )}
+          </p>
           <MatchBoard
             q={q}
             values={submitted?.matches ?? matches}

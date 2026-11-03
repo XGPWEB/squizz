@@ -3,6 +3,7 @@ import { Dialog } from "radix-ui";
 import { useState } from "react";
 import { Check, CheckCheck, EyeOff, MessageCircleQuestion, ThumbsUp, Undo2, X } from "lucide-react";
 import type { Game } from "./game-parts";
+import { useSay } from "./voice";
 
 type Item = NonNullable<Game["qa"]>["questions"][number];
 type Send = (action: string, data: Record<string, unknown>) => Promise<void>;
@@ -41,6 +42,7 @@ export function QaPlayer({ game, send, busy }: { game: Game; send: Send; busy: b
     [text, setText] = useState(""),
     [anonymous, setAnonymous] = useState(false),
     [sent, setSent] = useState(false);
+  const say = useSay();
   const qa = game.qa;
   if (!qa?.open && !qa?.questions.some((q) => q.mine)) return null;
   const shown = qa.questions.filter((q) => q.status !== "hidden" || q.mine);
@@ -78,7 +80,7 @@ export function QaPlayer({ game, send, busy }: { game: Game; send: Send; busy: b
               }}
             >
               <label>
-                Ta question pour l’animateur
+                {say("Ta question pour l’animateur", "Votre question pour l’animateur")}
                 <textarea
                   rows={3}
                   maxLength={MAX}
@@ -137,7 +139,9 @@ export function QaPlayer({ game, send, busy }: { game: Game; send: Send; busy: b
               ))}
             </ol>
           ) : (
-            <p className="hint">Pas encore de question. Lance-toi !</p>
+            <p className="hint">
+              {say("Pas encore de question. Lance-toi !", "Pas encore de question : soyez le premier.")}
+            </p>
           )}
         </Dialog.Content>
       </Dialog.Portal>

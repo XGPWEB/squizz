@@ -1,6 +1,6 @@
 {
   "name": "squizz",
-  "version": "1.26.0",
+  "version": "1.26.1",
   "private": true,
   "engines": {
     "node": ">=20.9.0"

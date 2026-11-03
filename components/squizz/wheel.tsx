@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Dices, RotateCw } from "lucide-react";
 import { angleAt, finalAngle, SPIN_MS, type Spin } from "@/lib/wheel";
+import { useSay } from "./voice";
 
 const COLORS = [
   ["var(--electric)", "white"],
@@ -41,6 +42,7 @@ export function Wheel({
   busy?: boolean;
 }) {
   const shown = spin?.entries ?? entries;
+  const say = useSay();
   // Updated on each animation frame only; until the first frame of a new spin, worked out from the spin.
   const [frameState, setFrameState] = useState<{ id: number; angle: number; done: boolean } | null>(null);
   const frame = useRef(0);
@@ -120,7 +122,7 @@ export function Wheel({
       </div>
       {winner ? (
         <p className="wheel-winner" role="status" aria-live="assertive">
-          <span>{me && winner === me ? "C’est toi !" : "La roue a choisi"}</span>
+          <span>{me && winner === me ? say("C’est toi !", "C’est vous !") : "La roue a choisi"}</span>
           <strong key={spin!.id}>{winner}</strong>
         </p>
       ) : (

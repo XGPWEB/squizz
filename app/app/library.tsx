@@ -351,6 +351,15 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
                   en trop : un quiz compte 30 étapes au plus.
                 </li>
               )}
+              {imported.notes.some((n) => !n.kept) && (
+                <li className="template-hint">
+                  Pour voir les colonnes attendues,{" "}
+                  <a className="template-link" href="/api/modele-import" download>
+                    téléchargez le modèle Excel
+                  </a>
+                  .
+                </li>
+              )}
             </ul>
           )}
         </div>
@@ -379,14 +388,6 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
             >
               <Upload size={18} /> Importer
             </button>
-            <a
-              className="text-button template-link"
-              href="/api/modele-import"
-              download
-              title="Le tableur à remplir : une question par ligne"
-            >
-              <FileSpreadsheet size={16} /> Modèle Excel
-            </a>
             <AiDialog disabled={busy} />
             <Link className="button" href="/app/quiz/nouveau">
               <Plus size={18} /> Créer un quiz
