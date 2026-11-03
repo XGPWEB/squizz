@@ -6,6 +6,7 @@ import {
   type AnswerPayload,
   type PublicQuestion,
   type Aggregate,
+  asksNothing,
   formatValue,
   isScored,
   parseBlanks,
@@ -48,6 +49,8 @@ export function QuestionPlay({
     if (!locked) onSubmit(answer);
   };
   if (q.type === "slide") return <SlideView slide={q} />;
+  // The wheel is drawn by its own component, with the spin of the game (components/squizz/wheel.tsx).
+  if (q.type === "wheel") return null;
   return (
     <>
       <MediaView
@@ -556,7 +559,7 @@ export function QuestionResults({
   /** The host can download the word cloud as an image. */
   host?: boolean;
 }) {
-  if (q.type === "slide") return null;
+  if (asksNothing(q.type)) return null;
   const stats = a ? choiceStats(a.counts, a.responses, players) : null;
   const pinMedia = q.media.find((m) => m.kind === "image");
   return (

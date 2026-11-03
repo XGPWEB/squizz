@@ -1,6 +1,7 @@
 import { Trophy } from "lucide-react";
 import { type PublicQuestion, type Aggregate, type AnswerPayload } from "@/lib/question";
 import { leadingProfiles, type ProfileShare } from "@/lib/profiles";
+import type { WheelSpin } from "./wheel";
 
 export type RankedPlayer = {
   name: string;
@@ -36,6 +37,8 @@ export type Game = {
   startsIn: number;
   /** Local time at which this state was received, to run the timers between polls. */
   receivedAt: number;
+  /** The wheel of the current step, once it is on screen. */
+  wheel: { entries: string[]; spin: WheelSpin | null } | null;
 };
 
 export function Leaderboard({ players }: { players: Game["players"] }) {

@@ -2,6 +2,11 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.19.0] — 2026-11-03
+
+### Ajouté
+- Étape « Roue de tirage au sort » (avec les diapos) : l’animateur lance la roue depuis le grand écran ; le serveur tire au sort et tous les écrans la voient tourner et s’arrêter sur la même entrée, même un téléphone qui arrive en cours de route. Elle contient les pseudos des joueurs, ou une liste de 2 à 30 entrées (gages, thèmes, équipes, lots…). Elle peut être relancée ; le joueur tiré au sort voit « C’est toi ! ».
+
 ## [1.18.0] — 2026-11-03
 
 ### Ajouté

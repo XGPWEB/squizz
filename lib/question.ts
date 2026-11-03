@@ -101,6 +101,12 @@ export const questionTypes = [
     group: "Diapos multimédias",
     hint: "Afficher du texte et des médias entre deux questions.",
   },
+  {
+    id: "wheel",
+    label: "Roue de tirage au sort",
+    group: "Diapos multimédias",
+    hint: "Tire au sort un joueur, ou une entrée de votre liste, sous les yeux de tous.",
+  },
 ] as const;
 export type QuestionType = (typeof questionTypes)[number]["id"];
 /** The families of steps, with what sets each one apart: only the first one gives points. */
@@ -121,7 +127,7 @@ export const questionGroups = [
     id: "slides",
     label: "Diapos multimédias",
     tag: "Sans réponse",
-    hint: "Du texte et des médias à présenter entre deux questions.",
+    hint: "Du texte et des médias à présenter entre deux questions, ou une roue pour tirer au sort.",
   },
 ] as const;
 export const slideLayouts = [
@@ -231,13 +237,24 @@ export function parseBlanks(body: string) {
   parts.push(body.slice(last));
   return { parts, answers };
 }
+/** Steps nobody answers: a slide, the wheel of fortune. */
+export const asksNothing = (type: QuestionType) => type === "slide" || type === "wheel";
 /** Questions that collect opinions, the only ones that can be answered anonymously. */
-export const canBeAnonymous = (type: QuestionType) => !isScored(type) && type !== "slide";
+export const canBeAnonymous = (type: QuestionType) => !isScored(type) && !asksNothing(type);
+export const MAX_WHEEL_ENTRIES = 30;
+export const MAX_WHEEL_ENTRY = 60;
 export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "classic"): Question {
   return {
     type,
     text: "",
-    options: type === "truefalse" ? ["Vrai", "Faux"] : type === "match" ? ["", "", ""] : ["", "", "", ""],
+    options:
+      type === "truefalse"
+        ? ["Vrai", "Faux"]
+        : type === "match"
+          ? ["", "", ""]
+          : type === "wheel"
+            ? []
+            : ["", "", "", ""],
     correct: 0,
     correctAnswers: [0],
     multiple: false,
@@ -288,6 +305,7 @@ export function changeType(q: Question, type: QuestionType, layout: SlideLayout 
   if (typedAnswer(type) && typedAnswer(q.type)) next.accepted = q.accepted;
   if (type === "slide" && q.type === "slide") next.body = q.body;
   if (type === "fill" && q.type === "fill") next.body = q.body;
+  if (type === "wheel" && q.type === "wheel") next.options = q.options;
   if (type === "match" && q.type === "match") {
     next.options = q.options;
     next.targets = q.targets;
@@ -458,6 +476,15 @@ export function validateQuestion(raw: unknown): Question {
         "Ordre du puzzle invalide.",
       );
   }
+  if (q.type === "wheel") {
+    if (Array.isArray(q.options)) q.options = q.options.map((o) => (typeof o === "string" ? o.trim() : o));
+    check(
+      Array.isArray(q.options) &&
+        (q.options.length === 0 || (q.options.length >= 2 && q.options.length <= MAX_WHEEL_ENTRIES)) &&
+        q.options.every((o) => typeof o === "string" && o && o.length <= MAX_WHEEL_ENTRY),
+      `La roue compte de 2 à ${MAX_WHEEL_ENTRIES} entrées de ${MAX_WHEEL_ENTRY} caractères au plus, ou aucune pour tirer au sort parmi les joueurs.`,
+    );
+  }
   if (q.type === "fill") {
     const { answers } = parseBlanks(q.body);
     check(q.body.length <= 1000, "Le texte à trous est limité à 1 000 caractères.");
@@ -578,7 +605,7 @@ export function validateQuestion(raw: unknown): Question {
     unit: q.unit.trim(),
     minLabel: q.minLabel.trim(),
     maxLabel: q.maxLabel.trim(),
-    explanation: q.type === "slide" ? "" : q.explanation.trim(),
+    explanation: asksNothing(q.type) ? "" : q.explanation.trim(),
   };
 }
 const normalizeText = (s: string) =>
@@ -597,7 +624,7 @@ export function evaluateAnswer(
   const fail = () => {
     throw new Error("Réponse invalide pour cette question.");
   };
-  if (q.type === "slide") return fail();
+  if (asksNothing(q.type)) return fail();
   if (["quiz", "truefalse", "poll"].includes(q.type)) {
     if (
       !Array.isArray(a.choices) ||

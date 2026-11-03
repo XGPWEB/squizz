@@ -5,8 +5,10 @@ import { rankPlayers, type ScoreRow } from "@/lib/game-results";
 import { orgLimits } from "@/lib/plans";
 import { isProfileQuiz, profileResults } from "@/lib/profiles";
 import type { Quiz } from "@/lib/quizzes";
+import { drawSpin, SPIN_MS, wheelEntries, type Spin } from "@/lib/wheel";
 import {
   aggregateAnswers,
+  asksNothing,
   evaluateAnswer,
   isScored,
   publicQuestion,
@@ -35,6 +37,7 @@ type Room = {
   started: number;
   created: number;
   maxPlayers: number;
+  spin: Spin | null;
 };
 type AnswerRow = {
   player: string;
@@ -160,6 +163,7 @@ function toRoom(found: Awaited<ReturnType<typeof findRoom>>): Room {
     maxPlayers: Math.min(row.maxPlayers, orgLimits(organization).maxPlayersPerGame),
     quiz: normalizeQuiz(row.quiz as unknown as Quiz),
     phase: row.phase as Room["phase"],
+    spin: (row.spin as Spin | null) ?? null,
     started: Number(row.started),
     created: Number(row.created),
   };
@@ -308,7 +312,7 @@ export async function loadGame(who: string, code: string, fresh = false): Promis
     room.phase !== "lobby" &&
     (room.phase === "finished" ||
       (Date.now() >= room.started &&
-        (question.type === "slide" ||
+        (asksNothing(question.type) ||
           Date.now() >= room.started + duration ||
           (people.length > 0 && submitted.length >= people.length))));
   return { who, room, quiz, question, duration, host, people, me, submitted, everything, revealed };
@@ -319,7 +323,7 @@ export async function submitAnswer(g: GameContext, body: Body) {
   if (!g.me) fail("Rejoins la partie pour répondre.", 403);
   // The same answer sent twice (retry after a lost response) is not an error: the first one counts.
   if (body.question === room.question && g.submitted.some((a) => a.player === g.who)) return;
-  if (question.type === "slide") fail("Cette diapo ne demande pas de réponse.");
+  if (asksNothing(question.type)) fail("Cette étape ne demande pas de réponse.");
   if (room.phase !== "question" || g.revealed) fail("Le temps est écoulé.");
   if (Date.now() < room.started) fail("La question n’a pas encore commencé.");
   if (body.question !== room.question) fail("Cette question est terminée.");
@@ -377,6 +381,7 @@ export async function nextQuestion(g: GameContext, body: Body) {
       phase: last ? "finished" : "question",
       question: last ? room.question : room.question + 1,
       started: BigInt(Date.now() + (last ? 0 : READY_MS)),
+      spin: Prisma.DbNull,
     },
   });
   invalidate(room.code);
@@ -392,8 +397,35 @@ export async function nextQuestion(g: GameContext, body: Body) {
   return last ? 0 : READY_MS;
 }
 
+/**
+ * The host spins the wheel of the current step. `after` is the spin the host's screen last saw: a click
+ * repeated after a lost response finds a newer spin already there and does not spin again.
+ */
+export async function spinWheel(g: GameContext, body: Body) {
+  requireHost(g);
+  const { room, question } = g;
+  if (room.phase !== "question" || question.type !== "wheel" || body.question !== room.question)
+    fail("Il n’y a pas de roue à lancer maintenant.");
+  if (Date.now() < room.started) fail("La roue apparaît dans un instant.");
+  const seen = typeof body.after === "number" ? body.after : null;
+  if ((room.spin?.id ?? null) !== seen) return; // already spun since
+  if (room.spin && Date.now() - room.spin.at < SPIN_MS) return;
+  const entries = wheelEntries(
+    question.options,
+    g.people.map((p) => p.name),
+  );
+  if (entries.length < 2) fail("Il faut au moins deux joueurs pour lancer la roue.");
+  const random = () => randomInt() / 2 ** 32;
+  const spin = drawSpin(entries, random, Date.now());
+  await prisma.room.updateMany({
+    where: { code: room.code, question: room.question, phase: "question" },
+    data: { spin: spin as unknown as Prisma.InputJsonValue },
+  });
+  invalidate(room.code);
+}
+
 function outcome(question: Question, answer: AnswerRow | undefined) {
-  if (question.type === "slide") return "slide";
+  if (asksNothing(question.type)) return "slide";
   if (!answer) return "timeout";
   const correctness = answer.correctness ?? (answer.points > 0 ? 1 : 0);
   return correctness === -1 ? "opinion" : correctness === 1 ? "correct" : "incorrect";
@@ -450,7 +482,20 @@ export function gameState(g: GameContext) {
         }
       : null,
     aggregate:
-      revealed && question.type !== "slide" ? aggregateAnswers(question, g.submitted.map(decode)) : null,
+      revealed && !asksNothing(question.type) ? aggregateAnswers(question, g.submitted.map(decode)) : null,
+    /** The wheel of the current step: its entries, and the last spin with how far into it we are. */
+    wheel:
+      question.type === "wheel" && room.phase === "question" && startsIn === 0
+        ? {
+            entries:
+              room.spin?.entries ??
+              wheelEntries(
+                question.options,
+                g.people.map((p) => p.name),
+              ),
+            spin: room.spin ? { ...room.spin, elapsed: Date.now() - room.spin.at } : null,
+          }
+        : null,
   };
 }
 

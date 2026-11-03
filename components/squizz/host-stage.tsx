@@ -6,6 +6,8 @@ import { useState } from "react";
 import { BarChart3, Copy, Lock, Play, Smartphone, SkipForward, Trophy, Users, X } from "lucide-react";
 import { Brand } from "@/components/site/brand";
 import { FillSentence, MatchBoard, QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
+import { asksNothing } from "@/lib/question";
+import { Wheel } from "./wheel";
 import { MediaView } from "@/components/squizz/media";
 import { FullscreenButton } from "@/components/squizz/fullscreen-button";
 import { gameApi as api } from "@/lib/client/api";
@@ -43,7 +45,7 @@ export function HostStage(props: Props) {
         ? game.profileQuiz
           ? "LE PROFIL DU GROUPE"
           : "RÉSULTATS FINAUX"
-        : `${q?.type === "slide" ? "ÉTAPE" : "QUESTION"} ${game.index + 1} / ${game.total}`;
+        : `${q && asksNothing(q.type) ? "ÉTAPE" : "QUESTION"} ${game.index + 1} / ${game.total}`;
   return (
     <div className={`host-stage phase-${game.phase}`}>
       <header className="host-top">
@@ -51,7 +53,7 @@ export function HostStage(props: Props) {
           <span className="eyebrow">{step}</span>
           <strong>{game.title}</strong>
         </div>
-        {q && !counting && q.type !== "slide" && game.phase === "question" && (
+        {q && !counting && !asksNothing(q.type) && game.phase === "question" && (
           <Timer seconds={remaining} total={game.duration} done={game.revealed} />
         )}
         <div className="host-top-side">
@@ -236,7 +238,8 @@ function Lobby({ game, busy, run, settle, joinUrl, origin, onError }: Props) {
 
 function Question({ game, busy, run, settle, remaining }: Props) {
   const q = game.question!;
-  const slide = q.type === "slide";
+  // A slide or the wheel: nothing to answer, the host moves on when ready.
+  const slide = asksNothing(q.type);
   const hostPlays = game.players.some((p) => p.me);
   // The pop-up opens by itself when the answers are revealed; closing it keeps it closed for this step.
   const [closedAt, setClosedAt] = useState(-1),
@@ -261,14 +264,36 @@ function Question({ game, busy, run, settle, remaining }: Props) {
       : "Question suivante";
   return (
     <>
-      <div className={`host-main host-question ${slide ? "is-slide" : ""}`} key={game.index}>
+      <div className={`host-main host-question ${q.type === "slide" ? "is-slide" : ""}`} key={game.index}>
         {q.anonymous && (
           <span className="anonymous-badge host">
             <Lock size={18} aria-hidden /> Réponses anonymes
           </span>
         )}
-        {!slide && <h1 className="host-question-title">{q.text}</h1>}
-        {SHOWN_AS_IS.includes(q.type) || hostPlays ? (
+        {q.type !== "slide" && <h1 className="host-question-title">{q.text}</h1>}
+        {q.type === "wheel" ? (
+          <div className="host-answers">
+            <Wheel
+              entries={game.wheel?.entries ?? []}
+              spin={game.wheel?.spin ?? null}
+              busy={busy}
+              onSpin={() =>
+                run(() =>
+                  settle(
+                    () =>
+                      api("spin", {
+                        code: game.code,
+                        question: game.index,
+                        after: game.wheel?.spin?.id ?? null,
+                      }),
+                    (g) => (g.wheel?.spin?.id ?? null) !== (game.wheel?.spin?.id ?? null),
+                    "Lancement de la roue non confirmé : vérifiez la connexion, puis cliquez à nouveau.",
+                  ),
+                )
+              }
+            />
+          </div>
+        ) : SHOWN_AS_IS.includes(q.type) || hostPlays ? (
           <div className="host-answers">
             <QuestionPlay
               question={q}

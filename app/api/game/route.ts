@@ -22,6 +22,7 @@ import {
   loadGame,
   nextQuestion,
   parseCode,
+  spinWheel,
   startGame,
   submitAnswer,
 } from "@/lib/server/game";
@@ -81,6 +82,10 @@ const actions: Record<string, Handler> = {
   next: async (who, body) => {
     const startsIn = await nextQuestion(await loadGame(who, parseCode(body.code), true), body);
     return { ok: true, startsIn };
+  },
+  spin: async (who, body) => {
+    await spinWheel(await loadGame(who, parseCode(body.code), true), body);
+    return { ok: true };
   },
   kick: async (who, body) => {
     await kickPlayer(await loadGame(who, parseCode(body.code), true), body.name);

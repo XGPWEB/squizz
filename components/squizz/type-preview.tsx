@@ -191,6 +191,37 @@ const typePreviews: Record<QuestionType, [string, React.ReactNode]> = {
     </span>,
   ],
   slide: ["Diapo", <Lines key="t" />],
+  wheel: [
+    "Qui commence ?",
+    <span key="t" className="pv-wheel">
+      <svg viewBox="-22 -24 44 46" aria-hidden>
+        <g className="pv-wheel-spin">
+          {[
+            "var(--electric)",
+            "var(--acid)",
+            "var(--pink)",
+            "var(--orange)",
+            "var(--acid)",
+            "var(--pink)",
+          ].map((fill, i) => {
+            const a0 = (i * 60 * Math.PI) / 180;
+            const a1 = ((i + 1) * 60 * Math.PI) / 180;
+            return (
+              <path
+                key={i}
+                d={`M0 0 L${20 * Math.sin(a0)} ${-20 * Math.cos(a0)} A20 20 0 0 1 ${20 * Math.sin(a1)} ${-20 * Math.cos(a1)} Z`}
+                fill={fill}
+                stroke="var(--ink)"
+                strokeWidth="1"
+              />
+            );
+          })}
+          <circle r="3" fill="var(--ink)" />
+        </g>
+        <path d="M-3 -23 L3 -23 L0 -17 Z" fill="var(--ink)" />
+      </svg>
+    </span>,
+  ],
 };
 
 export function TypePreview({ type }: { type: QuestionType }) {

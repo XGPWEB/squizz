@@ -185,16 +185,27 @@ export function StepWizard({
                       </header>
                       <div className="type-grid">
                         {group.id === "slides"
-                          ? slideLayouts.map((l) => (
-                              <TypeCard
-                                key={l.id}
-                                selected={draft?.type === "slide" && draft.layout === l.id}
-                                preview={<LayoutPreview layout={l.id} />}
-                                label={l.label}
-                                hint={l.hint}
-                                onPick={() => pick("slide", l.id)}
-                              />
-                            ))
+                          ? slideLayouts
+                              .map((l) => (
+                                <TypeCard
+                                  key={l.id}
+                                  selected={draft?.type === "slide" && draft.layout === l.id}
+                                  preview={<LayoutPreview layout={l.id} />}
+                                  label={l.label}
+                                  hint={l.hint}
+                                  onPick={() => pick("slide", l.id)}
+                                />
+                              ))
+                              .concat(
+                                <TypeCard
+                                  key="wheel"
+                                  selected={draft?.type === "wheel"}
+                                  preview={<TypePreview type="wheel" />}
+                                  label={questionTypes.find((t) => t.id === "wheel")!.label}
+                                  hint={questionTypes.find((t) => t.id === "wheel")!.hint}
+                                  onPick={() => pick("wheel")}
+                                />,
+                              )
                           : questionTypes
                               .filter((t) => t.group === group.label)
                               .map((t) => (

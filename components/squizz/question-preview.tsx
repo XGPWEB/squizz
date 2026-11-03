@@ -1,8 +1,11 @@
 "use client";
 import { useState } from "react";
 import { Eye, EyeOff, Monitor, Smartphone } from "lucide-react";
-import { publicQuestion, type AnswerPayload, type Question } from "@/lib/question";
+import { asksNothing, publicQuestion, type AnswerPayload, type Question } from "@/lib/question";
 import { Explanation, QuestionPlay } from "./question-play";
+import { Wheel } from "./wheel";
+
+const SAMPLE_PLAYERS = ["Alex", "Camille", "Charlie", "Dominique", "Lou", "Sacha"];
 
 /**
  * Shows a step as the players will see it on their phone, or as it appears on the projected
@@ -13,7 +16,7 @@ export function QuestionPreview({ question, index = 0 }: { question: Question; i
     [revealed, setRevealed] = useState(false),
     [answer, setAnswer] = useState<AnswerPayload | null>(null);
   const pq = publicQuestion(question, revealed, index, view === "screen");
-  const slide = question.type === "slide";
+  const slide = asksNothing(question.type);
   // Switching view starts the preview afresh (the component keeps its own draft answer).
   const key = view;
   return (
@@ -58,7 +61,16 @@ export function QuestionPreview({ question, index = 0 }: { question: Question; i
             </span>
             {!slide && <span className="timer">{question.duration} s</span>}
           </div>
-          {!slide && <h2 className="question-title">{question.text || "Votre question…"}</h2>}
+          {question.type !== "slide" && (
+            <h2 className="question-title">{question.text || "Votre question…"}</h2>
+          )}
+          {question.type === "wheel" && (
+            <Wheel
+              size="preview"
+              entries={question.options.length ? question.options : SAMPLE_PLAYERS}
+              spin={null}
+            />
+          )}
           <QuestionPlay
             key={key}
             question={pq}
@@ -71,11 +83,15 @@ export function QuestionPreview({ question, index = 0 }: { question: Question; i
         </div>
       </div>
       <p className="hint center">
-        {slide
-          ? "Les diapos s’affichent ainsi pour tout le monde, sans chronomètre."
-          : answer
-            ? "Réponse envoyée (pour de faux). Montrez la correction pour voir le résultat."
-            : "Essayez de répondre : rien n’est enregistré."}
+        {question.type === "wheel"
+          ? question.options.length
+            ? "Pendant la partie, l’animateur lance la roue : tous les écrans la voient tourner et s’arrêter sur la même entrée."
+            : "Sans liste, la roue tire au sort parmi les pseudos des joueurs (ici, des exemples)."
+          : slide
+            ? "Les diapos s’affichent ainsi pour tout le monde, sans chronomètre."
+            : answer
+              ? "Réponse envoyée (pour de faux). Montrez la correction pour voir le résultat."
+              : "Essayez de répondre : rien n’est enregistré."}
       </p>
     </div>
   );

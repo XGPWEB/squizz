@@ -16,6 +16,8 @@ import {
   ProfileStep,
 } from "./game-parts";
 import { HostStage } from "./host-stage";
+import { Wheel } from "./wheel";
+import { asksNothing } from "@/lib/question";
 import { invitationOrigin } from "@/lib/invitation";
 import { gameApi as api, getJson, UncertainError } from "@/lib/client/api";
 import { Brand } from "@/components/site/brand";
@@ -127,6 +129,8 @@ export function GameView({ code }: { code: string }) {
   }
   const elapsed = game ? Math.max(0, clock - game.receivedAt) : 0;
   const startsLeft = game ? Math.max(0, game.startsIn - elapsed) : 0;
+  // A slide or the wheel: nothing to answer on the phone.
+  const silent = !!game?.question && asksNothing(game.question.type);
   const remaining = game
     ? Math.max(0, Math.ceil((game.remaining - Math.max(0, elapsed - game.startsIn)) / 1000))
     : 0;
@@ -235,11 +239,13 @@ export function GameView({ code }: { code: string }) {
                 <>
                   <div className="row spaced" style={{ marginTop: 22 }}>
                     <span>
-                      {game.question?.type === "slide" ? "Étape" : "Question"} {game.index + 1} / {game.total}
+                      {silent ? "Étape" : "Question"} {game.index + 1} / {game.total}
                     </span>
                     <span className="timer">
-                      {game.question?.type === "slide"
-                        ? "Diapo"
+                      {silent
+                        ? game.question?.type === "wheel"
+                          ? "Roue"
+                          : "Diapo"
                         : game.revealed
                           ? "Terminé"
                           : `${remaining} s`}
@@ -253,14 +259,14 @@ export function GameView({ code }: { code: string }) {
                   {/* Each player's own result and place, first thing on the phone once the answers are in. */}
                   {game.revealed &&
                     game.personal &&
-                    game.question?.type !== "slide" &&
+                    !silent &&
                     (game.profileQuiz ? <ProfileStep game={game} /> : <PersonalResult game={game} />)}
                   {game.question?.anonymous && (
                     <p className="anonymous-badge">
                       <Lock size={15} aria-hidden /> Réponse anonyme : personne ne saura ce que tu as répondu.
                     </p>
                   )}
-                  {game.question?.type !== "slide" && (
+                  {game.question && game.question.type !== "slide" && (
                     <h2 className="question-title" aria-live="polite">
                       {game.question?.text}
                     </h2>
@@ -286,7 +292,15 @@ export function GameView({ code }: { code: string }) {
                       }
                     />
                   )}{" "}
-                  {game.question?.type !== "slide" && (
+                  {game.question?.type === "wheel" && (
+                    <Wheel
+                      size="phone"
+                      entries={game.wheel?.entries ?? []}
+                      spin={game.wheel?.spin ?? null}
+                      me={game.players.find((p) => p.me)?.name}
+                    />
+                  )}
+                  {!silent && (
                     <p className="center hint" role="status">
                       {game.myAnswer && !game.revealed
                         ? "Réponse envoyée. On attend les autres…"
@@ -302,7 +316,7 @@ export function GameView({ code }: { code: string }) {
                           players={game.players.length}
                         />
                       )}{" "}
-                      {game.question?.type !== "slide" && !game.profileQuiz && (
+                      {!silent && !game.profileQuiz && (
                         <>
                           <h2 style={{ marginTop: 24 }}>Qui mène le jeu ?</h2>
                           <Leaderboard players={game.players} />

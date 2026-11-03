@@ -1,5 +1,6 @@
 import {
   aggregateAnswers,
+  asksNothing,
   formatValue,
   isScored,
   parseBlanks,
@@ -112,7 +113,7 @@ export function buildReport(
 ): ReportData {
   const kept = steps
     .map((q, index) => ({ q, index }))
-    .filter(({ q, index }) => index < played && q.type !== "slide");
+    .filter(({ q, index }) => index < played && !asksNothing(q.type));
   const byKey = new Map(answers.map((a) => [`${a.player}:${a.question}`, a]));
   const questions: ReportQuestion[] = kept.map(({ q, index }) => {
     const given = answers.filter((a) => a.question === index);
@@ -167,7 +168,7 @@ export function buildReport(
   });
   rows.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, "fr"));
   return {
-    total: steps.filter((q) => q.type !== "slide").length,
+    total: steps.filter((q) => !asksNothing(q.type)).length,
     questions,
     players: rows.map((p) => ({ ...p, rank: rows.findIndex((o) => o.score === p.score) + 1 })),
   };

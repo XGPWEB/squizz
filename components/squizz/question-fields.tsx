@@ -1,10 +1,14 @@
 "use client";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import {
+  asksNothing,
   canBeAnonymous,
   MAX_BLANKS,
+  MAX_WHEEL_ENTRIES,
+  MAX_WHEEL_ENTRY,
   parseBlanks,
   questionGroups,
   questionTypes,
@@ -89,7 +93,7 @@ export function QuestionFields({
           required
         />
       </label>
-      {q.type !== "slide" && (
+      {!asksNothing(q.type) && (
         <div className="question-settings">
           <Choice
             label="Temps imparti"
@@ -417,7 +421,8 @@ export function QuestionFields({
           </span>
         </label>
       )}
-      {q.type !== "slide" && (
+      {q.type === "wheel" && <WheelEditor q={q} patch={patch} />}
+      {!asksNothing(q.type) && (
         <label className="stack explanation-field">
           Explication de la réponse (facultatif)
           <textarea
@@ -480,6 +485,72 @@ export function QuestionFields({
         </section>
       )}
     </>
+  );
+}
+
+/** The entries of the wheel, one per line; none means the players' nicknames. */
+function WheelEditor({ q, patch }: { q: Question; patch: (value: Partial<Question>) => void }) {
+  const [text, setText] = useState(q.options.join("\n"));
+  const entries = text
+    .split("\n")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  return (
+    <section className="answer-editor wheel-editor">
+      <h3>Ce que la roue tire au sort</h3>
+      <div className="wheel-modes" role="radiogroup" aria-label="Contenu de la roue">
+        <button
+          type="button"
+          role="radio"
+          aria-checked={!q.options.length}
+          className={!q.options.length ? "on" : ""}
+          onClick={() => {
+            setText("");
+            patch({ options: [] });
+          }}
+        >
+          <b>Les joueurs</b>
+          <small>Leurs pseudos, au moment de lancer la roue.</small>
+        </button>
+        <button
+          type="button"
+          role="radio"
+          aria-checked={!!q.options.length}
+          className={q.options.length ? "on" : ""}
+          onClick={() => {
+            if (q.options.length) return;
+            const sample = "Gage 1\nGage 2\nGage 3";
+            setText(sample);
+            patch({ options: sample.split("\n") });
+          }}
+        >
+          <b>Ma liste</b>
+          <small>Des gages, des thèmes, des équipes, des lots…</small>
+        </button>
+      </div>
+      {q.options.length > 0 && (
+        <label className="stack">
+          Une entrée par ligne ({entries.length} / {MAX_WHEEL_ENTRIES})
+          <textarea
+            rows={6}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              const next = e.target.value
+                .split("\n")
+                .map((t) => t.trim().slice(0, MAX_WHEEL_ENTRY))
+                .filter(Boolean)
+                .slice(0, MAX_WHEEL_ENTRIES);
+              // An empty list would switch the wheel to the players: keep one placeholder until then.
+              patch({ options: next.length ? next : [""] });
+            }}
+          />
+        </label>
+      )}
+      <p className="hint">
+        L’animateur lance la roue depuis le grand écran, et peut la relancer. Sans chronomètre ni points.
+      </p>
+    </section>
   );
 }
 

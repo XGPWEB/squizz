@@ -20,6 +20,8 @@ Version en ligne : voir [CHANGELOG.md](CHANGELOG.md). Historique en clair : [JOU
 
 **Diapos**, pour introduire une manche ou donner une information entre deux questions, en 6 mises en page : classique, grand titre, titre et texte, liste à puces, citation, grande image.
 
+**Roue de tirage au sort**, sans réponse comme une diapo (`asksNothing()`) : les pseudos des joueurs, ou une liste de 2 à 30 entrées. L'action `spin` de l'animateur tire au sort côté serveur (`lib/wheel.ts`) et enregistre le tirage dans `Room.spin` ; chaque écran calcule l'angle à partir du temps écoulé depuis le tirage, donc tous s'arrêtent ensemble sur la même entrée. `after` (le tirage vu par l'animateur) évite un second tirage quand un clic est renvoyé ; le tirage est effacé à l'étape suivante.
+
 Les types et leur validation sont définis dans `lib/question.ts`.
 
 ## Espaces du site

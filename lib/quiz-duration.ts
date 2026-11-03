@@ -1,4 +1,4 @@
-import type { Question } from "@/lib/question";
+import { asksNothing, type Question } from "@/lib/question";
 
 /** « Prêt ? » countdown before each step (READY_MS in lib/server/game.ts). */
 const READY_S = 2;
@@ -13,7 +13,7 @@ const SLIDE_S = 20;
  */
 export function estimateSeconds(questions: Pick<Question, "type" | "duration">[]) {
   return questions.reduce(
-    (total, q) => total + READY_S + (q.type === "slide" ? SLIDE_S : q.duration + RESULTS_S),
+    (total, q) => total + READY_S + (asksNothing(q.type) ? SLIDE_S : q.duration + RESULTS_S),
     0,
   );
 }

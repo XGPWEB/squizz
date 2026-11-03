@@ -214,6 +214,8 @@ model Room {
   maxPlayers     Int
   /// Idempotency key sent when launching: a retried launch returns the same game instead of a second one.
   clientKey      String?
+  /// Last spin of the wheel of fortune on the current step (lib/wheel.ts): what was drawn and when.
+  spin           Json?
 
   players Player[]
 

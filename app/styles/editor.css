@@ -1591,3 +1591,173 @@ fieldset {
     animation: none;
   }
 }
+
+/* Wheel of fortune */
+.wheel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+.wheel-disc {
+  position: relative;
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+}
+.wheel-screen .wheel-disc {
+  width: min(42vh, 92%);
+}
+.wheel-preview .wheel-disc {
+  width: min(100%, 240px);
+}
+.wheel-disc::before {
+  content: "";
+  position: absolute;
+  inset: 5%;
+  border-radius: 50%;
+  background: var(--ink);
+  transform: translate(6px, 6px);
+}
+.wheel-disc svg {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.wheel-disc svg > g {
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.wheel-disc text {
+  font-family: Anton, sans-serif;
+  letter-spacing: 0.2px;
+  pointer-events: none;
+}
+.wheel-pointer {
+  filter: drop-shadow(1px 1.5px 0 var(--acid));
+}
+.wheel.spinning .wheel-pointer {
+  animation: wheel-tick 0.12s ease-in-out infinite alternate;
+  transform-origin: 0 -54px;
+}
+@keyframes wheel-tick {
+  to {
+    transform: rotate(-9deg);
+  }
+}
+.wheel.landed g.won path {
+  stroke-width: 2.6;
+  animation: wheel-won 0.6s ease-in-out 3;
+}
+@keyframes wheel-won {
+  50% {
+    filter: brightness(1.25);
+  }
+}
+.wheel-status {
+  margin: 0;
+  font-weight: 700;
+  text-align: center;
+}
+.wheel-winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  text-align: center;
+}
+.wheel-winner span {
+  font: 700 13px monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.wheel-winner strong {
+  display: inline-block;
+  padding: 6px 22px;
+  font:
+    400 clamp(28px, 5vh, 52px) / 1.1 Anton,
+    sans-serif;
+  background: var(--pink);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 5px 5px 0 var(--ink);
+  transform: rotate(-3deg);
+  animation: wheel-winner 0.6s cubic-bezier(0.3, 1.7, 0.5, 1) both;
+}
+.wheel-phone .wheel-winner strong {
+  font-size: 30px;
+}
+@keyframes wheel-winner {
+  from {
+    transform: rotate(-20deg) scale(0.3);
+    opacity: 0;
+  }
+}
+.wheel-button {
+  min-width: 220px;
+}
+.wheel-editor .wheel-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 10px 0 14px;
+}
+.wheel-modes button {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.wheel-modes button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.wheel-modes button.on {
+  background: var(--acid);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.wheel-modes small {
+  font-size: 13px;
+}
+.type-grid .pv-wheel svg {
+  width: 74px;
+  height: 74px;
+}
+.pv-wheel-spin {
+  transform-origin: 0 0;
+  animation: pv-wheel 6s linear infinite;
+}
+.type-grid :hover > * .pv-wheel-spin,
+.type-grid button:hover .pv-wheel-spin {
+  animation-duration: 1.2s;
+}
+@keyframes pv-wheel {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 560px) {
+  .wheel-editor .wheel-modes {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wheel.spinning .wheel-pointer,
+  .wheel.landed g.won path,
+  .wheel-winner strong,
+  .pv-wheel-spin {
+    animation: none;
+  }
+}
