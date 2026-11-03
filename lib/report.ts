@@ -26,6 +26,8 @@ export type ReportQuestion = {
   top: { label: string; count: number }[];
   average: number | null;
   nps: number | null;
+  /** Answered anonymously: only the figures are kept, never who said what. */
+  anonymous: boolean;
 };
 export type ReportPlayer = {
   name: string;
@@ -135,12 +137,16 @@ export function buildReport(
       top,
       average: agg.average,
       nps: agg.nps,
+      anonymous: q.anonymous,
     };
   });
   const rows = players.map((p) => {
     const list = kept.map(({ q, index }) => {
       const a = byKey.get(`${p.id}:${index}`);
-      return a ? { text: describeAnswer(q, a.payload), outcome: outcomeOf(a), points: a.points } : null;
+      if (!a) return null;
+      return q.anonymous
+        ? { text: "Réponse anonyme", outcome: "opinion" as const, points: 0 }
+        : { text: describeAnswer(q, a.payload), outcome: outcomeOf(a), points: a.points };
     });
     return {
       name: p.name,

@@ -175,6 +175,8 @@ export type Question = {
   explanation: string;
   /** Poll only: the profile each answer points to ("" for none), see lib/profiles.ts. */
   profiles: string[];
+  /** Opinion questions only: nobody sees who answered what, not even in the kept results. */
+  anonymous: boolean;
 };
 export type AnswerPayload = {
   choices?: number[];
@@ -188,6 +190,8 @@ export type AnswerPayload = {
 export const durations = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240];
 export const isScored = (type: QuestionType) =>
   ["quiz", "truefalse", "text", "blindtest", "slider", "pin", "puzzle"].includes(type);
+/** Questions that collect opinions, the only ones that can be answered anonymously. */
+export const canBeAnonymous = (type: QuestionType) => !isScored(type) && type !== "slide";
 export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "classic"): Question {
   return {
     type,
@@ -214,6 +218,7 @@ export function newQuestion(type: QuestionType = "quiz", layout: SlideLayout = "
     media: [],
     explanation: "",
     profiles: [],
+    anonymous: false,
   };
 }
 const hasChoices = (type: QuestionType) => ["quiz", "truefalse", "poll", "puzzle"].includes(type);
@@ -228,6 +233,7 @@ export function changeType(q: Question, type: QuestionType, layout: SlideLayout 
     explanation: q.explanation,
   };
   if (isScored(type) && isScored(q.type)) next.points = q.points;
+  if (canBeAnonymous(type) && canBeAnonymous(q.type)) next.anonymous = q.anonymous;
   if (hasChoices(type) && hasChoices(q.type) && type !== "truefalse") {
     const correct = q.correctAnswers.filter((i) => i < q.options.length);
     next.options = q.options;
@@ -263,6 +269,7 @@ export function normalizeQuestion(value: Partial<Question>): Question {
     media: value.media ?? [],
     explanation: value.explanation ?? "",
     profiles: value.profiles ?? [],
+    anonymous: value.anonymous === true,
   };
 }
 export function youtubeId(raw: string): string | null {
@@ -340,6 +347,8 @@ export function validateQuestion(raw: unknown): Question {
   check(durations.includes(q.duration), "Temps imparti invalide.");
   check(["standard", "double", "none"].includes(q.points), "Barème invalide.");
   check(typeof q.multiple === "boolean", "Limite de réponse invalide.");
+  check(typeof q.anonymous === "boolean", "Réglage d’anonymat invalide.");
+  if (!canBeAnonymous(q.type)) q.anonymous = false;
   check(
     typeof q.body === "string" && q.body.length <= 4000,
     "Le texte de la diapo est limité à 4 000 caractères.",

@@ -116,6 +116,7 @@ npm run dev -- --port 5173
 - **Pages** : `/app/resultats` (toutes les parties de l'organisation) et `/app/resultats/[id]` (chiffres, classement, question par question, réponses de chaque joueur). Impression ou PDF par le navigateur (feuille de style `@media print` dans `app/styles/app.css`).
 - **Export** : `GET /api/reports/[id]` renvoie un classeur Excel (`reportSheets()` écrit par `lib/xlsx.ts` : onglets Classement, Questions, Partie ; les cellules sont du texte ou des nombres, jamais des formules, quel que soit le pseudo). `DELETE` le supprime (animateur de la partie ou administrateur).
 - **Réussite** : part de tous les joueurs de la partie qui ont bien répondu (sans réponse = faux).
+- **Réponses anonymes** : une question d'avis marquée `anonymous` (`canBeAnonymous()` dans `lib/question.ts`) garde ses chiffres, mais chaque joueur n'y a que « Réponse anonyme » dans le rapport.
 - **Conservation** : 12 mois (`deploy/purge.mjs`), annoncée dans la politique de confidentialité, les CGU et la FAQ. L'animateur est un lien vers son compte, vidé si le compte est supprimé (« un ancien membre »).
 
 ## Import depuis Excel ou CSV

@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import {
+  canBeAnonymous,
   questionGroups,
   questionTypes,
   slideLayouts,
@@ -111,6 +112,25 @@ export function QuestionFields({
                 ["none", "Aucun point", "Diminue les enjeux de la question et désactive les points."],
               ]}
               onChange={(v) => patch({ points: v as Question["points"] })}
+            />
+          )}{" "}
+          {canBeAnonymous(q.type) && (
+            <Choice
+              label="Réponses"
+              value={q.anonymous ? "anonymous" : "named"}
+              options={[
+                [
+                  "named",
+                  "Avec le pseudo",
+                  "Les résultats gardés après la partie montrent la réponse de chacun.",
+                ],
+                [
+                  "anonymous",
+                  "Anonymes",
+                  "Personne ne voit qui a répondu quoi : seuls les chiffres et les réponses sans nom sont gardés.",
+                ],
+              ]}
+              onChange={(v) => patch({ anonymous: v === "anonymous" })}
             />
           )}{" "}
           {["quiz", "poll"].includes(q.type) && (

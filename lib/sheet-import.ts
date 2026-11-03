@@ -1,4 +1,11 @@
-import { durations, newQuestion, validateQuestion, type Question, type QuestionType } from "./question";
+import {
+  canBeAnonymous,
+  durations,
+  newQuestion,
+  validateQuestion,
+  type Question,
+  type QuestionType,
+} from "./question";
 import type { Rows } from "./sheet";
 import type { Sheet } from "./xlsx";
 
@@ -31,6 +38,7 @@ const columns: { key: string; words: string[] }[] = [
   { key: "time", words: ["temps", "duree", "time limit", "time", "chrono"] },
   { key: "points", words: ["points", "bareme"] },
   { key: "explanation", words: ["explication", "explanation", "commentaire"] },
+  { key: "anonymous", words: ["anonyme", "anonymous", "reponses anonymes"] },
 ];
 const optionHeader = /^(?:reponse|answer|choix|option|proposition)\s*([1-6])\b/;
 
@@ -156,6 +164,8 @@ export function rowsToQuestions(rows: Rows): ImportResult {
       else if (["0", "aucun", "aucuns", "sans", "non", "none", "no points"].includes(points))
         q.points = "none";
     }
+    if (canBeAnonymous(type))
+      q.anonymous = ["oui", "o", "x", "1", "yes", "y", "vrai", "anonyme"].includes(fold(get("anonymous")));
     const correct = get("correct");
     if (type === "quiz" || type === "poll" || type === "puzzle") {
       if (options.length < 2) return skip("il faut au moins 2 réponses");
@@ -242,6 +252,7 @@ export function importTemplate(): Sheet[] {
     "Temps (s)",
     "Points",
     "Explication",
+    "Anonyme",
   ];
   const row = (
     type: string,
@@ -251,6 +262,7 @@ export function importTemplate(): Sheet[] {
     time: number | "" = 20,
     points = "",
     explanation = "",
+    anonymous = "",
   ) => [
     type,
     question,
@@ -259,11 +271,12 @@ export function importTemplate(): Sheet[] {
     time,
     points,
     explanation,
+    anonymous,
   ];
   return [
     {
       name: "Questions",
-      widths: [16, 46, 18, 18, 18, 18, 14, 14, 18, 10, 10, 40],
+      widths: [16, 46, 18, 18, 18, 18, 14, 14, 18, 10, 10, 40, 10],
       rows: [
         head,
         row(
@@ -293,7 +306,16 @@ export function importTemplate(): Sheet[] {
           "",
           45,
         ),
-        row("Sondage", "Quel format préférez-vous ?", ["En salle", "À distance", "Les deux"], "", 30),
+        row(
+          "Sondage",
+          "Quel format préférez-vous ?",
+          ["En salle", "À distance", "Les deux"],
+          "",
+          30,
+          "",
+          "",
+          "oui",
+        ),
         row("Échelle", "Cette formation vous a-t-elle été utile ?", ["5"], "", 30),
         row("Nuage de mots", "Un mot pour résumer la journée ?", [], "", 45),
         row("Diapo", "Pause café : reprise dans 10 minutes", ["À tout de suite !"], "", ""),
@@ -317,6 +339,10 @@ export function importTemplate(): Sheet[] {
         ["Temps (s)", "Le temps de réponse en secondes (5 à 240). Vide = 20 secondes."],
         ["Points", "Vide = normaux, « double » = doublés, « aucun » = sans points."],
         ["Explication", "Facultatif : affichée avec la correction (600 caractères au plus)."],
+        [
+          "Anonyme",
+          "« oui » pour une question d’avis à laquelle on répond sans que personne sache qui a répondu quoi. Ignoré pour les questions notées.",
+        ],
         ["", ""],
         [
           "Bon à savoir",

@@ -1171,3 +1171,51 @@ footer {
 .pill-selected {
   background: var(--pink);
 }
+
+/* Anonymous opinion question: said on the phone and on the big screen. */
+.anonymous-badge {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 7px;
+  margin: 16px auto 0;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--ink);
+  color: var(--acid);
+  border-radius: 999px;
+  transform: rotate(-1.5deg);
+  animation: anonymous-in 0.5s 0.2s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+.anonymous-badge.host {
+  align-self: center;
+  margin: 0 0 10px;
+  font-size: 16px;
+  padding: 8px 16px;
+}
+.anonymous-badge svg {
+  animation: anonymous-lock 1.6s 0.7s ease-in-out;
+}
+@keyframes anonymous-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) rotate(4deg) scale(0.8);
+  }
+}
+@keyframes anonymous-lock {
+  20%,
+  60% {
+    transform: rotate(-14deg);
+  }
+  40%,
+  80% {
+    transform: rotate(14deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .anonymous-badge,
+  .anonymous-badge svg {
+    animation: none;
+  }
+}

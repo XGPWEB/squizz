@@ -3,7 +3,7 @@ import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { Dialog } from "radix-ui";
 import { useState } from "react";
-import { BarChart3, Copy, Play, Smartphone, SkipForward, Trophy, Users, X } from "lucide-react";
+import { BarChart3, Copy, Lock, Play, Smartphone, SkipForward, Trophy, Users, X } from "lucide-react";
 import { Brand } from "@/components/site/brand";
 import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
 import { MediaView } from "@/components/squizz/media";
@@ -262,6 +262,11 @@ function Question({ game, busy, run, settle, remaining }: Props) {
   return (
     <>
       <div className={`host-main host-question ${slide ? "is-slide" : ""}`} key={game.index}>
+        {q.anonymous && (
+          <span className="anonymous-badge host">
+            <Lock size={18} aria-hidden /> Réponses anonymes
+          </span>
+        )}
         {!slide && <h1 className="host-question-title">{q.text}</h1>}
         {SHOWN_AS_IS.includes(q.type) || hostPlays ? (
           <div className="host-answers">

@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.17.0] — 2026-11-03
+
+### Ajouté
+- Réponses anonymes : un réglage « Réponses » (avec le pseudo / anonymes) pour les questions d’avis (sondage, échelle, NPS, place le pin’s, nuage de mots, question ouverte, brainstorming). Le téléphone et le grand écran l’annoncent ; les résultats gardés n’en conservent que les chiffres et les réponses sans nom.
+- Import Excel : colonne « Anonyme » (oui) dans le modèle.
+
 ## [1.16.0] — 2026-11-03
 
 ### Ajouté

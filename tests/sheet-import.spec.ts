@@ -48,6 +48,7 @@ describe("import de questions", () => {
     expect(slider).toMatchObject({ min: 1950, max: 2000, target: 1969 });
     expect(puzzle.order).toEqual([0, 1, 2, 3]);
     expect(scale.max).toBe(5);
+    expect(questions.filter((q) => q.anonymous).map((q) => q.type)).toEqual(["poll"]);
   });
 
   it("comprend le modèle de tableur de Kahoot (titre au-dessus, en-têtes en anglais)", () => {

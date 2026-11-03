@@ -1323,3 +1323,15 @@ main:focus {
     animation: none;
   }
 }
+.report .tag.anonymous {
+  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink);
+  background: var(--acid);
+}
+.report-grid th svg {
+  margin-left: 3px;
+  vertical-align: -1px;
+}

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
 
 const noopSubscribe = () => () => {};
-import { X } from "lucide-react";
+import { Lock, X } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { QuestionPlay, QuestionResults } from "@/components/squizz/question-play";
 import {
@@ -255,6 +255,11 @@ export function GameView({ code }: { code: string }) {
                     game.personal &&
                     game.question?.type !== "slide" &&
                     (game.profileQuiz ? <ProfileStep game={game} /> : <PersonalResult game={game} />)}
+                  {game.question?.anonymous && (
+                    <p className="anonymous-badge">
+                      <Lock size={15} aria-hidden /> Réponse anonyme : personne ne saura ce que tu as répondu.
+                    </p>
+                  )}
                   {game.question?.type !== "slide" && (
                     <h2 className="question-title" aria-live="polite">
                       {game.question?.text}

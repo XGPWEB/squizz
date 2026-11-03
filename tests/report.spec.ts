@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { newQuestion, type Question } from "@/lib/question";
+import { changeType, newQuestion, validateQuestion, type Question } from "@/lib/question";
 import { buildReport, describeAnswer, overallSuccess, reportSheets, type RawAnswer } from "@/lib/report";
 import { readXlsx } from "@/lib/sheet";
 import { buildXlsx } from "@/lib/xlsx";
@@ -92,5 +92,26 @@ describe("rapport de partie", () => {
     // Read back with the import reader: the file is a real workbook.
     const rows = await readXlsx(buildXlsx(sheets));
     expect(rows[3].slice(0, 2)).toEqual(["3", "=Bob"]);
+  });
+
+  it("ne relie jamais une réponse anonyme à un pseudo", () => {
+    const secret = [quiz, slide, { ...poll, anonymous: true }];
+    const r = buildReport(secret, 3, players, answers);
+    expect(r.questions[1]).toMatchObject({ anonymous: true, top: [{ label: "Poire", count: 2 }] });
+    expect(r.players.map((p) => p.answers[1]?.text ?? null)).toEqual([
+      "Réponse anonyme",
+      null,
+      "Réponse anonyme",
+    ]);
+    expect(JSON.stringify(r.players)).not.toContain("Poire");
+  });
+
+  it("n’accepte l’anonymat que pour les questions d’avis", () => {
+    const filled = { ...poll, options: ["Pomme", "Poire"] };
+    expect(validateQuestion({ ...filled, anonymous: true }).anonymous).toBe(true);
+    expect(validateQuestion({ ...quiz, anonymous: true }).anonymous).toBe(false);
+    expect(changeType({ ...poll, anonymous: true }, "wordcloud").anonymous).toBe(true);
+    expect(changeType({ ...poll, anonymous: true }, "quiz").anonymous).toBe(false);
+    expect(newQuestion("open").anonymous).toBe(false);
   });
 });

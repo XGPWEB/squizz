@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Check, Minus, X } from "lucide-react";
+import { ArrowLeft, Check, Lock, Minus, X } from "lucide-react";
 import { pageUser } from "@/lib/server/guard";
 import { findReport } from "@/lib/server/reports";
 import { overallSuccess } from "@/lib/report";
@@ -125,6 +125,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                 <span className="tag">
                   Q{i + 1} · {q.typeLabel}
                 </span>
+                {q.anonymous && (
+                  <span className="tag anonymous">
+                    <Lock size={12} aria-hidden /> Anonyme
+                  </span>
+                )}
                 <h3>{q.text || "(sans texte)"}</h3>
                 <p className="hint">
                   {q.responses} réponse{q.responses > 1 ? "s" : ""}
@@ -172,8 +177,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               <tr>
                 <th>Pseudo</th>
                 {data.questions.map((q, i) => (
-                  <th key={q.index} title={q.text}>
+                  <th key={q.index} title={q.anonymous ? `${q.text} (réponses anonymes)` : q.text}>
                     Q{i + 1}
+                    {q.anonymous && <Lock size={11} aria-label="anonyme" />}
                   </th>
                 ))}
               </tr>
