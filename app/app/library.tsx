@@ -7,6 +7,7 @@ import {
   Copy,
   Download,
   FileSpreadsheet,
+  Link2,
   Pencil,
   Play,
   Plus,
@@ -26,6 +27,7 @@ import { MAX_TRANSFER_FILE_BYTES, MAX_TRANSFER_MEDIA_BYTES } from "@/lib/quiz-fi
 import { formatSize } from "@/lib/media-limits";
 import { parseCsv, readXlsx } from "@/lib/sheet";
 import { rowsToQuestions, titleFromFile, type ImportResult } from "@/lib/sheet-import";
+import { SoloLinkDialog } from "@/components/squizz/solo-link";
 
 type Props = {
   quizzes: OrgQuiz[];
@@ -264,6 +266,21 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
                 <Trash2 size={16} />
               </button>
             )}
+            <SoloLinkDialog
+              title={`« ${q.title} » en autonomie`}
+              days
+              create={async (days) => (await gameApi<{ id: string }>("solo", { quizId: q.id, days })).id}
+              trigger={
+                <button
+                  type="button"
+                  aria-label={`Lien en autonomie pour ${q.title}`}
+                  title="Lien en autonomie : chacun joue à son rythme"
+                  className="card-action"
+                >
+                  <Link2 size={16} />
+                </button>
+              }
+            />
             <button
               disabled={busy}
               aria-label={`Lancer ${q.title}`}

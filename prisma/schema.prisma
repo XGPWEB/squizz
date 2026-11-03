@@ -84,6 +84,7 @@ model Organization {
   auditLogs   AuditLog[]
   eventPasses EventPass[]
   reports     GameReport[]
+  solos       SoloSession[]
 }
 
 /// One paid event pass. Keyed by the Stripe Checkout session that paid for it, so a payment reported twice
@@ -220,6 +221,8 @@ model Room {
   maxPlayers     Int
   /// Idempotency key sent when launching: a retried launch returns the same game instead of a second one.
   clientKey      String?
+  /// « Replay at your own pace » opened from this game at its end (lib/server/solo.ts).
+  replayId       String?
   /// Questions from the audience (lib/qa.ts): open to players, and held for the host's approval first.
   qaOpen         Boolean      @default(false)
   qaModerated    Boolean      @default(false)
@@ -253,6 +256,48 @@ model Player {
 
   @@id([code, id])
   @@unique([code, name])
+}
+
+/// A self-paced game (lib/server/solo.ts): a link where everyone plays the quiz alone, at their own pace,
+/// until it expires or the host closes it. Its results go to a GameReport « solo-<id> ».
+model SoloSession {
+  /// The secret in the link (/solo/<id>).
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  hostId         String?
+  title          String
+  /// The quiz as it was when the link was made, like a live game's snapshot.
+  quiz           Json
+  brand          Json?
+  maxPlayers     Int
+  createdAt      DateTime     @default(now())
+  expiresAt      DateTime
+  closedAt       DateTime?
+  runs           SoloRun[]
+
+  @@index([organizationId])
+  @@index([expiresAt])
+}
+
+/// One participant's go at a self-paced game.
+model SoloRun {
+  id         String      @id @default(cuid())
+  sessionId  String
+  session    SoloSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  player     String
+  name       String
+  /// The step being played and when it started (server time, ms): speed points as in a live game.
+  index      Int         @default(0)
+  startedAt  BigInt
+  /// One entry per answered step: { question, payload, points, correctness }.
+  answers    Json        @default("[]")
+  score      Int         @default(0)
+  finishedAt DateTime?
+  createdAt  DateTime    @default(now())
+
+  @@unique([sessionId, player])
+  @@unique([sessionId, name])
 }
 
 /// A question asked by a player on the audience's wall (lib/qa.ts). Goes with its game (24 hours).

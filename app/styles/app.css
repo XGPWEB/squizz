@@ -1578,7 +1578,9 @@ main:focus {
   box-shadow: 6px 6px 0 var(--ink);
 }
 .mini-stage.theme-squizz .mini-title {
-  font: 400 18px/1.2 Anton, sans-serif;
+  font:
+    400 18px/1.2 Anton,
+    sans-serif;
   text-align: center;
 }
 .mini-stage.theme-squizz .mini-answers span {

@@ -15,6 +15,7 @@ import {
   updateQuiz,
 } from "@/lib/server/quiz-store";
 import { exportQuiz, importQuiz } from "@/lib/server/quiz-transfer";
+import { closeSolo, createReplay, createSolo } from "@/lib/server/solo";
 import {
   createRoom,
   gameState,
@@ -80,6 +81,22 @@ const actions: Record<string, Handler> = {
     const max = orgLimits(user.organization).maxPlayersPerGame;
     const brand = brandOf(user.organization);
     return { code: await createRoom(user.id, user.organizationId, quiz, max, body.clientKey, brand) };
+  },
+  // Self-paced links: opened from the library, or from a live game once it is over.
+  solo: async (_, body) => {
+    const user = await requireMember();
+    const quiz = await findQuiz(user, body.quizId);
+    if (!quiz) fail("Quiz introuvable.", 404);
+    return { id: await createSolo(user, quiz, body.days, brandOf(user.organization)) };
+  },
+  "solo-close": async (_, body) => {
+    await closeSolo(await requireMember(), body.id);
+    return { ok: true };
+  },
+  replay: async (who, body) => {
+    const g = await loadGame(who, parseCode(body.code), true);
+    if (g.room.phase !== "finished") fail("Le replay s’ouvre à la fin de la partie.");
+    return { id: await createReplay(g.room.code, who) };
   },
   // Playing: anyone with the code, signed in or not.
   join: async (who, body, req) => {

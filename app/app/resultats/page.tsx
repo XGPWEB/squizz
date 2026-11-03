@@ -3,6 +3,8 @@ import Link from "next/link";
 import { BarChart3, ChevronRight, Users } from "lucide-react";
 import { pageUser } from "@/lib/server/guard";
 import { listReports, REPORT_DAYS } from "@/lib/server/reports";
+import { listSolos } from "@/lib/server/solo";
+import { SoloLinks } from "./solo-links";
 
 export const metadata: Metadata = { title: "Résultats" };
 
@@ -15,7 +17,8 @@ const when = (iso: string) =>
 
 export default async function ReportsPage() {
   const user = await pageUser();
-  const reports = await listReports(user as typeof user & { organizationId: string });
+  const member = user as typeof user & { organizationId: string };
+  const [reports, solos] = await Promise.all([listReports(member), listSolos(member.organizationId)]);
   return (
     <>
       <div className="dash-heading">
@@ -28,6 +31,7 @@ export default async function ReportsPage() {
           </p>
         </div>
       </div>
+      <SoloLinks solos={solos} />
       {reports.length ? (
         <ul className="report-list">
           {reports.map((r, i) => (
@@ -47,7 +51,11 @@ export default async function ReportsPage() {
                     <Users size={15} aria-hidden /> {r.players} joueur{r.players > 1 ? "s" : ""}
                   </span>
                   <span className={`status ${r.finished ? "on" : "off"}`}>
-                    {r.finished ? "Terminée" : `Arrêtée à ${r.questions}/${r.total}`}
+                    {r.id.startsWith("solo-")
+                      ? "En autonomie"
+                      : r.finished
+                        ? "Terminée"
+                        : `Arrêtée à ${r.questions}/${r.total}`}
                   </span>
                 </span>
                 <ChevronRight size={20} aria-hidden className="report-go" />

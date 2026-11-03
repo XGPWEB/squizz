@@ -57,6 +57,8 @@ export type Game = {
       voted: boolean;
     }[];
   } | null;
+  /** « Replay at your own pace », opened by the host at the end of the game (/solo/<id>). */
+  replay: string | null;
   /** How the screens look (lib/brand.ts). */
   brand: GameBrand;
   /** Team mode: the teams in ranking order, and the player's own team. */

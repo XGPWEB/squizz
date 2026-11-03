@@ -239,6 +239,11 @@ export function GameView({ code }: { code: string }) {
                     </span>
                   </div>
                   <Leaderboard players={game.players} />
+                  {game.replay && (
+                    <a className="button secondary replay-link" href={`/solo/${game.replay}`}>
+                      Rejouer à mon rythme
+                    </a>
+                  )}
                   <div className="center" style={{ marginTop: 25 }}>
                     <Link className="button" href="/">
                       On remet ça ?

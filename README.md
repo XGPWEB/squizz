@@ -33,6 +33,10 @@ Les types et leur validation sont définis dans `lib/question.ts`.
 | Espace organisation | `/app` : bibliothèque de quiz, éditeur, équipe, compte | Membres d'une organisation |
 | Super-admin | `/super-admin` : organisations, utilisateurs, messages de contact, journal | Pressweb |
 
+## Quiz en autonomie
+
+`lib/server/solo.ts` : `SoloSession` (le secret du lien `/solo/<id>`, une copie du quiz, la date de fin) et `SoloRun` (une participation : étape en cours, heure de départ côté serveur pour les points de vitesse, réponses). Actions `solo` (bibliothèque), `replay` (animateur, partie terminée, `Room.replayId`) et `solo-close` sur `/api/game` ; `join`, `state`, `answer`, `next` sur `/api/solo`. À chaque participant qui termine, `saveSoloReport()` réécrit le rapport `solo-<id>`. La purge supprime les liens le lendemain de leur fin.
+
 ## Questions du public
 
 `lib/server/qa.ts` : `Room.qaOpen` et `Room.qaModerated`, tables `QaQuestion` (statut `pending`, `visible`, `answered` ou `hidden` ; pseudo affiché ou `null` si anonyme) et `QaVote`, supprimées avec la partie. Le mur est lu une fois par instantané de la partie et filtré pour chaque visiteur (`wallFor`) : l'animateur voit tout, un joueur les questions validées et les siennes. Actions `qa-ask` et `qa-vote` (joueurs, limite par adresse), `qa-settings` et `qa-moderate` (animateur et télécommande). Les questions affichées vont dans le rapport (`ReportData.qa`, sans les noms).

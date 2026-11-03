@@ -143,6 +143,12 @@ export default function PolitiqueConfidentialitePage() {
             <td>24 heures après la création de la partie, puis suppression automatique</td>
           </tr>
           <tr>
+            <td>Participations à un quiz en autonomie (pseudo, réponses, score)</td>
+            <td>
+              Jusqu’à la fermeture du lien (30 jours au plus), puis suppression automatique sous 24 heures
+            </td>
+          </tr>
+          <tr>
             <td>Résultats d’une partie (pseudos, réponses, scores)</td>
             <td>
               12 mois après la partie, puis suppression automatique ; l’organisation peut les supprimer avant

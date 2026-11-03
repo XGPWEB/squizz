@@ -2,6 +2,16 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.24.0] — 2026-11-03
+
+### Ajouté
+- Lien en autonomie : depuis la bibliothèque (icône lien sur une carte), un lien et un QR code ouverts 24 heures, 7 ou 30 jours. Chacun joue seul, à son rythme : chrono par question, correction immédiate avec l’explication et les réponses du groupe, score final et rang parmi ceux qui ont terminé. La roue de tirage, qui demande un animateur, est retirée.
+- Rejouer en différé : à la fin d’une partie, un bouton ouvre ce même quiz en autonomie pour 7 jours ; les téléphones des joueurs affichent « Rejouer à mon rythme ».
+- Onglet Résultats : les liens en autonomie (participants, date de fin, copier, fermer) et leurs résultats, mis à jour à chaque participant qui termine.
+
+### Données personnelles
+- Les participations en autonomie (pseudo, réponses) sont supprimées le lendemain de la fermeture du lien ; leurs résultats suivent la règle des 12 mois. Politique de confidentialité mise à jour.
+
 ## [1.23.0] — 2026-11-03
 
 ### Ajouté

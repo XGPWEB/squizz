@@ -53,6 +53,7 @@ type Room = {
   brand: Brand;
   qaOpen: boolean;
   qaModerated: boolean;
+  replayId: string | null;
 };
 type AnswerRow = {
   player: string;
@@ -69,6 +70,9 @@ const randomOrder = (n: number) =>
   Array.from({ length: n }, (_, i) => ({ i, key: randomInt() }))
     .sort((a, b) => a.key - b.key)
     .map((x) => x.i);
+
+/** A quiz ready to be played: normalised, puzzles and matchings shuffled (live games and self-paced links). */
+export const prepareQuiz = (quiz: Quiz) => shufflePuzzles(normalizeQuiz(quiz));
 
 /** Shuffles puzzle options and matching targets so the stored order does not expose the solution. */
 function shufflePuzzles(quiz: Quiz): Quiz {
@@ -121,7 +125,7 @@ export async function createRoom(
       : null;
   const done = await existing();
   if (done) return done.code;
-  const snapshot = shufflePuzzles(normalizeQuiz(quiz)) as unknown as Prisma.InputJsonValue;
+  const snapshot = prepareQuiz(quiz) as unknown as Prisma.InputJsonValue;
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = String(100000 + (randomInt() % 900000));
     try {
@@ -624,6 +628,8 @@ export function gameState(g: GameContext) {
       : null,
     aggregate:
       revealed && !asksNothing(question.type) ? aggregateAnswers(question, g.submitted.map(decode)) : null,
+    /** « Replay at your own pace », once the host opened it at the end of the game. */
+    replay: room.replayId,
     /** Questions from the audience: whether the wall is open, and what this visitor may see of it. */
     qa:
       room.qaOpen || g.wall.length

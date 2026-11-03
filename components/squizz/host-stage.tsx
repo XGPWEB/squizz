@@ -9,6 +9,7 @@ import {
   Gauge,
   Lock,
   Play,
+  Repeat,
   Shuffle,
   Smartphone,
   SkipForward,
@@ -20,6 +21,7 @@ import { FillSentence, MatchBoard, QuestionPlay, QuestionResults } from "@/compo
 import { asksNothing } from "@/lib/question";
 import { Wheel } from "./wheel";
 import { QaHostButton } from "./qa";
+import { SoloLinkDialog } from "./solo-link";
 import { MediaView } from "@/components/squizz/media";
 import { FullscreenButton } from "@/components/squizz/fullscreen-button";
 import { gameApi as api } from "@/lib/client/api";
@@ -196,6 +198,23 @@ function RemoteButton({ game, origin }: { game: Game; origin: string }) {
         </Dialog.Portal>
       </Dialog.Root>
     </>
+  );
+}
+
+/** At the end of a game: the same quiz as a self-paced link, shown here and on the players' phones. */
+function ReplayButton({ game }: { game: Game }) {
+  return (
+    <SoloLinkDialog
+      title="Rejouer à son rythme"
+      className={themeOf(game)}
+      style={brandStyle(game)}
+      create={async () => (await api<{ id: string }>("replay", { code: game.code })).id}
+      trigger={
+        <button type="button" className="button secondary">
+          <Repeat size={18} /> Rejouer en différé
+        </button>
+      }
+    />
   );
 }
 
@@ -691,6 +710,7 @@ function Finale({ game }: { game: Game }) {
           <button className="button secondary" onClick={() => setFull(true)}>
             <Trophy size={18} /> Classement complet
           </button>
+          <ReplayButton game={game} />
           <Link className="button secondary" href="/app/resultats">
             <BarChart3 size={18} /> Résultats détaillés
           </Link>
