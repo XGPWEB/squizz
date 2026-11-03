@@ -2,6 +2,18 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.27.1] — 2026-11-03
+
+### Site public
+
+- Accueil, types de questions : une seule scène au lieu de 24 cartes. Trois onglets (connaissances, avis, diapos), les types de l’onglet en pastilles et le type choisi affiché en grand avec sa description. La scène fait défiler les types toute seule quand elle est à l’écran, avec une barre de progression sur la pastille ; elle s’arrête au survol, au premier clic ou avec le bouton pause, et ne défile jamais avec « réduire les animations ». La diapo montre ses 6 mises en page.
+- « Tout ce qu’il faut pour animer » : les cinq moments deviennent des onglets numérotés, un seul panneau ouvert à la fois (onglets horizontaux sur téléphone).
+- Onglets au clavier (flèches, Début, Fin) ; tous les textes restent dans la page pour les moteurs de recherche.
+
+### Corrigé
+
+- Vignette de la roue : coordonnées arrondies, le serveur et le navigateur dessinent le même tracé.
+
 ## [1.27.0] — 2026-11-03
 
 ### Site public

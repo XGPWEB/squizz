@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Building2, GraduationCap, PartyPopper, QrCode, Sparkles, Trophy, Users, Zap } from "lucide-react";
-import { FeatureGroups, FeatureNav, TypeShowcase } from "@/components/site/features";
+import { FeatureGroups, TypeShowcase } from "@/components/site/features";
 import { JoinBox } from "@/components/site/join-box";
 import { ContactSection } from "@/components/site/contact-section";
 import { Marquee } from "@/components/site/marquee";
@@ -125,7 +125,6 @@ export default function HomePage() {
           </div>
           <span className="hint">{QUESTION_COUNT} types de questions, des diapos et une roue</span>
         </div>
-        <FeatureNav />
         <TypeShowcase />
       </section>
 

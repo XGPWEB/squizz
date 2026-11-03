@@ -7,6 +7,8 @@ import type { QuestionType, SlideLayout } from "@/lib/question";
  * answer colours of SQuizz with their A–D letters, sticker-like images.
  */
 const LETTERS = ["A", "B", "C", "D"];
+/** Rounded coordinates: the server and the browser then write the same SVG path (no hydration mismatch). */
+const r = (n: number) => Math.round(n * 1000) / 1000;
 
 const Img = ({ tall = false, label = "IMAGE" }: { tall?: boolean; label?: string }) => (
   <span className={`pv-img ${tall ? "tall" : ""}`}>
@@ -209,7 +211,7 @@ const typePreviews: Record<QuestionType, [string, React.ReactNode]> = {
             return (
               <path
                 key={i}
-                d={`M0 0 L${20 * Math.sin(a0)} ${-20 * Math.cos(a0)} A20 20 0 0 1 ${20 * Math.sin(a1)} ${-20 * Math.cos(a1)} Z`}
+                d={`M0 0 L${r(20 * Math.sin(a0))} ${r(-20 * Math.cos(a0))} A20 20 0 0 1 ${r(20 * Math.sin(a1))} ${r(-20 * Math.cos(a1))} Z`}
                 fill={fill}
                 stroke="var(--ink)"
                 strokeWidth="1"
