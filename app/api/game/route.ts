@@ -80,10 +80,12 @@ const actions: Record<string, Handler> = {
     if (!quiz) fail("Quiz introuvable.", 404);
     const max = orgLimits(user.organization).maxPlayersPerGame;
     const brand = brandOf(user.organization);
-    return { code: await createRoom(user.id, user.organizationId, quiz, max, body.clientKey, brand, {
+    return {
+      code: await createRoom(user.id, user.organizationId, quiz, max, body.clientKey, brand, {
         count: body.teams,
         names: body.teamNames,
-      }) };
+      }),
+    };
   },
   // Self-paced links: opened from the library, or from a live game once it is over.
   solo: async (_, body) => {
