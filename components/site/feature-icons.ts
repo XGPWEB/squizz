@@ -1,0 +1,40 @@
+import {
+  BadgeCheck,
+  ChartColumn,
+  EyeOff,
+  FileDown,
+  FileSpreadsheet,
+  Flag,
+  Image,
+  LayoutTemplate,
+  Library,
+  Link2,
+  MessageCircleQuestion,
+  Palette,
+  PieChart,
+  RotateCcw,
+  Smartphone,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
+import type { FeatureIcon } from "@/lib/seo";
+
+/** The icon of each feature of `FEATURES` (lib/seo.ts). */
+export const FEATURE_ICONS: Record<FeatureIcon, LucideIcon> = {
+  ai: Sparkles,
+  import: FileSpreadsheet,
+  templates: LayoutTemplate,
+  media: Image,
+  teams: Flag,
+  remote: Smartphone,
+  qa: MessageCircleQuestion,
+  anonymous: EyeOff,
+  solo: Link2,
+  replay: RotateCcw,
+  profiles: PieChart,
+  results: ChartColumn,
+  export: FileDown,
+  theme: Palette,
+  brand: BadgeCheck,
+  team: Library,
+};

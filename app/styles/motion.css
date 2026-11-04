@@ -362,7 +362,7 @@ html.motion .marquee-track {
 
 /* Hover life */
 .step-list li,
-.type-grid.showcase article,
+.type-grid.showcase > *,
 .audience-grid article,
 .price-card,
 .quiz-card {
@@ -371,7 +371,7 @@ html.motion .marquee-track {
     box-shadow 0.25s;
 }
 .step-list li:hover,
-.type-grid.showcase article:hover,
+.type-grid.showcase > *:hover,
 .price-card:hover {
   transform: translate(-3px, -5px) rotate(-0.6deg);
   box-shadow: 9px 10px 0 var(--ink);

@@ -75,6 +75,15 @@ export const TYPE_DETAILS: Record<QuestionType, string> = {
     "La roue tourne sur tous les écrans et s’arrête sur un joueur, ou sur une entrée de votre liste : gages, thèmes, lots…",
 };
 
+/** The anchor of a type on /fonctionnalites: « Vrai ou faux » → « vrai-ou-faux ». */
+export const typeAnchor = (label: string) =>
+  label
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
 /** The families as the site names them, each with its steps. */
 export const TYPE_FAMILIES = questionGroups.map((g) => ({
   ...g,

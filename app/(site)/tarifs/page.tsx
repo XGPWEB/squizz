@@ -10,6 +10,12 @@ export const metadata: Metadata = {
   title: "Tarifs",
   description:
     "SQuizz gratuit, Essentiel à 15 € / mois, Pro à 30 € / mois, Premium à 310 € / an, ou Pack Événement à 29 € pour 7 jours sans abonnement.",
+  openGraph: {
+    title: "Tarifs de SQuizz",
+    description:
+      "Gratuit pour essayer, offres sans engagement dès 15 € / mois, ou Pack Événement sans abonnement.",
+    url: "/tarifs",
+  },
 };
 
 const euros = (n: number) => n.toLocaleString("fr-FR", { maximumFractionDigits: 2 });

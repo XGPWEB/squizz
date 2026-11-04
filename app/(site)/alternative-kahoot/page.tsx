@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   title: "Alternative française à Kahoot! — comparatif",
   description:
     "SQuizz, l’alternative française à Kahoot!, Mentimeter et Wooclap : quiz en direct sur téléphone, essai gratuit, offres sans engagement, données hébergées en Europe, sans publicité.",
+  openGraph: {
+    title: "SQuizz, l’alternative française à Kahoot!",
+    description: "Comparatif avec Kahoot!, Mentimeter et Wooclap : prix, participants, hébergement, langue.",
+    url: "/alternative-kahoot",
+  },
 };
 
 const free = PLANS.FREE;

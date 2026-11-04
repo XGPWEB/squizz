@@ -18,7 +18,7 @@ export function JoinBox() {
       <div className="icon-box">
         <Zap />
       </div>
-      <h2>T’es dans la partie ?</h2>
+      <p className="join-title">T’es dans la partie ?</p>
       <p>Entre le code affiché par ton animateur.</p>
       <label htmlFor="code">Code de la partie</label>
       <input

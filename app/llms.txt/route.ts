@@ -1,6 +1,6 @@
 import { ADVANTAGES, FAQ, FEATURES, QUESTION_COUNT, TYPE_DETAILS, TYPE_FAMILIES, SUMMARY } from "@/lib/seo";
 import { COMPANY_INFO } from "@/lib/company-info";
-import { PLAN_KEYS, PLANS, limitsSummary, priceLabel } from "@/lib/plans";
+import { EVENT_PASS, PLAN_KEYS, PLANS, limitsSummary, priceLabel } from "@/lib/plans";
 
 export const dynamic = "force-static";
 
@@ -20,6 +20,8 @@ ${ADVANTAGES.map((a) => `- **${a.title}** : ${a.text}`).join("\n")}
 ## Offres
 
 ${PLAN_KEYS.map((k) => `- ${PLANS[k].label} (${priceLabel(PLANS[k])}) : ${limitsSummary(PLANS[k])}.`).join("\n")}
+
+- ${EVENT_PASS.label} (${EVENT_PASS.price} € en une fois) : ${EVENT_PASS.days} jours, jusqu’à ${PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie, sans abonnement.
 
 Offres payantes sans engagement, résiliables à tout moment. TVA non applicable, art. 293 B du CGI.
 
@@ -44,7 +46,8 @@ ${FAQ.map(({ q, a }) => `### ${q}\n\n${a}`).join("\n\n")}
 
 ## Pages
 
-- [Accueil](${site}/) : présentation, types de questions et fonctionnalités
+- [Accueil](${site}/) : présentation, prix, questions fréquentes
+- [Fonctionnalités](${site}/fonctionnalites) : chaque type de question et chaque fonction, en détail
 - [Alternative à Kahoot!](${site}/alternative-kahoot) : comparatif avec Kahoot!, Mentimeter et Wooclap
 - [Tarifs](${site}/tarifs) : offres Gratuit, Essentiel, Pro et Premium annuel
 - [Rejoindre une partie](${site}/jouer) : saisir le code de la partie

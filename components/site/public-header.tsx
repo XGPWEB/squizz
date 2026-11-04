@@ -13,7 +13,7 @@ export async function PublicHeader() {
         <Link href="/jouer" className="nav-join">
           Rejoindre une partie
         </Link>
-        <AnchorLink href="/#fonctionnalites">Fonctionnalités</AnchorLink>
+        <Link href="/fonctionnalites">Fonctionnalités</Link>
         <Link href="/tarifs">Tarifs</Link>
         <AnchorLink href="/#contact">Contact</AnchorLink>
       </nav>

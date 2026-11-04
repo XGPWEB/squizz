@@ -9,15 +9,18 @@ import { CookieConsent } from "@/components/site/cookie-consent";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "https://www.squizz.fun"),
-  title: { default: "SQuizz — Le quiz qui se joue ensemble", template: "%s · SQuizz" },
+  title: {
+    default: "SQuizz : quiz interactif en direct, l’alternative française à Kahoot!",
+    template: "%s · SQuizz",
+  },
   description:
-    "L’alternative française à Kahoot! : créez des quiz interactifs, lancez une partie en direct et faites jouer vos participants depuis leur téléphone, sans application. Essai gratuit sans carte bancaire, offres sans engagement, données hébergées en Europe.",
+    "Quiz interactifs en direct, joués sur téléphone sans application. L’alternative française à Kahoot! : essai gratuit, sans engagement, données en Europe.",
   alternates: { canonical: "/" },
   openGraph: {
     siteName: "SQuizz",
     locale: "fr_FR",
     type: "website",
-    title: "SQuizz — Le quiz qui se joue ensemble",
+    title: "SQuizz : quiz interactif en direct, l’alternative française à Kahoot!",
     description: "Créez un quiz, projetez-le et faites jouer tout le monde depuis son téléphone.",
   },
   twitter: { card: "summary_large_image" },

@@ -1,13 +1,28 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Building2, GraduationCap, PartyPopper, QrCode, Sparkles, Trophy, Users, Zap } from "lucide-react";
-import { FeatureGroups, TypeShowcase } from "@/components/site/features";
+import { Building2, GraduationCap, PartyPopper, QrCode, Sparkles, Trophy, Zap } from "lucide-react";
+import { FormatsPreview, MomentsFold } from "@/components/site/features";
 import { JoinBox } from "@/components/site/join-box";
 import { ContactSection } from "@/components/site/contact-section";
 import { Marquee } from "@/components/site/marquee";
 import { JsonLd } from "@/components/site/json-ld";
 import { Advantages, Faq } from "@/components/site/seo-sections";
-import { QUESTION_COUNT, faqLd, softwareLd } from "@/lib/seo";
+import { FAQ, QUESTION_COUNT, faqLd, softwareLd } from "@/lib/seo";
 import { EVENT_PASS, PLANS } from "@/lib/plans";
+
+export const metadata: Metadata = {
+  title: { absolute: "SQuizz : quiz interactif en direct, l’alternative française à Kahoot!" },
+};
+
+/** The questions the home page shows first; the others are folded under them (all stay in the page). */
+const FIRST = [
+  "SQuizz est-il gratuit ?",
+  "Les joueurs doivent-ils installer une application ou créer un compte ?",
+  "Combien de joueurs peuvent participer à une partie ?",
+  "SQuizz est-il une bonne alternative à Kahoot! ?",
+  "Où sont hébergées les données et que deviennent-elles ?",
+];
+const HOME_FAQ = [...FAQ].sort((a, b) => (FIRST.indexOf(a.q) + 1 || 99) - (FIRST.indexOf(b.q) + 1 || 99));
 
 export default function HomePage() {
   return (
@@ -35,9 +50,10 @@ export default function HomePage() {
               Plus de <span className="wiggle">défis.</span>
             </span>
           </h1>
-          <p className="lead hero-in" style={{ ["--d" as string]: "420ms" }}>
-            Créez un quiz en quelques minutes, projetez-le et laissez chacun répondre depuis son téléphone.
-            Classement en direct, podium final, zéro application à installer.
+          {/* No entrance animation here: this paragraph is what the page is measured on (LCP). */}
+          <p className="lead">
+            SQuizz est la plateforme française de quiz interactifs en direct : vous projetez le quiz, chacun
+            répond depuis son téléphone, sans application. Classement en direct et podium final.
           </p>
           <div className="row hero-in" style={{ marginTop: 26, ["--d" as string]: "560ms" }}>
             <Link className="button" href="/inscription" data-conversion="signup_cta_click">
@@ -47,6 +63,10 @@ export default function HomePage() {
               Voir les offres
             </Link>
           </div>
+          <p className="hero-price">
+            <b>Gratuit</b> pour essayer, sans carte bancaire · offres dès {PLANS.STARTER.price} € / mois ·{" "}
+            {EVENT_PASS.label} {EVENT_PASS.price} € sans abonnement
+          </p>
         </div>
         <div className="hero-join" data-reveal="pop">
           {/* Two shapes pinned to the join box itself, so they stick out of its corners at every width. */}
@@ -89,30 +109,21 @@ export default function HomePage() {
               <Sparkles />
             </span>
             <h3>Préparez</h3>
-            <p>
-              {QUESTION_COUNT} types de questions, des diapos et une roue : écrivez votre quiz, importez-le
-              depuis Excel ou laissez l’IA le rédiger.
-            </p>
+            <p>Écrivez votre quiz, importez-le depuis Excel ou laissez l’IA le rédiger.</p>
           </li>
           <li>
             <span className="step-icon">
               <QrCode />
             </span>
             <h3>Invitez</h3>
-            <p>
-              Un code à six chiffres et un QR code : les joueurs rejoignent en une seconde, sans compte, seuls
-              ou en équipes.
-            </p>
+            <p>Un code à six chiffres et un QR code : les joueurs rejoignent en une seconde, sans compte.</p>
           </li>
           <li>
             <span className="step-icon">
               <Trophy />
             </span>
             <h3>Jouez</h3>
-            <p>
-              Chrono, points de rapidité, classement et podium, pilotés depuis votre téléphone. Les résultats
-              restent ensuite dans votre espace.
-            </p>
+            <p>Chrono, points de rapidité, classement après chaque question et podium final.</p>
           </li>
         </ol>
       </section>
@@ -125,17 +136,8 @@ export default function HomePage() {
           </div>
           <span className="hint">{QUESTION_COUNT} types de questions, des diapos et une roue</span>
         </div>
-        <TypeShowcase />
-      </section>
-
-      <section className="features-more" aria-labelledby="features-more-title">
-        <div className="section-heading" data-reveal="left">
-          <div>
-            <p className="eyebrow">AVANT, PENDANT, APRÈS</p>
-            <h2 id="features-more-title">Tout ce qu’il faut pour animer</h2>
-          </div>
-        </div>
-        <FeatureGroups />
+        <FormatsPreview />
+        <MomentsFold />
       </section>
 
       <section className="audiences" aria-labelledby="audiences-title">
@@ -167,18 +169,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <Marquee
-        tone="acid"
-        items={[
-          `Jusqu’à ${PLANS.PREMIUM.maxPlayersPerGame} joueurs avec Premium`,
-          "Sans application",
-          "Classement en direct",
-          "QR code",
-          "Gratuit pour démarrer",
-          `${EVENT_PASS.label} : ${EVENT_PASS.price} € sans abonnement`,
-        ]}
-      />
-
       <section className="advantages" aria-labelledby="advantages-title">
         <div className="section-heading" data-reveal="left">
           <div>
@@ -194,21 +184,17 @@ export default function HomePage() {
 
       <section className="cta-band" data-reveal="zoom">
         <div>
-          <h2>Votre équipe, vos animateurs, vos quiz.</h2>
+          <h2>Prêt pour votre premier quiz&nbsp;?</h2>
           <p>
-            Invitez vos animateurs, partagez une bibliothèque de quiz commune et gérez les droits de chacun
-            depuis votre espace.
+            Créez votre espace en une minute, invitez vos animateurs et partagez vos quiz avec toute l’équipe.
           </p>
         </div>
         <div className="cta-points">
           <span>
-            <Users size={18} /> Rôles administrateur et animateur
-          </span>
-          <span>
-            <Zap size={18} /> Démarrage gratuit, sans carte bancaire
+            <Zap size={18} /> Gratuit, sans carte bancaire
           </span>
           <Link className="button" href="/inscription" data-conversion="signup_cta_click">
-            Créer mon espace
+            <Sparkles size={18} /> Créer mon espace gratuit
           </Link>
         </div>
       </section>
@@ -219,7 +205,7 @@ export default function HomePage() {
             <h2 id="faq-title">Questions fréquentes</h2>
           </div>
         </div>
-        <Faq />
+        <Faq items={HOME_FAQ} shown={FIRST.length} />
       </section>
       <div data-reveal="up">
         <ContactSection />

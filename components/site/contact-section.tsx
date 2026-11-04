@@ -2,8 +2,9 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { turnstileSiteKey } from "@/lib/server/turnstile";
 import { ContactForm } from "./contact-form";
+import { ContactFold } from "./contact-fold";
 
-/** "Parlons-en" section: contact details on the left, the form on the right. */
+/** "Parlons-en" section: contact details on the left, the form folded on the right. */
 export function ContactSection() {
   const c = COMPANY_INFO.editor;
   return (
@@ -11,13 +12,11 @@ export function ContactSection() {
       <div className="contact-intro">
         <p className="eyebrow">— PARLONS-EN</p>
         <h2 id="contact-title">
-          Un projet
-          <br />
+          Un projet <br />
           en tête ?
         </h2>
         <p className="lead">
-          Une question sur SQuizz, une démonstration à organiser pour votre équipe, un devis pour l’offre Pro
-          ou besoin d’aide pour lancer votre premier quiz ? Écrivez-nous, on répond vite.
+          Une question, une démonstration pour votre équipe, un devis ? Écrivez-nous, on répond vite.
         </p>
         <ul className="contact-facts">
           <li>
@@ -32,9 +31,9 @@ export function ContactSection() {
           </li>
         </ul>
       </div>
-      <div className="contact-card">
+      <ContactFold>
         <ContactForm siteKey={turnstileSiteKey()} email={c.email} />
-      </div>
+      </ContactFold>
     </section>
   );
 }

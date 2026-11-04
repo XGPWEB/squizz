@@ -193,6 +193,16 @@ h2 {
   font-size: 14px;
   margin-bottom: 20px;
 }
+/* A title to the eye, not to search engines: the page's outline starts with its own content. */
+.join p.join-title {
+  margin: 17px 0 12px;
+  font:
+    400 32px/1.25 Anton,
+    Impact,
+    "Arial Narrow",
+    sans-serif;
+  letter-spacing: -0.5px;
+}
 .join label {
   display: block;
   font: 700 13px monospace;

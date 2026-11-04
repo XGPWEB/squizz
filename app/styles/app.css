@@ -408,7 +408,7 @@ body {
 .skip-link:focus {
   top: 12px;
 }
-.type-grid.showcase article h3 {
+.type-grid.showcase > * h3 {
   font-family: Anton, sans-serif;
   font-size: 23px;
   font-weight: 400;
@@ -450,6 +450,14 @@ main:focus {
   }
   .site-header:not(.app-header) .site-nav::-webkit-scrollbar {
     display: none;
+  }
+}
+/* Small phones: the four links fit on the line, none cut at the edge. */
+@media (max-width: 420px) {
+  .site-header:not(.app-header) .site-nav {
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
   }
 }
 

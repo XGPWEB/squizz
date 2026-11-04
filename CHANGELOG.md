@@ -2,6 +2,22 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.29.0] — 2026-11-04
+
+### Site public
+
+- Accueil allégé : de 14 à 7 écrans sur téléphone, de 7 à 5,5 sur ordinateur. Six formats dessinés comme avant la 1.27, les autres nommés en une ligne ; les fonctions autour des questions, la moitié de la FAQ et le formulaire de contact passent dans des sections qui se déplient (barre crème, « + » qui pivote, ouverture avec un léger rebond, sans animation avec « réduire les animations »). Les avantages s’affichent en titres et s’ouvrent sur leur explication.
+- Une seule bande d’inscription, un seul libellé (« Créer mon espace gratuit ») ; le bandeau défilant vert est retiré, les types ne défilent plus tout seuls.
+- En haut de l’accueil, une phrase qui dit ce qu’est SQuizz et une ligne de prix (gratuit, dès 15 € / mois, Pack Événement 29 €).
+- Sur téléphone, les formats et « Pour qui ? » se font glisser de côté ; les trois étapes tiennent en un écran ; les quatre liens du menu tiennent sur la ligne.
+- Nouvelle page **/fonctionnalites** : chaque type de question et chaque fonction en clair, avec une ancre par type (« /fonctionnalites#blind-test »). Le menu et le pied de page y mènent.
+
+### Référencement
+
+- Titre de l’accueil « SQuizz : quiz interactif en direct, l’alternative française à Kahoot! », description raccourcie ; aperçus de partage propres à /tarifs et /alternative-kahoot.
+- Tout le contenu replié reste dans la page servie (lu par Google et par les assistants IA). Titres dans l’ordre (plus de H4 sous un H2), « Un projet en tête ? » ne colle plus ses mots.
+- Sitemap (avec /fonctionnalites) et llms.txt (Pack Événement, nouvelle page) à jour. Le paragraphe d’accroche s’affiche sans attendre l’animation.
+
 ## [1.28.0] — 2026-11-03
 
 ### Apparence

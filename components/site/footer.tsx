@@ -9,6 +9,7 @@ const columns = [
     title: "SQuizz",
     links: [
       { href: "/jouer", label: "Rejoindre une partie" },
+      { href: "/fonctionnalites", label: "Fonctionnalités" },
       { href: "/tarifs", label: "Tarifs" },
       { href: "/alternative-kahoot", label: "Alternative à Kahoot!" },
       { href: "/inscription", label: "Créer un compte" },
