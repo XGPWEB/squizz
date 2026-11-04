@@ -1896,6 +1896,50 @@
   justify-self: stretch;
   justify-content: center;
 }
+.launch-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  color: var(--ink);
+  background: var(--pink);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 var(--ink);
+  transform: rotate(-0.6deg);
+  animation: launch-shake 0.45s ease-out;
+}
+.launch-error:focus {
+  outline: 3px solid var(--electric, var(--ink));
+  outline-offset: 3px;
+}
+.launch-error svg {
+  flex: none;
+  margin-top: 1px;
+}
+.launch-error p {
+  margin: 0;
+  line-height: 1.4;
+}
+.launch-error strong {
+  display: block;
+}
+@keyframes launch-shake {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) rotate(-0.6deg);
+  }
+  35% {
+    opacity: 1;
+    transform: translateX(-5px) rotate(-1.2deg);
+  }
+  60% {
+    transform: translateX(4px) rotate(0deg);
+  }
+  80% {
+    transform: translateX(-2px) rotate(-0.8deg);
+  }
+}
 @keyframes launch-in {
   from {
     opacity: 0;
@@ -1919,7 +1963,8 @@
 @media (prefers-reduced-motion: reduce) {
   .launch-teams,
   .launch-names li,
-  .launch-names input.rolled {
+  .launch-names input.rolled,
+  .launch-error {
     animation: none;
   }
 }

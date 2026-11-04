@@ -1,7 +1,7 @@
 "use client";
 import { Dialog } from "radix-ui";
-import { useState } from "react";
-import { Dices, Play, User, Users, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CircleAlert, Dices, Play, User, Users, X } from "lucide-react";
 import { MAX_TEAM_NAME, MAX_TEAMS, randomTeamNames, TEAMS } from "@/lib/teams";
 
 export type LaunchChoice = { teams: number; teamNames: string[] };
@@ -9,6 +9,8 @@ export type LaunchChoice = { teams: number; teamNames: string[] };
 /**
  * Before the waiting room opens: everyone for themselves, or in teams. With teams, the host picks
  * how many and names them, or keeps the funny names drawn here (a die draws others).
+ * If the game cannot be opened, `onLaunch` throws: the message shows here, over the page, and the
+ * choices stay as they were for another try.
  */
 export function LaunchDialog({
   title,
@@ -19,13 +21,21 @@ export function LaunchDialog({
   title: string;
   trigger: React.ReactNode;
   busy: boolean;
-  onLaunch: (choice: LaunchChoice) => void;
+  onLaunch: (choice: LaunchChoice) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false),
     [teamMode, setTeamMode] = useState(false),
     [names, setNames] = useState<string[]>([]),
     // Bumped on each draw, so the drawn names play their little arrival again.
-    [rolls, setRolls] = useState<number[]>([]);
+    [rolls, setRolls] = useState<number[]>([]),
+    [error, setError] = useState(""),
+    // Bumped on each failure, so the same message shown again plays its arrival again.
+    [failures, setFailures] = useState(0);
+  const alertRef = useRef<HTMLDivElement>(null);
+  // Once the message is on screen, focus moves to it: read out, and in view on a small screen.
+  useEffect(() => {
+    if (failures) alertRef.current?.focus();
+  }, [failures]);
   const count = names.length;
   const setCount = (n: number) => {
     const kept = names.slice(0, n);
@@ -42,6 +52,7 @@ export function LaunchDialog({
       open={open}
       onOpenChange={(o) => {
         setOpen(o);
+        if (!o) setError("");
         if (o && !names.length) {
           setNames(randomTeamNames(2));
           setRolls([0, 0]);
@@ -61,9 +72,17 @@ export function LaunchDialog({
           <form
             method="post"
             className="host-modal-body launch-body"
-            onSubmit={(e) => {
+            aria-describedby={error ? "launch-error" : undefined}
+            onSubmit={async (e) => {
               e.preventDefault();
-              onLaunch(teamMode ? { teams: count, teamNames: names } : { teams: 0, teamNames: [] });
+              if (busy) return;
+              setError("");
+              try {
+                await onLaunch(teamMode ? { teams: count, teamNames: names } : { teams: 0, teamNames: [] });
+              } catch (err) {
+                setError((err as Error).message || "La partie n’a pas pu être ouverte. Réessayez.");
+                setFailures((n) => n + 1);
+              }
             }}
           >
             <p id="launch-help">Comment voulez-vous jouer ?</p>
@@ -146,8 +165,24 @@ export function LaunchDialog({
                 </p>
               </div>
             )}
+            {error && (
+              <div
+                key={failures}
+                ref={alertRef}
+                id="launch-error"
+                className="launch-error"
+                role="alert"
+                tabIndex={-1}
+              >
+                <CircleAlert size={22} aria-hidden />
+                <p>
+                  <strong>La salle d’attente n’a pas pu s’ouvrir.</strong> {error}
+                </p>
+              </div>
+            )}
             <button type="submit" className="button launch-go" disabled={busy}>
-              <Play size={18} fill="currentColor" /> {busy ? "Ouverture…" : "Ouvrir la salle d’attente"}
+              <Play size={18} fill="currentColor" />{" "}
+              {busy ? "Ouverture…" : error ? "Réessayer" : "Ouvrir la salle d’attente"}
             </button>
           </form>
         </Dialog.Content>

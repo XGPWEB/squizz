@@ -90,6 +90,10 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
   const usages = USAGES.filter(([id]) => demos.some((q) => q.usage === id));
   const shownTemplates = demos.filter((q) => q.usage && (usage === "all" || q.usage === usage) && matches(q));
 
+  const messageOf = (e: unknown) =>
+    e instanceof UncertainError
+      ? "La connexion est lente ou coupée : l’action n’a pas pu être confirmée. Réessayez dans un instant."
+      : (e as Error).message;
   async function run(task: () => Promise<void>) {
     if (busy) return;
     setBusy(true);
@@ -97,24 +101,29 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
     try {
       await task();
     } catch (e) {
-      setError(
-        e instanceof UncertainError
-          ? "La connexion est lente ou coupée : l’action n’a pas pu être confirmée. Réessayez dans un instant."
-          : (e as Error).message,
-      );
+      setError(messageOf(e));
     } finally {
       setBusy(false);
     }
   }
   // One key per click: a retry after a lost response opens the same game, never a second one.
-  const launch = (id: string, choice: LaunchChoice) =>
-    run(async () => {
+  // A failure is thrown back to the launch window, which shows it over the page and keeps the choices.
+  const launch = async (id: string, choice: LaunchChoice) => {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
       const clientKey = newClientKey();
       const { code } = await withRetry(() =>
         gameApi<{ code: string }>("create", { quizId: id, clientKey, ...choice }),
       );
       router.push(`/partie/${code}`);
-    });
+    } catch (e) {
+      throw new Error(messageOf(e));
+    } finally {
+      setBusy(false);
+    }
+  };
   const duplicate = (q: Quiz) =>
     run(async () => {
       const clientKey = newClientKey();

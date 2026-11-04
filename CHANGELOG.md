@@ -2,6 +2,21 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.31.2] — 2026-11-04
+
+### Espace organisateur
+
+- Si la partie ne peut pas s’ouvrir, l’erreur s’affiche dans la fenêtre de lancement (elle restait cachée derrière) ; le bouton devient « Réessayer » et le mode de jeu, le nombre d’équipes et leurs noms restent tels quels.
+
+### Autonomie
+
+- Des participants qui arrivent au même instant ne dépassent plus le nombre maximal de places du lien ; un participant déjà inscrit revient toujours, même quand le lien est complet.
+- Des participants qui terminent au même instant figurent tous dans le compte rendu : une écriture tardive ne remplace plus un compte rendu plus complet.
+
+### Technique
+
+- Nouveau scénario d’intégration `solo-race` (inscriptions et fins simultanées) ; les parcours navigateur valident la fenêtre de lancement et couvrent le lancement en équipes, avec une erreur puis un nouvel essai.
+
 ## [1.31.1] — 2026-11-04
 
 ### Partie

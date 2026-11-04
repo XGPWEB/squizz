@@ -23,6 +23,7 @@ test("thème sobre : le joueur est vouvoyé, du lobby à son résultat", async (
 
   await page.goto("/app");
   await page.getByRole("button", { name: "Lancer Quiz sobre" }).click();
+  await page.getByRole("button", { name: "Ouvrir la salle d’attente" }).click();
   const code = ((await page.locator(".host-code").getAttribute("aria-label")) ?? "").replace(/\D/g, "");
 
   const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "fr-FR" });

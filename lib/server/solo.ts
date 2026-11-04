@@ -96,15 +96,27 @@ export async function soloJoin(who: string, id: unknown, rawName: unknown) {
   requireOpen(session);
   const name = String(rawName || "").trim();
   if (name.length < 1 || name.length > MAX_NAME) fail(`Choisis un pseudo de 1 à ${MAX_NAME} caractères.`);
-  const mine = await prisma.soloRun.findUnique({
-    where: { sessionId_player: { sessionId: session.id, player: who } },
-  });
-  if (mine) return;
-  const count = await prisma.soloRun.count({ where: { sessionId: session.id } });
-  if (count >= session.maxPlayers) fail("Ce quiz a atteint son nombre maximal de participants.");
+  // A player already in comes back, even once the link is full.
+  if (await runOf(session.id, who)) return;
   try {
-    await prisma.soloRun.create({
-      data: { sessionId: session.id, player: who, name, startedAt: BigInt(Date.now()) },
+    // The link's row stays locked from the count to the insert: simultaneous arrivals, on any server
+    // instance, are admitted one after the other and can never take more places than there are.
+    await prisma.$transaction(async (tx) => {
+      const [now] = await tx.$queryRaw<{ maxPlayers: number; closedAt: Date | null; expiresAt: Date }[]>`
+        SELECT "maxPlayers", "closedAt", "expiresAt" FROM "SoloSession" WHERE "id" = ${session.id}
+        FOR NO KEY UPDATE`;
+      if (!now) fail("Ce lien n’existe pas ou a été supprimé.", 404);
+      requireOpen(now);
+      // Checked again under the lock: the same player sending their first join twice at once.
+      if (
+        await tx.soloRun.findUnique({ where: { sessionId_player: { sessionId: session.id, player: who } } })
+      )
+        return;
+      const count = await tx.soloRun.count({ where: { sessionId: session.id } });
+      if (count >= now.maxPlayers) fail("Ce quiz a atteint son nombre maximal de participants.");
+      await tx.soloRun.create({
+        data: { sessionId: session.id, player: who, name, startedAt: BigInt(Date.now()) },
+      });
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")
@@ -297,9 +309,12 @@ export async function saveSoloReport(sessionId: string) {
     players: runs.length,
     data: data as unknown as Prisma.InputJsonValue,
   };
-  await prisma.gameReport.upsert({
-    where: { id },
-    create: {
+  // Players finishing at the same time each rebuild the report from what they read, and their writes may
+  // land in any order. A finished run never changes and is never unfinished, so the number of players
+  // tells which read is the more complete: a write only replaces a report built from fewer players (or
+  // as many, the same ones, to mark it finished). No lock is held while building, on any instance.
+  const created = await prisma.gameReport.createMany({
+    data: {
       id,
       organizationId: session.organizationId,
       quizId: quiz.id,
@@ -307,7 +322,18 @@ export async function saveSoloReport(sessionId: string) {
       playedAt: session.createdAt,
       ...fields,
     },
-    update: fields,
+    skipDuplicates: true,
+  });
+  if (created.count) return;
+  await prisma.gameReport.updateMany({
+    where: {
+      id,
+      OR: [
+        { players: { lt: runs.length } },
+        { players: runs.length, ...(fields.finished ? {} : { finished: false }) },
+      ],
+    },
+    data: fields,
   });
 }
 

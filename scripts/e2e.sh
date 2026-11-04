@@ -85,7 +85,7 @@ browser_prod() {
   [ "$status" -eq 0 ] || { echo "--- serveur de production de test :"; tail -30 "$out"; }
   return "$status"
 }
-SCENARIOS=${*:-game-flow rich-game-flow fill-match wheel teams remote qa solo ai reports profiles sharing timeout quiz-management accounts contact super-admin game-live rights security editing email-verification transfer admins billing event-pass monitoring auth-hardening browser browser-prod}
+SCENARIOS=${*:-game-flow rich-game-flow fill-match wheel teams remote qa solo solo-race ai reports profiles sharing timeout quiz-management accounts contact super-admin game-live rights security editing email-verification transfer admins billing event-pass monitoring auth-hardening browser browser-prod}
 FAILED=0
 for t in $SCENARIOS; do
   # « browser » and « browser-prod » are the Playwright suite (tests/browser, real Chromium), on the dev
