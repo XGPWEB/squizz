@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import {
+  BookOpen,
   Check,
   Copy,
   Download,
@@ -370,7 +371,10 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
           <h1>Bonjour {firstName} !</h1>
           <p className="hint">
             {quota.max === null ? `${quota.used} quiz` : `${quota.used} / ${quota.max} quiz`} · jusqu’à{" "}
-            {quota.players} joueurs par partie
+            {quota.players} joueurs par partie ·{" "}
+            <Link href="/app/aide" className="guide-link">
+              <BookOpen size={15} aria-hidden /> Notice d’utilisation
+            </Link>
           </p>
         </div>
         {full ? (

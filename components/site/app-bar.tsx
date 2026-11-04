@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Activity,
   BarChart3,
+  BookOpen,
   Building2,
   ChevronDown,
   Cookie,
@@ -167,6 +168,11 @@ export function AppBar(p: Props) {
               <Link href={accountHref} className="menu-item" onClick={() => setOpen(false)}>
                 <UserRound size={18} /> Mon compte
               </Link>
+              {p.area === "app" && (
+                <Link href="/app/aide" className="menu-item" onClick={() => setOpen(false)}>
+                  <BookOpen size={18} /> Notice d’utilisation
+                </Link>
+              )}
               <button
                 className="menu-item"
                 onClick={() => {

@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.30.0] — 2026-11-04
+
+### Espace organisateur
+
+- Nouvelle **notice d’utilisation** (/app/aide), ouverte depuis le menu à votre nom et depuis « Mes quiz » : neuf chapitres (premiers pas, créer un quiz, animer, faire jouer à distance, résultats, équipe, apparence, abonnement, compte), chacun en quelques étapes numérotées, avec le détail dans « En savoir plus ». Les boutons y sont écrits comme à l’écran, en étiquette ; les chapitres réservés aux administrateurs sont signalés. Sommaire collant sur ordinateur, à faire glisser sur téléphone.
+
 ## [1.29.0] — 2026-11-04
 
 ### Site public
