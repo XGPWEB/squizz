@@ -157,8 +157,9 @@ const CHAPTERS: Chapter[] = [
         <B>Copier l’invitation</B>.
       </>,
       <>
-        Pour jouer en équipes, choisissez de 2 à 6 dans <B>ÉQUIPES</B> ; chacun choisit la sienne sur son
-        téléphone, ou cliquez sur <B>Répartir au hasard</B>.
+        Pour jouer en équipes, choisissez <B>En équipes</B> en lançant le quiz : de 2 à 6, avec vos noms ou
+        ceux tirés au sort. Chacun choisit la sienne sur son téléphone, ou cliquez sur{" "}
+        <B>Répartir au hasard</B>.
       </>,
       <>
         <B>Lancer le quiz</B>. La correction arrive à la fin du temps ou dès que tout le monde a répondu.

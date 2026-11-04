@@ -37,7 +37,7 @@ import {
   TeamTag,
   finaleWords,
 } from "./game-parts";
-import { MAX_TEAMS, TEAMS } from "@/lib/teams";
+import { TEAMS } from "@/lib/teams";
 
 /** Question types whose answers the projected screen can show as they are (the tiles, the slide, the map). */
 const SHOWN_AS_IS = ["quiz", "truefalse", "poll", "slide", "pin", "pinpoll"];
@@ -299,25 +299,9 @@ function Lobby({ game, busy, run, settle, joinUrl, origin, onError }: Props) {
               <small> / {game.maxPlayers} max.</small>
             </span>
           </div>
-          <div className="team-controls" role="group" aria-label="Mode équipes">
-            <span className="eyebrow">ÉQUIPES</span>
-            {[0, ...Array.from({ length: MAX_TEAMS - 1 }, (_, i) => i + 2)].map((n) => (
-              <button
-                key={n}
-                type="button"
-                className={(game.teams?.count ?? 0) === n ? "on" : ""}
-                aria-pressed={(game.teams?.count ?? 0) === n}
-                disabled={busy}
-                onClick={() =>
-                  run(async () => {
-                    await api("teams", { code: game.code, count: n });
-                  })
-                }
-              >
-                {n ? n : "Seul"}
-              </button>
-            ))}
-            {game.teams && (
+          {game.teams && (
+            <div className="team-controls" role="group" aria-label="Équipes">
+              <span className="eyebrow">{game.teams.count} ÉQUIPES</span>
               <button
                 type="button"
                 className="team-shuffle"
@@ -330,9 +314,9 @@ function Lobby({ game, busy, run, settle, joinUrl, origin, onError }: Props) {
               >
                 <Shuffle size={15} /> Répartir au hasard
               </button>
-            )}
-          </div>
-          {game.teams && game.players.length > 0 && (
+            </div>
+          )}
+          {game.teams && (
             <div className="team-columns">
               {[...Array.from({ length: game.teams.count }, (_, i) => i), null].map((team) => {
                 const members = game.players.filter((p) => (p.team ?? null) === team);
@@ -345,7 +329,7 @@ function Lobby({ game, busy, run, settle, joinUrl, origin, onError }: Props) {
                     {team === null ? (
                       <span className="team-tag none">Sans équipe</span>
                     ) : (
-                      <TeamTag team={team} />
+                      <TeamTag team={team} names={game.teams!.names} />
                     )}
                     <small>{members.length}</small>
                     <ul>

@@ -1,4 +1,5 @@
 "use client";
+import { LaunchDialog, type LaunchChoice } from "@/components/squizz/launch-dialog";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
@@ -106,10 +107,12 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
     }
   }
   // One key per click: a retry after a lost response opens the same game, never a second one.
-  const launch = (id: string) =>
+  const launch = (id: string, choice: LaunchChoice) =>
     run(async () => {
       const clientKey = newClientKey();
-      const { code } = await withRetry(() => gameApi<{ code: string }>("create", { quizId: id, clientKey }));
+      const { code } = await withRetry(() =>
+        gameApi<{ code: string }>("create", { quizId: id, clientKey, ...choice }),
+      );
       router.push(`/partie/${code}`);
     });
   const duplicate = (q: Quiz) =>
@@ -288,15 +291,21 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
                 </button>
               }
             />
-            <button
-              disabled={busy}
-              aria-label={`Lancer ${q.title}`}
-              title="Lancer une partie"
-              onClick={() => launch(q.id)}
-              className="play"
-            >
-              <Play size={18} fill="currentColor" />
-            </button>
+            <LaunchDialog
+              title={q.title}
+              busy={busy}
+              onLaunch={(choice) => launch(q.id, choice)}
+              trigger={
+                <button
+                  disabled={busy}
+                  aria-label={`Lancer ${q.title}`}
+                  title="Lancer une partie"
+                  className="play"
+                >
+                  <Play size={18} fill="currentColor" />
+                </button>
+              }
+            />
           </span>
         </div>
       </div>

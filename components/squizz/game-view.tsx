@@ -444,7 +444,7 @@ function PlayerWaiting({
                       className={game.teams!.mine === team ? "on" : ""}
                       onClick={() => onPickTeam(team)}
                     >
-                      <TeamTag team={team} />
+                      <TeamTag team={team} names={game.teams!.names} />
                       <small>
                         {size} joueur{size > 1 ? "s" : ""}
                       </small>

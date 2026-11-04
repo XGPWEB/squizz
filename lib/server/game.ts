@@ -6,7 +6,7 @@ import { orgLimits } from "@/lib/plans";
 import { isProfileQuiz, profileResults } from "@/lib/profiles";
 import type { Quiz } from "@/lib/quizzes";
 import { drawSpin, SPIN_MS, wheelEntries, type Spin } from "@/lib/wheel";
-import { fillTeams, MAX_TEAMS, teamStandings } from "@/lib/teams";
+import { cleanTeamNames, fillTeams, MAX_TEAMS, teamName, teamStandings } from "@/lib/teams";
 import { DEFAULT_BRAND, type Brand } from "@/lib/brand";
 import {
   askQuestion,
@@ -50,6 +50,7 @@ type Room = {
   maxPlayers: number;
   spin: Spin | null;
   teams: number;
+  teamNames: string[];
   brand: Brand;
   qaOpen: boolean;
   qaModerated: boolean;
@@ -115,7 +116,10 @@ export async function createRoom(
   maxPlayers: number,
   key?: unknown,
   brand: Brand = DEFAULT_BRAND,
+  teamMode: { count?: unknown; names?: unknown } = {},
 ): Promise<string> {
+  const teams = teamCount(teamMode.count ?? 0);
+  const teamNames = cleanTeamNames(teamMode.names, teams);
   await purgeExpiredRooms();
   // A launch retried after a lost response returns the game created the first time.
   const clientKey = typeof key === "string" && /^[\w-]{8,64}$/.test(key) ? key : null;
@@ -142,6 +146,8 @@ export async function createRoom(
           maxPlayers,
           clientKey,
           brand: brand as unknown as Prisma.InputJsonValue,
+          teams,
+          teamNames,
         },
       });
       return code;
@@ -154,6 +160,14 @@ export async function createRoom(
     }
   }
   fail("Impossible de créer la partie. Réessaie.", 503);
+}
+
+/** A number of teams: 0 to play alone, else 2 to MAX_TEAMS. */
+function teamCount(value: unknown) {
+  const teams = Number(value);
+  if (!Number.isInteger(teams) || !(teams === 0 || (teams >= 2 && teams <= MAX_TEAMS)))
+    fail(`Choisissez de 2 à ${MAX_TEAMS} équipes.`);
+  return teams;
 }
 
 export function parseCode(value: unknown): string {
@@ -443,9 +457,7 @@ export async function closeQuestion(g: GameContext, body: Body) {
 export async function setTeams(g: GameContext, count: unknown) {
   requireHost(g);
   if (g.room.phase !== "lobby") fail("Les équipes se forment avant le lancement.");
-  const teams = Number(count);
-  if (!Number.isInteger(teams) || !(teams === 0 || (teams >= 2 && teams <= MAX_TEAMS)))
-    fail(`Choisissez de 2 à ${MAX_TEAMS} équipes.`);
+  const teams = teamCount(count);
   await prisma.$transaction([
     prisma.room.updateMany({ where: { code: g.room.code, phase: "lobby" }, data: { teams } }),
     // Players of a team that no longer exists choose again (or are placed at the start).
@@ -639,6 +651,7 @@ export function gameState(g: GameContext) {
     teams: room.teams
       ? {
           count: room.teams,
+          names: Array.from({ length: room.teams }, (_, i) => teamName(i, room.teamNames)),
           standings: teamStandings(
             room.teams,
             g.people.map((p) => ({
@@ -647,6 +660,7 @@ export function gameState(g: GameContext) {
               priorScore: p.priorScore,
             })),
             revealed && room.question > 0 && room.phase !== "lobby",
+            room.teamNames,
           ),
           mine: g.me?.team ?? null,
         }

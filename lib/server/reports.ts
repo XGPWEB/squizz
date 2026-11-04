@@ -38,6 +38,7 @@ export async function saveReport(code: string, played: number, finished: boolean
       payload: (a.payload ? JSON.parse(a.payload) : { choices: [a.choice] }) as AnswerPayload,
     })),
     room.teams,
+    room.teamNames,
   );
   // Linked only to a member account (a super-admin viewing the organisation is not one).
   const qa = await keptQuestions(code);

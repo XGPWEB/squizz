@@ -120,7 +120,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                   <td>
                     <strong>{p.name}</strong>
                   </td>
-                  {data.teams && <td>{p.team === null || p.team === undefined ? "—" : teamName(p.team)}</td>}
+                  {data.teams && <td>{p.team === null || p.team === undefined ? "—" : teamName(p.team, data.teamNames)}</td>}
                   {scored && <td>{p.score.toLocaleString("fr-FR")}</td>}
                   {scored && (
                     <td>

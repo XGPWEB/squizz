@@ -51,6 +51,8 @@ export type ReportData = {
   qa?: { text: string; votes: number; answered: boolean }[];
   /** Team mode: the teams in ranking order. */
   teams?: { name: string; color: string; players: number; score: number; rank: number }[];
+  /** Team mode: the names chosen at launch, by team number (older reports have none). */
+  teamNames?: string[];
 };
 
 /** What `buildReport` reads from the database: the answers of the questions played. */
@@ -122,6 +124,7 @@ export function buildReport(
   players: { id: string; name: string; team?: number | null }[],
   answers: RawAnswer[],
   teamCount = 0,
+  teamNames: string[] = [],
 ): ReportData {
   const kept = steps
     .map((q, index) => ({ q, index }))
@@ -187,7 +190,10 @@ export function buildReport(
           teams: teamStandings(
             teamCount,
             rows.map((p) => ({ team: p.team ?? null, score: p.score })),
+            false,
+            teamNames,
           ).map(({ name, color, players, score, rank }) => ({ name, color, players, score, rank })),
+          teamNames: Array.from({ length: teamCount }, (_, i) => teamName(i, teamNames)),
         }
       : {}),
     questions,
@@ -230,7 +236,9 @@ export function reportSheets(
         ...data.players.map((p) => [
           p.rank,
           p.name,
-          ...(data.teams ? [p.team === null || p.team === undefined ? "" : teamName(p.team)] : []),
+          ...(data.teams
+            ? [p.team === null || p.team === undefined ? "" : teamName(p.team, data.teamNames)]
+            : []),
           p.score,
           p.correct,
           p.answered,

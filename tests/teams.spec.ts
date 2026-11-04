@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fillTeams, teamStandings } from "@/lib/teams";
+import { cleanTeamNames, fillTeams, randomTeamNames, teamName, teamStandings } from "@/lib/teams";
 
 describe("mode équipes", () => {
   it("classe les équipes à la moyenne de leurs joueurs", () => {
@@ -48,5 +48,27 @@ describe("mode équipes", () => {
       ["e", 1],
       ["f", 2],
     ]);
+  });
+});
+
+describe("noms d’équipe", () => {
+  it("garde le nom choisi, sinon celui par défaut", () => {
+    expect(teamName(0, ["Les Profs"])).toBe("Les Profs");
+    expect(teamName(1, ["Les Profs", "  "])).toBe("Les Citrons");
+    expect(cleanTeamNames(["  Les   Pros ", 3, "x".repeat(60)], 4)).toEqual([
+      "Les Pros",
+      "",
+      "x".repeat(32),
+      "",
+    ]);
+  });
+
+  it("tire des noms tous différents et accordés", () => {
+    for (let k = 0; k < 50; k++) {
+      const names = randomTeamNames(6);
+      expect(new Set(names).size).toBe(6);
+      for (const n of names) expect(n.length).toBeLessThanOrEqual(32);
+      expect(names.join(" ")).not.toMatch(/(Licornes|Patates|Loutres|Tortues) \w+és\b/);
+    }
   });
 });

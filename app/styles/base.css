@@ -1409,3 +1409,12 @@ footer {
     animation: none;
   }
 }
+/* Team names chosen at launch can be long: they wrap inside their column, card or row. */
+:is(.team-column, .team-picker button, .team-row) .team-tag {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.team-column > .team-tag {
+  justify-self: start;
+}

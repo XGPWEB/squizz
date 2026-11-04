@@ -47,4 +47,11 @@ for i in range(2):
         assert standings[1]['movement'] == 0
     call(host, 'next', code=code, question=i)
 
+# Teams chosen at launch, with their names (a blank one keeps its default).
+code = call(host, 'create', quizId=qid, teams=3, teamNames=['  Les   Profs ', '', 'Les Loutres Masquées'])['code']
+call(host, 'create', expect=400, quizId=qid, teams=1)
+call(players['Ana'], 'join', code=code, name='Ana')
+teams = call(players['Ana'], 'state', code=code)['teams']
+assert teams['count'] == 3 and teams['names'] == ['Les Profs', 'Les Citrons', 'Les Loutres Masquées'], teams
+
 print('teams: ok')

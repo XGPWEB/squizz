@@ -2,6 +2,18 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.31.0] — 2026-11-04
+
+### Espace organisateur
+
+- Le mode de jeu se choisit en lançant un quiz : une fenêtre propose **Chacun pour soi** ou **En équipes** (de 2 à 6), avant d’ouvrir la salle d’attente. Les boutons « Seul / 2 / 3… » quittent la salle d’attente, qui garde « Répartir au hasard » et montre les équipes dès son ouverture.
+- Chaque équipe peut être nommée (32 caractères au plus) ; sinon, des noms drôles sont tirés au sort sur l’appareil de l’animateur (« Les Girafes Volantes », « Les Chaussettes Cosmiques »…), tous différents, accordés, avec un dé pour en tirer un autre et « Tout tirer au sort ». Un nom effacé reprend le nom par défaut.
+- Les noms choisis apparaissent sur les téléphones, dans les classements, le podium, la page Résultats et l’export Excel ; les noms longs passent à la ligne dans leur colonne.
+
+### Technique
+
+- Migration `20261104120000_team_names` : colonne `teamNames` sur `Room`, à appliquer avec `prisma migrate deploy`.
+
 ## [1.30.1] — 2026-11-04
 
 ### Site public

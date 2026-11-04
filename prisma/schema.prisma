@@ -238,6 +238,8 @@ model Room {
   brand          Json?
   /// Team mode (lib/teams.ts): the number of teams, 0 when everyone plays alone.
   teams          Int          @default(0)
+  /// Team mode: the names chosen at launch, by team (a blank one keeps its default name).
+  teamNames      String[]     @default([])
   /// Last spin of the wheel of fortune on the current step (lib/wheel.ts): what was drawn and when.
   spin           Json?
 

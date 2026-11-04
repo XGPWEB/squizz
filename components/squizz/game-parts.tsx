@@ -63,7 +63,7 @@ export type Game = {
   /** How the screens look (lib/brand.ts). */
   brand: GameBrand;
   /** Team mode: the teams in ranking order, and the player's own team. */
-  teams: { count: number; standings: TeamStanding[]; mine: number | null } | null;
+  teams: { count: number; names?: string[]; standings: TeamStanding[]; mine: number | null } | null;
 };
 
 /**
@@ -121,10 +121,10 @@ export function finaleWords(game: Game) {
 }
 
 /** A team's colour badge with its name. */
-export function TeamTag({ team, small = false }: { team: number; small?: boolean }) {
+export function TeamTag({ team, names, small = false }: { team: number; names?: string[]; small?: boolean }) {
   return (
     <span className={`team-tag team-${TEAMS[team]?.color ?? "electric"} ${small ? "small" : ""}`}>
-      {teamName(team)}
+      {teamName(team, names)}
     </span>
   );
 }
@@ -310,7 +310,7 @@ export function PersonalResult({ game, final = false }: { game: Game; final?: bo
         {!final && <p className="rank-copy">{rankMessage(p.rank, game.players, say)}</p>}
         {game.teams && game.teams.mine !== null && (
           <p className="team-line">
-            <TeamTag team={game.teams.mine} small />{" "}
+            <TeamTag team={game.teams.mine} names={game.teams.names} small />{" "}
             {(() => {
               const t = game.teams.standings.find((s) => s.index === game.teams!.mine);
               return t ? `${t.rank}${t.rank === 1 ? "re" : "e"} sur ${game.teams.count}` : "";

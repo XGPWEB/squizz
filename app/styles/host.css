@@ -1196,7 +1196,7 @@
 }
 .team-column {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-content: start;
   gap: 8px;
   padding: 10px;
@@ -1753,4 +1753,171 @@
   --s-font: var(--s-tight);
   font-weight: 600;
   color: var(--brand);
+}
+
+/* Launching a game: alone or in teams, and the team names */
+.launch-modal {
+  width: min(560px, calc(100vw - 32px));
+}
+.launch-body {
+  display: grid;
+  gap: 16px;
+}
+.launch-body > p {
+  margin: 0;
+  font-weight: 700;
+}
+.launch-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.launch-modes button {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  padding: 14px 16px;
+  text-align: left;
+  color: var(--ink);
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
+}
+.launch-modes button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.launch-modes button.on {
+  background: var(--acid);
+  box-shadow: 4px 4px 0 var(--ink);
+  transform: rotate(-1deg);
+}
+.launch-modes strong {
+  font:
+    400 20px/1.2 Anton,
+    sans-serif;
+}
+.launch-modes small {
+  color: #55514b;
+}
+.launch-teams {
+  display: grid;
+  gap: 12px;
+  animation: launch-in 0.25s ease-out;
+}
+.launch-count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.launch-count .eyebrow {
+  margin-right: 4px;
+}
+.launch-count button {
+  min-width: 40px;
+  padding: 6px 10px;
+  font:
+    700 15px Arial,
+    sans-serif;
+  color: var(--ink);
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  cursor: pointer;
+}
+.launch-count button.on {
+  background: var(--acid);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.launch-names {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.launch-names li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: launch-in 0.25s ease-out both;
+}
+.launch-swatch {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  background: var(--team, white);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  transform: rotate(-6deg);
+}
+.launch-names input {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+}
+.launch-names input.rolled {
+  animation: launch-roll 0.35s ease-out;
+}
+.launch-die {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--ink);
+  background: var(--pink);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.launch-die:hover {
+  transform: rotate(-12deg) scale(1.05);
+}
+.launch-die:active {
+  transform: rotate(180deg);
+}
+.launch-reroll {
+  justify-self: start;
+}
+.launch-teams .hint {
+  margin: 0;
+}
+.launch-go {
+  justify-self: stretch;
+  justify-content: center;
+}
+@keyframes launch-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes launch-roll {
+  0% {
+    transform: scale(0.96);
+    background: var(--acid);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+}
+@media (max-width: 520px) {
+  .launch-modes {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .launch-teams,
+  .launch-names li,
+  .launch-names input.rolled {
+    animation: none;
+  }
 }

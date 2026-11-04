@@ -15,7 +15,98 @@ export const TEAMS = [
   { name: "Les Nuages", color: "cloud" },
 ] as const;
 
-export const teamName = (index: number) => TEAMS[index]?.name ?? `Équipe ${index + 1}`;
+/** Longest team name the host can type. */
+export const MAX_TEAM_NAME = 32;
+
+/** A team's name: the one chosen at launch, else the default of its place. */
+export const teamName = (index: number, names: readonly string[] = []) =>
+  names[index]?.trim() || TEAMS[index]?.name || `Équipe ${index + 1}`;
+
+/** The names sent with a launch, cleaned: trimmed, cut to the limit, a blank one left to its default. */
+export function cleanTeamNames(raw: unknown, count: number): string[] {
+  const list = Array.isArray(raw) ? raw : [];
+  return Array.from({ length: count }, (_, i) =>
+    String(typeof list[i] === "string" ? list[i] : "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, MAX_TEAM_NAME),
+  );
+}
+
+/**
+ * Funny team names, drawn on the host's device: an animal or a thing, then an adjective agreed
+ * with it (« Les Cornichons Survoltés », « Les Loutres Masquées »). No word comes twice in a draw.
+ */
+const NOUNS: [string, "m" | "f"][] = [
+  ["Pingouins", "m"],
+  ["Cornichons", "m"],
+  ["Hérissons", "m"],
+  ["Lamas", "m"],
+  ["Yétis", "m"],
+  ["Pandas", "m"],
+  ["Croissants", "m"],
+  ["Ninjas", "m"],
+  ["Wombats", "m"],
+  ["Dinosaures", "m"],
+  ["Ratons laveurs", "m"],
+  ["Poulpes", "m"],
+  ["Koalas", "m"],
+  ["Castors", "m"],
+  ["Licornes", "f"],
+  ["Patates", "f"],
+  ["Sardines", "f"],
+  ["Chaussettes", "f"],
+  ["Tortues", "f"],
+  ["Crevettes", "f"],
+  ["Loutres", "f"],
+  ["Mouettes", "f"],
+  ["Baguettes", "f"],
+  ["Girafes", "f"],
+  ["Fusées", "f"],
+  ["Myrtilles", "f"],
+];
+const ADJECTIVES: [string, string][] = [
+  ["Survoltés", "Survoltées"],
+  ["Masqués", "Masquées"],
+  ["Givrés", "Givrées"],
+  ["Déchaînés", "Déchaînées"],
+  ["Affamés", "Affamées"],
+  ["Futés", "Futées"],
+  ["Volants", "Volantes"],
+  ["Rugissants", "Rugissantes"],
+  ["Pétillants", "Pétillantes"],
+  ["Joyeux", "Joyeuses"],
+  ["Intrépides", "Intrépides"],
+  ["Cosmiques", "Cosmiques"],
+  ["Atomiques", "Atomiques"],
+  ["Galactiques", "Galactiques"],
+  ["Légendaires", "Légendaires"],
+  ["Rebelles", "Rebelles"],
+  ["Sauvages", "Sauvages"],
+  ["Turbo", "Turbo"],
+  ["Fluo", "Fluo"],
+  ["en Folie", "en Folie"],
+];
+
+const draw = <T>(list: T[], taken: Set<T>, random: () => number) => {
+  const free = list.filter((x) => !taken.has(x));
+  const pick = (free.length ? free : list)[Math.floor(random() * (free.length || list.length))];
+  taken.add(pick);
+  return pick;
+};
+
+/** `count` different funny names, none of those in `avoid` (the names already on screen). */
+export function randomTeamNames(count: number, avoid: readonly string[] = [], random = Math.random) {
+  const nouns = new Set(NOUNS.filter(([n]) => avoid.some((a) => a.includes(n))));
+  const adjectives = new Set(
+    ADJECTIVES.filter(([m, f]) => avoid.some((a) => a.endsWith(m) || a.endsWith(f))),
+  );
+  return Array.from({ length: count }, () => {
+    const [noun, gender] = draw(NOUNS, nouns, random);
+    const [m, f] = draw(ADJECTIVES, adjectives, random);
+    return `Les ${noun} ${gender === "m" ? m : f}`;
+  });
+}
 
 type Member = { team: number | null; score: number; priorScore?: number };
 
@@ -40,7 +131,12 @@ const ranks = (scores: number[]) => scores.map((s) => scores.filter((o) => o > s
  * The teams in ranking order. With `previous`, each one also says how many places it won or lost
  * compared with the scores before the current question.
  */
-export function teamStandings(count: number, members: Member[], previous = false): TeamStanding[] {
+export function teamStandings(
+  count: number,
+  members: Member[],
+  previous = false,
+  names: readonly string[] = [],
+): TeamStanding[] {
   const groups = Array.from({ length: count }, (_, i) => members.filter((m) => m.team === i));
   const scores = groups.map((g) => average(g.map((m) => m.score)));
   const before = groups.map((g) => average(g.map((m) => m.priorScore ?? 0)));
@@ -49,7 +145,7 @@ export function teamStandings(count: number, members: Member[], previous = false
   return groups
     .map((g, index) => ({
       index,
-      name: teamName(index),
+      name: teamName(index, names),
       color: TEAMS[index]?.color ?? "electric",
       players: g.length,
       score: scores[index],
