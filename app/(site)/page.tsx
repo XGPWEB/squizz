@@ -6,6 +6,7 @@ import { JoinBox } from "@/components/site/join-box";
 import { ContactSection } from "@/components/site/contact-section";
 import { Marquee } from "@/components/site/marquee";
 import { JsonLd } from "@/components/site/json-ld";
+import { SwipeRow } from "@/components/site/swipe-row";
 import { Advantages, Faq } from "@/components/site/seo-sections";
 import { FAQ, QUESTION_COUNT, faqLd, softwareLd } from "@/lib/seo";
 import { EVENT_PASS, PLANS } from "@/lib/plans";
@@ -147,7 +148,7 @@ export default function HomePage() {
             <h2 id="audiences-title">Une salle, un écran, et c’est parti</h2>
           </div>
         </div>
-        <div className="audience-grid" data-stagger="pop">
+        <SwipeRow className="audience-grid" label="Pour qui" stagger="pop">
           <article>
             <Building2 />
             <h3>Entreprises</h3>
@@ -166,7 +167,7 @@ export default function HomePage() {
               partie avec l’offre Premium.
             </p>
           </article>
-        </div>
+        </SwipeRow>
       </section>
 
       <section className="advantages" aria-labelledby="advantages-title">

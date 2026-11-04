@@ -3,8 +3,8 @@ import { useEffect, useRef } from "react";
 import { PenLine } from "lucide-react";
 
 /**
- * The contact form, folded behind « Écrire un message ». It opens by itself when the visitor comes for it:
- * the « Contact » link (#contact) or « Choisir Essentiel » on /tarifs (?offre=).
+ * The contact form under « Écrire un message », open from the start. A visitor may fold it; it opens again
+ * when they come for it: the « Contact » link (#contact) or « Choisir Essentiel » on /tarifs (?offre=).
  */
 export function ContactFold({ children }: { children: React.ReactNode }) {
   const fold = useRef<HTMLDetailsElement>(null);
@@ -26,7 +26,7 @@ export function ContactFold({ children }: { children: React.ReactNode }) {
     };
   }, []);
   return (
-    <details ref={fold} className="fold contact-fold">
+    <details ref={fold} className="fold contact-fold" open>
       <summary>
         <PenLine aria-hidden />
         <span className="fold-title">Écrire un message</span>

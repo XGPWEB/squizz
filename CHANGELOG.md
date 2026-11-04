@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.30.1] — 2026-11-04
+
+### Site public
+
+- Le formulaire « Écrire un message » est ouvert dès l’arrivée sur l’accueil ; il peut toujours être replié.
+- Sur téléphone, les rangées qui se font glisser (formats de questions, « Pour qui ? ») ont des flèches précédent / suivant, des points qui montrent la carte affichée et la mention « Glissez ». Elles défilent toutes seules toutes les 3,5 secondes quand elles sont à l’écran, s’arrêtent 8 secondes dès que le visiteur les touche, repartent au début après la dernière carte, et ne bougent pas avec « réduire les animations ». Rien ne change sur ordinateur.
+
 ## [1.30.0] — 2026-11-04
 
 ### Espace organisateur

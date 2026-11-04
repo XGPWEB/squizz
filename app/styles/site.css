@@ -1950,3 +1950,86 @@ label.cookie-service {
     font-size: 30px;
   }
 }
+
+/* The controls under a sliding row (SwipeRow): shown on phones only, where the row slides */
+.swipe-controls {
+  display: none;
+}
+@media (max-width: 620px) {
+  .swipe-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .swipe-arrow {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    color: var(--ink);
+    background: var(--acid);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    box-shadow: 3px 3px 0 var(--ink);
+    transition:
+      transform 0.15s,
+      box-shadow 0.15s;
+  }
+  .swipe-arrow:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+  .swipe-arrow.prev {
+    background: white;
+  }
+  .swipe-arrow.next svg {
+    animation: swipe-nudge 1.6s ease-in-out infinite;
+  }
+  .swipe-dots {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .swipe-dots i {
+    width: 10px;
+    height: 10px;
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    transition:
+      width 0.3s cubic-bezier(0.2, 0.7, 0.2, 1.4),
+      background 0.3s;
+  }
+  .swipe-dots i.on {
+    width: 26px;
+    background: var(--pink);
+  }
+  .swipe-hint {
+    font:
+      16px/1 "Permanent Marker",
+      cursive;
+    color: var(--electric);
+    rotate: -4deg;
+  }
+}
+@keyframes swipe-nudge {
+  0%,
+  60%,
+  100% {
+    transform: none;
+  }
+  30% {
+    transform: translateX(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .swipe-arrow.next svg {
+    animation: none;
+  }
+  .swipe-dots i {
+    transition: none;
+  }
+}

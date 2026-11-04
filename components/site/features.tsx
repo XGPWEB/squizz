@@ -5,6 +5,7 @@ import { FEATURES, TYPE_DETAILS, TYPE_FAMILIES, typeAnchor } from "@/lib/seo";
 import { LayoutPreview, TypePreview } from "@/components/squizz/type-preview";
 import { FEATURE_ICONS } from "./feature-icons";
 import { Fold } from "./fold";
+import { SwipeRow } from "./swipe-row";
 
 /** The six types the home page shows; the others are named in one line, all are on /fonctionnalites. */
 const FEATURED = ["quiz", "truefalse", "blindtest", "puzzle", "wordcloud", "pin"] as const;
@@ -24,7 +25,7 @@ export function FormatsPreview() {
     .join(", ");
   return (
     <>
-      <div className="type-grid showcase" data-stagger="zoom">
+      <SwipeRow className="type-grid showcase" label="Formats de questions" stagger="zoom">
         {FEATURED.map((id) => {
           const t = questionTypes.find((x) => x.id === id)!;
           return (
@@ -35,7 +36,7 @@ export function FormatsPreview() {
             </Link>
           );
         })}
-      </div>
+      </SwipeRow>
       <p className="feature-more">Et aussi : {others}.</p>
       <Link className="more-link" href="/fonctionnalites">
         Tous les formats en détail <ArrowRight size={18} aria-hidden />
