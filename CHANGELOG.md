@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.31.1] — 2026-11-04
+
+### Partie
+
+- Sur l’écran de jeu, le compteur n’est plus recouvert par les boutons du haut (Questions, télécommande, plein écran) quand l’écran est étroit : c’est le titre du quiz qui se raccourcit.
+- Le compteur est un peu plus grand (cercle jusqu’à 92 px au lieu de 78, chiffres plus gros), dans les deux styles.
+
 ## [1.31.0] — 2026-11-04
 
 ### Espace organisateur
