@@ -75,6 +75,64 @@ a.button {
   color: var(--electric);
   transform: rotate(-2deg);
 }
+.site-footer .footer-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 6px 16px 6px 6px;
+  background: #fff;
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 4px 4px 0 var(--acid);
+  text-decoration: none;
+  font: 700 14px/1.2 monospace;
+  transform: rotate(1.5deg);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.footer-label img {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 9px;
+}
+.footer-label span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.footer-label small {
+  font: 700 10px monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--electric);
+}
+.site-footer .footer-label:hover,
+.site-footer .footer-label:focus-visible {
+  transform: rotate(0deg) translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--pink);
+}
+.site-footer .footer-label:hover img {
+  animation: footer-label-wiggle 0.5s ease;
+}
+@keyframes footer-label-wiggle {
+  25% {
+    transform: rotate(-8deg);
+  }
+  75% {
+    transform: rotate(6deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-footer .footer-label,
+  .site-footer .footer-label:hover img {
+    transition: none;
+    animation: none;
+  }
+}
 .footer-column h2 {
   display: inline-block;
   margin: 0 0 14px;

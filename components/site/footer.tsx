@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { AnchorLink } from "@/components/site/anchor-link";
 import { Brand } from "@/components/site/brand";
@@ -39,6 +40,19 @@ export function Footer() {
         <div className="footer-intro">
           <Brand />
           <p>On joue ensemble. On brille chacun son tour.</p>
+          <a
+            className="footer-label"
+            href="https://lespepitestech.com/startup-de-la-french-tech/squizz"
+            target="_blank"
+            rel="noopener"
+            title="SQuizz sur Les Pépites Tech"
+          >
+            <Image src="/labels/pepites-tech.jpg" alt="Les Pépites Tech" width={64} height={64} unoptimized />
+            <span>
+              <small>Startup référencée</small>
+              Les Pépites Tech
+            </span>
+          </a>
         </div>
         {columns.map((column) => (
           <nav key={column.title} className="footer-column" aria-label={column.title}>

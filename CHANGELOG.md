@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.31.3] — 2026-11-05
+
+### Site
+
+- Le pied de page affiche le badge **Les Pépites Tech** (startup de la French Tech référencée), avec un lien vers la fiche SQuizz sur lespepitestech.com.
+
 ## [1.31.2] — 2026-11-04
 
 ### Espace organisateur
