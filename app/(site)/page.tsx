@@ -11,8 +11,12 @@ import { Advantages, Faq } from "@/components/site/seo-sections";
 import { FAQ, QUESTION_COUNT, faqLd, softwareLd } from "@/lib/seo";
 import { EVENT_PASS, PLANS } from "@/lib/plans";
 
+const HOME_TITLE = "SQuizz : quiz interactif en direct, alternative à Kahoot!";
+
 export const metadata: Metadata = {
-  title: { absolute: "SQuizz : quiz interactif en direct, l’alternative française à Kahoot!" },
+  title: { absolute: HOME_TITLE },
+  openGraph: { siteName: "SQuizz", locale: "fr_FR", type: "website", title: HOME_TITLE },
+  twitter: { card: "summary_large_image", title: HOME_TITLE },
 };
 
 /** The questions the home page shows first; the others are folded under them (all stay in the page). */
