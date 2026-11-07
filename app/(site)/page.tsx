@@ -15,7 +15,13 @@ const HOME_TITLE = "SQuizz : quiz interactif en direct, alternative à Kahoot!";
 
 export const metadata: Metadata = {
   title: { absolute: HOME_TITLE },
-  openGraph: { siteName: "SQuizz", locale: "fr_FR", type: "website", title: HOME_TITLE },
+  openGraph: {
+    siteName: "SQuizz",
+    locale: "fr_FR",
+    type: "website",
+    title: HOME_TITLE,
+    url: "https://www.squizz.fun/",
+  },
   twitter: { card: "summary_large_image", title: HOME_TITLE },
 };
 

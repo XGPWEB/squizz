@@ -18,7 +18,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/alternative-kahoot", 0.8, "monthly"),
     page("/inscription", 0.7, "monthly"),
     page("/jouer", 0.6, "monthly"),
-    page("/connexion", 0.3, "yearly"),
     page("/mentions-legales", 0.2, "yearly"),
     page("/cgu", 0.2, "yearly"),
     page("/confidentialite", 0.2, "yearly"),
