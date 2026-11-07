@@ -12,6 +12,10 @@ import { FAQ, QUESTION_COUNT, faqLd, softwareLd } from "@/lib/seo";
 import { EVENT_PASS, PLANS } from "@/lib/plans";
 
 const HOME_TITLE = "SQuizz : quiz interactif en direct, alternative à Kahoot!";
+// Une page qui redéfinit openGraph/twitter remplace tout le bloc du layout, images de partage comprises :
+// on remet la description et les images (app/opengraph-image.png et app/twitter-image.png, 1200 × 630).
+const SHARE_DESCRIPTION = "Créez un quiz, projetez-le et faites jouer tout le monde depuis son téléphone.";
+const SHARE_IMAGE = { width: 1200, height: 630, type: "image/png" };
 
 export const metadata: Metadata = {
   title: { absolute: HOME_TITLE },
@@ -20,9 +24,16 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     type: "website",
     title: HOME_TITLE,
+    description: SHARE_DESCRIPTION,
     url: "https://www.squizz.fun/",
+    images: [{ url: "/opengraph-image.png", ...SHARE_IMAGE }],
   },
-  twitter: { card: "summary_large_image", title: HOME_TITLE },
+  twitter: {
+    card: "summary_large_image",
+    title: HOME_TITLE,
+    description: SHARE_DESCRIPTION,
+    images: [{ url: "/twitter-image.png", ...SHARE_IMAGE }],
+  },
 };
 
 /** The questions the home page shows first; the others are folded under them (all stay in the page). */
