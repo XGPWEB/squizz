@@ -7,7 +7,7 @@ import { QUESTION_COUNT } from "@/lib/seo";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/tarifs" },
-  title: "Tarifs",
+  title: { absolute: "Tarifs SQuizz : quiz interactif gratuit ou dès 15 €/mois" },
   description:
     "SQuizz gratuit, Essentiel à 15 € / mois, Pro à 30 € / mois, Premium à 310 € / an, ou Pack Événement à 29 € pour 7 jours sans abonnement.",
   openGraph: {

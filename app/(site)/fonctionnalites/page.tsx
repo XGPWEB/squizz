@@ -6,7 +6,7 @@ import { FAMILY_ANCHOR, MomentCatalog, TypeCatalog } from "@/components/site/fea
 import { COMPANY_INFO } from "@/lib/company-info";
 import { FEATURES, QUESTION_COUNT, TYPE_FAMILIES } from "@/lib/seo";
 
-const DESCRIPTION = `Les ${QUESTION_COUNT} types de questions de SQuizz (quiz, blind test, nuage de mots, sondage…), les diapos, la roue et tout ce qui les entoure : IA, import Excel, équipes, quiz en autonomie, résultats.`;
+const DESCRIPTION = `${QUESTION_COUNT} types de questions, diapos et roue de tirage : découvrez tout ce que SQuizz propose pour animer vos quiz. Essayez gratuitement.`;
 
 export const metadata: Metadata = {
   alternates: { canonical: "/fonctionnalites" },
