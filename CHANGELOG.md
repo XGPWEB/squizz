@@ -2,6 +2,15 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.31.4] — 2026-11-07
+
+### Site
+
+- Référencement : l’accueil a un H1 avec le mot-clé (« Le quiz interactif en direct », en sur-titre discret) et un title plus court (57 caractères), repris en og:title et twitter:title ; og:url ajouté.
+- Title de /tarifs (« Tarifs SQuizz : quiz interactif gratuit ou dès 15 €/mois ») et meta descriptions de /fonctionnalites et /alternative-kahoot raccourcies sous 155 caractères.
+- /connexion retiré du sitemap.
+- L’accueil garde son image et sa description de partage (og:image, twitter:image).
+
 ## [1.31.3] — 2026-11-05
 
 ### Site
