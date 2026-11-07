@@ -441,6 +441,20 @@ html.motion .marquee-track {
   box-shadow: 5px 5px 0 var(--ink);
   rotate: -3deg;
 }
+/* Sur-titre SEO discret, pas une ligne du slogan : pas de sticker, typo réduite. */
+.hero h1 .hero-kicker {
+  display: block;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  transform: none;
+  font: 700 13px/1.4 monospace;
+  letter-spacing: 1px;
+  color: #54504b;
+  margin-bottom: 6px;
+}
 html.motion .intro .eyebrow.hero-in {
   display: inline-block;
 }

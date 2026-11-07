@@ -43,9 +43,12 @@ export default function HomePage() {
             LE SAVOIR, ÇA SE JOUE.
           </p>
           <h1>
+            <span className="hero-kicker hero-in" style={{ ["--d" as string]: "0ms" }}>
+              Le quiz interactif en direct
+            </span>{" "}
             <span className="hero-line hero-in" style={{ ["--d" as string]: "120ms" }}>
               Moins de blabla.
-            </span>
+            </span>{" "}
             <br />
             <span className="hero-line hero-in" style={{ ["--d" as string]: "260ms" }}>
               Plus de <span className="wiggle">défis.</span>
