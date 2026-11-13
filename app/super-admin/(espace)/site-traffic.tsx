@@ -178,7 +178,7 @@ export function SiteTrafficView({
       </div>
       <p className="traffic-note">
         Pages publiques uniquement, et seulement les visiteurs qui ont accepté la mesure d’audience : le
-        trafic réel est plus élevé. Les chiffres mettent quelques heures à arriver, sauf le temps réel.
+        trafic réel est plus élevé. Les chiffres s’arrêtent à hier, sauf le temps réel.
       </p>
     </section>
   );

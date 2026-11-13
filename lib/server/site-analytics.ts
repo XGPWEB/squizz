@@ -139,7 +139,10 @@ async function fetchSiteAnalytics(): Promise<SiteAnalytics | null> {
 
   try {
     const property = `properties/${propertyId}`;
-    const dateRanges = [{ startDate: "7daysAgo", endDate: "today" }];
+    // Up to yesterday: on 2026-11-13, GA4 left every request that included the current day unanswered for
+    // hours, while those on past days answered (seen on another property too). Today's figures are incomplete
+    // anyway (several hours of processing at Google). 7 full days, the same length as the week before.
+    const dateRanges = [{ startDate: "7daysAgo", endDate: "yesterday" }];
     const totals = [{ name: "activeUsers" }, { name: "sessions" }, { name: "screenPageViews" }];
     const top = (dimension: string, metric: string, limit?: number) => ({
       dateRanges,

@@ -155,3 +155,11 @@ test("après un refus de Google, on attend avant de redemander", async () => {
     vi.useRealTimers();
   }
 });
+
+test("la période s’arrête à hier : Google bloque les rapports qui incluent aujourd’hui", async () => {
+  answer({ totals: [] }, []);
+  await getSiteAnalytics();
+  const ends = runReport.mock.calls.map(([r]) => r.dateRanges[0].endDate);
+  expect(ends).not.toContain("today");
+  expect(ends.filter((end) => end === "yesterday")).toHaveLength(6);
+});
