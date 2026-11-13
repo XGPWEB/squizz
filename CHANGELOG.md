@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.31.7] — 2026-11-13
+
+### Super-admin
+
+- « Trafic du site » couvre les 7 jours pleins jusqu’à hier : depuis le 13/11, Google ne répond plus aux rapports qui incluent le jour en cours, alors que ceux sur les jours passés répondent. Le temps réel ne change pas.
+
 ## [1.31.6] — 2026-11-13
 
 ### Super-admin
