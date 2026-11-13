@@ -77,6 +77,39 @@ function withinCeiling<T>(work: Promise<T | null>, what: string): Promise<T | nu
   return Promise.race([work, ceiling]).finally(() => clearTimeout(timer));
 }
 
+/**
+ * GA4 allows only 10 concurrent requests per property, and a request that hangs at Google keeps its place after
+ * we give up on it. On 2026-11-13, reloading the dashboard (7 reports each time) exhausted that quota
+ * (« Exhausted concurrent requests quota »). Answers are therefore kept a while, and a reload during a call
+ * waits for it instead of sending another one. A failure is kept too, so Google is left alone for a few minutes.
+ */
+type Cached<T> = { at: number; value: T | null } | null;
+
+function remembered<T>(okMs: number, failedMs: number, load: () => Promise<T | null>) {
+  let cached: Cached<T> = null;
+  let pending: Promise<T | null> | null = null;
+  return {
+    get(): Promise<T | null> {
+      if (cached && Date.now() - cached.at < (cached.value === null ? failedMs : okMs)) {
+        return Promise.resolve(cached.value);
+      }
+      pending ??= load()
+        .then((value) => {
+          cached = { at: Date.now(), value };
+          return value;
+        })
+        .finally(() => {
+          pending = null;
+        });
+      return pending;
+    },
+    clear() {
+      cached = null;
+      pending = null;
+    },
+  };
+}
+
 let client: BetaAnalyticsDataClient | null = null;
 
 function getClient() {
@@ -88,12 +121,15 @@ function getClient() {
   return client;
 }
 
+const weekly = remembered(15 * 60_000, 5 * 60_000, () => withinCeiling(fetchSiteAnalytics(), "GA4 Data API"));
+
 /**
  * Traffic of the public site over the last 7 days, from the GA4 Data API. null when GA is not set up or the
  * call fails (the service account not yet given access, for instance): the dashboard must keep working.
  */
 export function getSiteAnalytics(): Promise<SiteAnalytics | null> {
-  return withinCeiling(fetchSiteAnalytics(), "GA4 Data API");
+  if (!process.env.GA_PROPERTY_ID || !getClient()) return Promise.resolve(null);
+  return weekly.get();
 }
 
 async function fetchSiteAnalytics(): Promise<SiteAnalytics | null> {
@@ -105,54 +141,50 @@ async function fetchSiteAnalytics(): Promise<SiteAnalytics | null> {
     const property = `properties/${propertyId}`;
     const dateRanges = [{ startDate: "7daysAgo", endDate: "today" }];
     const totals = [{ name: "activeUsers" }, { name: "sessions" }, { name: "screenPageViews" }];
-    const top = (dimension: string, metric: string, limit?: number) =>
-      ga.runReport(
-        {
-          property,
-          dateRanges,
-          dimensions: [{ name: dimension }],
-          metrics: [{ name: metric }],
-          orderBys: [{ metric: { metricName: metric }, desc: true }],
-          dimensionFilter: PUBLIC_PAGES,
-          limit,
-        },
-        GA_CALL,
-      );
-    const rows = ([report]: [Report, ...unknown[]]) => report.rows ?? [];
-
-    const [summary, previous, pages, sources, cities, devices, events] = await Promise.all([
-      ga.runReport({ property, dateRanges, metrics: totals, dimensionFilter: PUBLIC_PAGES }, GA_CALL),
-      ga.runReport(
-        {
-          property,
-          dateRanges: [{ startDate: "14daysAgo", endDate: "8daysAgo" }],
-          metrics: totals,
-          dimensionFilter: PUBLIC_PAGES,
-        },
-        GA_CALL,
-      ),
+    const top = (dimension: string, metric: string, limit?: number) => ({
+      dateRanges,
+      dimensions: [{ name: dimension }],
+      metrics: [{ name: metric }],
+      orderBys: [{ metric: { metricName: metric }, desc: true }],
+      dimensionFilter: PUBLIC_PAGES,
+      limit,
+    });
+    const requests = [
+      { dateRanges, metrics: totals, dimensionFilter: PUBLIC_PAGES },
+      {
+        dateRanges: [{ startDate: "14daysAgo", endDate: "8daysAgo" }],
+        metrics: totals,
+        dimensionFilter: PUBLIC_PAGES,
+      },
       top("pagePath", "screenPageViews", 5),
       top("sessionDefaultChannelGroup", "sessions", 5),
       top("city", "activeUsers", 5),
       top("deviceCategory", "sessions"),
-      ga.runReport(
-        {
-          property,
-          dateRanges,
-          dimensions: [{ name: "eventName" }],
-          metrics: [{ name: "eventCount" }],
-          dimensionFilter: {
-            andGroup: {
-              expressions: [
-                PUBLIC_PAGES,
-                { filter: { fieldName: "eventName", inListFilter: { values: CONVERSION_NAMES } } },
-              ],
-            },
+      {
+        dateRanges,
+        dimensions: [{ name: "eventName" }],
+        metrics: [{ name: "eventCount" }],
+        dimensionFilter: {
+          andGroup: {
+            expressions: [
+              PUBLIC_PAGES,
+              { filter: { fieldName: "eventName", inListFilter: { values: CONVERSION_NAMES } } },
+            ],
           },
         },
-        GA_CALL,
+      },
+    ];
+    // Two calls instead of seven (Google takes at most 5 reports per batch), for the concurrency quota.
+    const batches = await Promise.all(
+      [requests.slice(0, 5), requests.slice(5)].map((part) =>
+        ga.batchRunReports({ property, requests: part }, GA_CALL),
       ),
-    ]);
+    );
+    const reports: Report[] = batches.flatMap(([batch]) => batch.reports ?? []);
+    if (reports.length !== requests.length)
+      throw new Error(`${reports.length} rapports reçus sur ${requests.length}`);
+    const [summary, previous, pages, sources, cities, devices, events] = reports;
+    const rows = (report: Report) => report.rows ?? [];
 
     const now = rows(summary)[0];
     const before = rows(previous)[0];
@@ -194,8 +226,19 @@ async function fetchSiteAnalytics(): Promise<SiteAnalytics | null> {
  * The last minutes, from the separate Realtime pipeline (standard reports lag by several hours). This API has
  * no page dimension, so PUBLIC_PAGES cannot apply here; the tag's own limits to the public site still do.
  */
+const realtimeNow = remembered(60_000, 60_000, () =>
+  withinCeiling(fetchSiteRealtimeAnalytics(), "GA4 Realtime API"),
+);
+
 export function getSiteRealtimeAnalytics(): Promise<SiteRealtimeAnalytics | null> {
-  return withinCeiling(fetchSiteRealtimeAnalytics(), "GA4 Realtime API");
+  if (!process.env.GA_PROPERTY_ID || !getClient()) return Promise.resolve(null);
+  return realtimeNow.get();
+}
+
+/** For the tests: forget what Google answered. */
+export function clearSiteAnalyticsCache() {
+  weekly.clear();
+  realtimeNow.clear();
 }
 
 async function fetchSiteRealtimeAnalytics(): Promise<SiteRealtimeAnalytics | null> {

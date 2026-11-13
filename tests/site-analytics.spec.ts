@@ -1,28 +1,38 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 const runReport = vi.hoisted(() => vi.fn());
+const batchRunReports = vi.hoisted(() => vi.fn());
 const runRealtimeReport = vi.hoisted(() => vi.fn());
 vi.mock("@google-analytics/data", () => ({
   BetaAnalyticsDataClient: class {
     runReport = runReport;
+    batchRunReports = batchRunReports;
     runRealtimeReport = runRealtimeReport;
   },
 }));
 
-import { GA_CEILING_MS, getSiteAnalytics, getSiteRealtimeAnalytics } from "@/lib/server/site-analytics";
+import {
+  GA_CEILING_MS,
+  clearSiteAnalyticsCache,
+  getSiteAnalytics,
+  getSiteRealtimeAnalytics,
+} from "@/lib/server/site-analytics";
 
 const row = (dimension: string | null, ...metrics: number[]) => ({
   dimensionValues: dimension === null ? [] : [{ value: dimension }],
   metricValues: metrics.map((m) => ({ value: String(m) })),
 });
 
-/** Answers by report: the two totals (this week, then the one before), then each dimension. */
+/** Answers by report, batch by batch: the two totals (this week, then the one before), then each dimension. */
 function answer(rowsFor: Record<string, ReturnType<typeof row>[]>, before: ReturnType<typeof row>[]) {
   runReport.mockImplementation(async ({ dimensions, dateRanges }) => {
     const key = dimensions?.[0]?.name;
     if (key) return [{ rows: rowsFor[key] ?? [] }];
     return [{ rows: dateRanges[0].startDate === "7daysAgo" ? rowsFor.totals : before }];
   });
+  batchRunReports.mockImplementation(async ({ requests }) => [
+    { reports: await Promise.all(requests.map(async (r: object) => (await runReport(r))[0])) },
+  ]);
 }
 
 beforeEach(() => {
@@ -33,7 +43,9 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
+  clearSiteAnalyticsCache();
   runReport.mockReset();
+  batchRunReports.mockReset();
   runRealtimeReport.mockReset();
 });
 
@@ -41,7 +53,7 @@ test("sans configuration, rien n’est demandé à Google", async () => {
   vi.stubEnv("GA_PROPERTY_ID", "");
   expect(await getSiteAnalytics()).toBeNull();
   expect(await getSiteRealtimeAnalytics()).toBeNull();
-  expect(runReport).not.toHaveBeenCalled();
+  expect(batchRunReports).not.toHaveBeenCalled();
 });
 
 test("les chiffres sont lus, comparés à la semaine d’avant, et les villes vides fusionnées", async () => {
@@ -75,6 +87,8 @@ test("les chiffres sont lus, comparés à la semaine d’avant, et les villes vi
 test("les pages de jeu et les espaces connectés sont exclus de chaque rapport", async () => {
   answer({ totals: [] }, []);
   await getSiteAnalytics();
+  // Seven reports in two calls: GA4 counts concurrent requests per property.
+  expect(batchRunReports).toHaveBeenCalledTimes(2);
   expect(runReport).toHaveBeenCalledTimes(7);
   for (const [request] of runReport.mock.calls) {
     const filter = JSON.stringify(request.dimensionFilter);
@@ -84,7 +98,7 @@ test("les pages de jeu et les espaces connectés sont exclus de chaque rapport",
 
 test("une erreur de Google ne casse pas le tableau de bord", async () => {
   vi.spyOn(console, "error").mockImplementation(() => {});
-  runReport.mockRejectedValue(new Error("PERMISSION_DENIED"));
+  batchRunReports.mockRejectedValue(new Error("PERMISSION_DENIED"));
   runRealtimeReport.mockRejectedValue(new Error("PERMISSION_DENIED"));
   expect(await getSiteAnalytics()).toBeNull();
   expect(await getSiteRealtimeAnalytics()).toBeNull();
@@ -107,11 +121,36 @@ test("Google qui ne répond jamais ne bloque pas la page au-delà du plafond", a
   vi.useFakeTimers();
   try {
     vi.spyOn(console, "error").mockImplementation(() => {});
-    runReport.mockImplementation(() => new Promise(() => {}));
+    batchRunReports.mockImplementation(() => new Promise(() => {}));
     runRealtimeReport.mockImplementation(() => new Promise(() => {}));
     const pending = Promise.all([getSiteAnalytics(), getSiteRealtimeAnalytics()]);
     await vi.advanceTimersByTimeAsync(GA_CEILING_MS);
     expect(await pending).toEqual([null, null]);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("un rechargement réutilise les chiffres au lieu de rappeler Google", async () => {
+  answer({ totals: [row(null, 1, 2, 3)] }, []);
+  const [first, during] = await Promise.all([getSiteAnalytics(), getSiteAnalytics()]);
+  const after = await getSiteAnalytics();
+  expect(during).toEqual(first);
+  expect(after).toEqual(first);
+  expect(batchRunReports).toHaveBeenCalledTimes(2); // One page load's worth, not three.
+});
+
+test("après un refus de Google, on attend avant de redemander", async () => {
+  vi.useFakeTimers();
+  try {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    batchRunReports.mockRejectedValue(new Error("8 RESOURCE_EXHAUSTED"));
+    expect(await getSiteAnalytics()).toBeNull();
+    expect(await getSiteAnalytics()).toBeNull();
+    expect(batchRunReports).toHaveBeenCalledTimes(2);
+    answer({ totals: [row(null, 1, 2, 3)] }, []);
+    await vi.advanceTimersByTimeAsync(5 * 60_000);
+    expect(await getSiteAnalytics()).toMatchObject({ activeUsers7d: 1 });
   } finally {
     vi.useRealTimers();
   }

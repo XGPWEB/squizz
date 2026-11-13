@@ -104,8 +104,8 @@ export function SiteTrafficView({
       <section className="traffic" aria-label="Trafic du site">
         <Heading>{live}</Heading>
         <p className="traffic-empty">
-          Google Analytics n’est pas encore disponible (configuration incomplète ou accès pas encore accordé
-          au compte de service).
+          Google Analytics ne répond pas pour le moment (trop de demandes, lenteur de Google ou configuration
+          incomplète). Nouvel essai dans quelques minutes.
         </p>
       </section>
     );
