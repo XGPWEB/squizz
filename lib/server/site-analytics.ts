@@ -53,6 +53,12 @@ function changePct(current: number, previous: number): number | null {
   return ((current - previous) / previous) * 100;
 }
 
+/**
+ * Google's default deadline is 60 s: when RunReport hangs (seen on 2026-11-13), the whole dashboard waited a minute.
+ * 10 s, with no retry (a retry would stretch the total time), then the panel falls back to « indisponible ».
+ */
+const GA_CALL = { timeout: 10_000, retry: null } as const;
+
 let client: BetaAnalyticsDataClient | null = null;
 
 function getClient() {
@@ -78,43 +84,52 @@ export async function getSiteAnalytics(): Promise<SiteAnalytics | null> {
     const dateRanges = [{ startDate: "7daysAgo", endDate: "today" }];
     const totals = [{ name: "activeUsers" }, { name: "sessions" }, { name: "screenPageViews" }];
     const top = (dimension: string, metric: string, limit?: number) =>
-      ga.runReport({
-        property,
-        dateRanges,
-        dimensions: [{ name: dimension }],
-        metrics: [{ name: metric }],
-        orderBys: [{ metric: { metricName: metric }, desc: true }],
-        dimensionFilter: PUBLIC_PAGES,
-        limit,
-      });
+      ga.runReport(
+        {
+          property,
+          dateRanges,
+          dimensions: [{ name: dimension }],
+          metrics: [{ name: metric }],
+          orderBys: [{ metric: { metricName: metric }, desc: true }],
+          dimensionFilter: PUBLIC_PAGES,
+          limit,
+        },
+        GA_CALL,
+      );
     const rows = ([report]: [Report, ...unknown[]]) => report.rows ?? [];
 
     const [summary, previous, pages, sources, cities, devices, events] = await Promise.all([
-      ga.runReport({ property, dateRanges, metrics: totals, dimensionFilter: PUBLIC_PAGES }),
-      ga.runReport({
-        property,
-        dateRanges: [{ startDate: "14daysAgo", endDate: "8daysAgo" }],
-        metrics: totals,
-        dimensionFilter: PUBLIC_PAGES,
-      }),
+      ga.runReport({ property, dateRanges, metrics: totals, dimensionFilter: PUBLIC_PAGES }, GA_CALL),
+      ga.runReport(
+        {
+          property,
+          dateRanges: [{ startDate: "14daysAgo", endDate: "8daysAgo" }],
+          metrics: totals,
+          dimensionFilter: PUBLIC_PAGES,
+        },
+        GA_CALL,
+      ),
       top("pagePath", "screenPageViews", 5),
       top("sessionDefaultChannelGroup", "sessions", 5),
       top("city", "activeUsers", 5),
       top("deviceCategory", "sessions"),
-      ga.runReport({
-        property,
-        dateRanges,
-        dimensions: [{ name: "eventName" }],
-        metrics: [{ name: "eventCount" }],
-        dimensionFilter: {
-          andGroup: {
-            expressions: [
-              PUBLIC_PAGES,
-              { filter: { fieldName: "eventName", inListFilter: { values: CONVERSION_NAMES } } },
-            ],
+      ga.runReport(
+        {
+          property,
+          dateRanges,
+          dimensions: [{ name: "eventName" }],
+          metrics: [{ name: "eventCount" }],
+          dimensionFilter: {
+            andGroup: {
+              expressions: [
+                PUBLIC_PAGES,
+                { filter: { fieldName: "eventName", inListFilter: { values: CONVERSION_NAMES } } },
+              ],
+            },
           },
         },
-      }),
+        GA_CALL,
+      ),
     ]);
 
     const now = rows(summary)[0];
@@ -166,17 +181,23 @@ export async function getSiteRealtimeAnalytics(): Promise<SiteRealtimeAnalytics 
     const property = `properties/${propertyId}`;
     const [[summary], [events]] = await Promise.all([
       // Google counts the last 30 minutes by default: far too wide to call someone online now.
-      ga.runRealtimeReport({
-        property,
-        metrics: [{ name: "activeUsers" }],
-        minuteRanges: [{ startMinutesAgo: 4, endMinutesAgo: 0 }],
-      }),
-      ga.runRealtimeReport({
-        property,
-        dimensions: [{ name: "eventName" }],
-        metrics: [{ name: "eventCount" }],
-        dimensionFilter: { filter: { fieldName: "eventName", inListFilter: { values: CONVERSION_NAMES } } },
-      }),
+      ga.runRealtimeReport(
+        {
+          property,
+          metrics: [{ name: "activeUsers" }],
+          minuteRanges: [{ startMinutesAgo: 4, endMinutesAgo: 0 }],
+        },
+        GA_CALL,
+      ),
+      ga.runRealtimeReport(
+        {
+          property,
+          dimensions: [{ name: "eventName" }],
+          metrics: [{ name: "eventCount" }],
+          dimensionFilter: { filter: { fieldName: "eventName", inListFilter: { values: CONVERSION_NAMES } } },
+        },
+        GA_CALL,
+      ),
     ]);
     return {
       activeUsersNow: num(summary.rows?.[0]),
