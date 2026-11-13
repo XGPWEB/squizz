@@ -9,7 +9,7 @@ vi.mock("@google-analytics/data", () => ({
   },
 }));
 
-import { getSiteAnalytics, getSiteRealtimeAnalytics } from "@/lib/server/site-analytics";
+import { GA_CEILING_MS, getSiteAnalytics, getSiteRealtimeAnalytics } from "@/lib/server/site-analytics";
 
 const row = (dimension: string | null, ...metrics: number[]) => ({
   dimensionValues: dimension === null ? [] : [{ value: dimension }],
@@ -101,4 +101,18 @@ test("le temps réel compte les visiteurs et les conversions en cours", async ()
   // « En ligne » means the last 5 minutes, not Google's default of 30.
   const online = runRealtimeReport.mock.calls.find(([r]) => !r.dimensions)?.[0];
   expect(online.minuteRanges).toEqual([{ startMinutesAgo: 4, endMinutesAgo: 0 }]);
+});
+
+test("Google qui ne répond jamais ne bloque pas la page au-delà du plafond", async () => {
+  vi.useFakeTimers();
+  try {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    runReport.mockImplementation(() => new Promise(() => {}));
+    runRealtimeReport.mockImplementation(() => new Promise(() => {}));
+    const pending = Promise.all([getSiteAnalytics(), getSiteRealtimeAnalytics()]);
+    await vi.advanceTimersByTimeAsync(GA_CEILING_MS);
+    expect(await pending).toEqual([null, null]);
+  } finally {
+    vi.useRealTimers();
+  }
 });

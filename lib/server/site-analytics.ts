@@ -59,6 +59,24 @@ function changePct(current: number, previous: number): number | null {
  */
 const GA_CALL = { timeout: 10_000, retry: null } as const;
 
+/**
+ * Ceiling on the whole panel. The per-call deadline does not cover everything (fetching the service account's
+ * token, for one): while the panel waits, the page's stream stays open with nothing to send, and past 60 s Nginx
+ * cuts it, so the browser shows the error page (« TypeError : network error » on /super-admin, 2026-11-13).
+ */
+export const GA_CEILING_MS = 12_000;
+
+function withinCeiling<T>(work: Promise<T | null>, what: string): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const ceiling = new Promise<null>((resolve) => {
+    timer = setTimeout(() => {
+      console.error(`[site-analytics] ${what} : pas de réponse de Google en ${GA_CEILING_MS / 1000} s`);
+      resolve(null);
+    }, GA_CEILING_MS);
+  });
+  return Promise.race([work, ceiling]).finally(() => clearTimeout(timer));
+}
+
 let client: BetaAnalyticsDataClient | null = null;
 
 function getClient() {
@@ -74,7 +92,11 @@ function getClient() {
  * Traffic of the public site over the last 7 days, from the GA4 Data API. null when GA is not set up or the
  * call fails (the service account not yet given access, for instance): the dashboard must keep working.
  */
-export async function getSiteAnalytics(): Promise<SiteAnalytics | null> {
+export function getSiteAnalytics(): Promise<SiteAnalytics | null> {
+  return withinCeiling(fetchSiteAnalytics(), "GA4 Data API");
+}
+
+async function fetchSiteAnalytics(): Promise<SiteAnalytics | null> {
   const propertyId = process.env.GA_PROPERTY_ID;
   const ga = getClient();
   if (!propertyId || !ga) return null;
@@ -172,7 +194,11 @@ export async function getSiteAnalytics(): Promise<SiteAnalytics | null> {
  * The last minutes, from the separate Realtime pipeline (standard reports lag by several hours). This API has
  * no page dimension, so PUBLIC_PAGES cannot apply here; the tag's own limits to the public site still do.
  */
-export async function getSiteRealtimeAnalytics(): Promise<SiteRealtimeAnalytics | null> {
+export function getSiteRealtimeAnalytics(): Promise<SiteRealtimeAnalytics | null> {
+  return withinCeiling(fetchSiteRealtimeAnalytics(), "GA4 Realtime API");
+}
+
+async function fetchSiteRealtimeAnalytics(): Promise<SiteRealtimeAnalytics | null> {
   const propertyId = process.env.GA_PROPERTY_ID;
   const ga = getClient();
   if (!propertyId || !ga) return null;
