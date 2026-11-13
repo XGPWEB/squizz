@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.31.6] — 2026-11-13
+
+### Super-admin
+
+- « Trafic du site » ne dépasse plus le quota de Google : les 7 rapports partent en 2 demandes groupées au lieu de 7, et les chiffres sont gardés 15 minutes (le temps réel, 1 minute). Un rechargement pendant un appel attend sa réponse au lieu d’en lancer un autre, et après un refus de Google, on attend 5 minutes avant de redemander.
+- Quand Google ne répond pas, le panneau le dit, au lieu d’évoquer une configuration incomplète.
+
 ## [1.31.5] — 2026-11-13
 
 ### Super-admin
