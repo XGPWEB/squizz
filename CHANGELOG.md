@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.31.5] — 2026-11-13
+
+### Super-admin
+
+- Quand Google Analytics ne répond pas, le panneau « Trafic du site » affiche « indisponible » au bout de 10 s au lieu d’attendre une minute ; au-delà de 12 s, il abandonne quoi qu’il arrive. La vue d’ensemble ne tombe plus sur la page « Oups » (« TypeError : network error ») lorsque la connexion était coupée pendant l’attente.
+
 ## [1.31.4] — 2026-11-07
 
 ### Site
