@@ -3,6 +3,7 @@ import path from "node:path";
 import { expect, test } from "vitest";
 import { demos } from "@/lib/quizzes";
 import { safeMediaUrl, validateQuestion } from "@/lib/question";
+import { isProfileQuiz, validateProfiles } from "@/lib/profiles";
 
 test("chaque SQuizz Original respecte les règles de l’éditeur (copiable tel quel)", () => {
   for (const quiz of demos)
@@ -24,4 +25,10 @@ test("les illustrations des Originals existent et restent limitées à leur doss
   expect(safeMediaUrl("/originals/espace/script.js")).toBe(false);
   expect(safeMediaUrl("/originals/../.env")).toBe(false);
   expect(safeMediaUrl("/api/admin/audit")).toBe(false);
+});
+
+test("les Originals à profils respectent les règles des quiz à profils", () => {
+  const profiled = demos.filter((quiz) => isProfileQuiz(quiz.questions));
+  expect(profiled.map((quiz) => quiz.id)).toContain("modele-profils");
+  for (const quiz of profiled) expect(() => validateProfiles(quiz.questions), quiz.id).not.toThrow();
 });

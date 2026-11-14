@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.33.0] — 2026-11-14
+
+### Bibliothèque
+
+- Modèles par usage illustrés dans la charte et enrichis : carte « d’où venez-vous ? » pour l’accueil, météo d’équipe à pin’s pour la réunion, cible des objectifs pour l’évaluation de formation, bateau de la rétrospective, traditions du monde pour la fin d’année, diapos de cadre et de clôture.
+- Trois nouveaux modèles : Lancement de projet (matrice confiance / enthousiasme), Atelier d’idées (nouvel usage « Atelier », matrice impact / effort) et « Quel coéquipier êtes-vous ? », un quiz à profils.
+
 ## [1.32.0] — 2026-11-14
 
 ### Bibliothèque

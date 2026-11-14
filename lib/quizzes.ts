@@ -10,7 +10,17 @@ import { cybersecurite } from "./originals/cybersecurite";
 import { gastronomie } from "./originals/gastronomie";
 import { planete } from "./originals/planete";
 import { corpsHumain } from "./originals/corps-humain";
-import { meeting, retro, training, welcome, yearEnd, type Usage } from "./originals/templates";
+import {
+  kickoff,
+  meeting,
+  retro,
+  teamProfiles,
+  training,
+  welcome,
+  workshop,
+  yearEnd,
+  type Usage,
+} from "./originals/templates";
 export { USAGES, type Usage } from "./originals/templates";
 export type { Question } from "./question";
 export type Quiz = {
@@ -202,7 +212,7 @@ export const demos: Quiz[] = [
     tag: "ACCUEIL",
     symbol: "☀",
     color: "green",
-    desc: "Le premier jour des nouveaux arrivants : se présenter, faire connaissance, poser ses questions.",
+    desc: "Le premier jour des nouveaux arrivants : carte « d’où venez-vous ? », roue des présentations, questions sans tabou.",
     usage: "accueil",
     questions: welcome,
   },
@@ -212,9 +222,19 @@ export const demos: Quiz[] = [
     tag: "RÉUNION",
     symbol: "◐",
     color: "purple",
-    desc: "Météo d’équipe, énergie du jour et tour de table tiré au sort pour lancer la séance.",
+    desc: "Météo d’équipe à pin’s, énergie du jour, tour de table tiré au sort et règles du jeu de la réunion.",
     usage: "reunion",
     questions: meeting,
+  },
+  {
+    id: "modele-lancement",
+    title: "Lancement de projet",
+    tag: "KICK-OFF",
+    symbol: "➚",
+    color: "purple",
+    desc: "Vision partagée, matrice confiance / enthousiasme, attentes et risques : le projet démarre sur de bonnes bases.",
+    usage: "reunion",
+    questions: kickoff,
   },
   {
     id: "modele-formation",
@@ -222,9 +242,19 @@ export const demos: Quiz[] = [
     tag: "FORMATION",
     symbol: "✓",
     color: "tangerine",
-    desc: "L’évaluation à chaud, anonyme : objectifs, utilité, recommandation et suggestions.",
+    desc: "L’évaluation à chaud, anonyme : cible des objectifs, utilité, recommandation (NPS) et suggestions.",
     usage: "formation",
     questions: training,
+  },
+  {
+    id: "modele-atelier",
+    title: "Atelier d’idées",
+    tag: "ATELIER",
+    symbol: "✷",
+    color: "green",
+    desc: "Règles du brainstorming, idées sans limite, matrice impact / effort et priorités votées ensemble.",
+    usage: "atelier",
+    questions: workshop,
   },
   {
     id: "modele-retro",
@@ -232,7 +262,7 @@ export const demos: Quiz[] = [
     tag: "BILAN D’ÉQUIPE",
     symbol: "↻",
     color: "orange",
-    desc: "Ce qui a marché, ce qui a freiné, le chantier prioritaire : un bilan anonyme et constructif.",
+    desc: "Le bateau de l’équipe, ce qui pousse, ce qui freine, le chantier prioritaire : un bilan anonyme.",
     usage: "bilan",
     questions: retro,
   },
@@ -242,8 +272,18 @@ export const demos: Quiz[] = [
     tag: "CONVIVIALITÉ",
     symbol: "❄",
     color: "purple",
-    desc: "Un quiz léger avant les fêtes, des votes gourmands et un tirage au sort pour le cadeau.",
+    desc: "Un quiz léger avant les fêtes, des traditions du monde, un vote gourmand et la roue du cadeau.",
     usage: "fete",
     questions: yearEnd,
+  },
+  {
+    id: "modele-profils",
+    title: "Quel coéquipier êtes-vous ?",
+    tag: "QUIZ À PROFILS",
+    symbol: "◎",
+    color: "orange",
+    desc: "Moteur, stratège, liant ou créatif ? Six situations pour dresser le portrait de l’équipe, sans classement.",
+    usage: "fete",
+    questions: teamProfiles,
   },
 ];
