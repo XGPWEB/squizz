@@ -2,6 +2,17 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.32.0] — 2026-11-14
+
+### Bibliothèque
+
+- Dix nouveaux SQuizz Originals, en tête de la bibliothèque : Le tour du monde en 10 escales, Objectif Lune… et au-delà, Blind test : les grands classiques, Chefs-d’œuvre : l’œil du connaisseur, Ces inventions qui ont changé le monde, Les pièges du français, Cybersécurité : déjouez les pièges, La France à table, Planète en questions, Le corps humain. Une dizaine de questions chacun, tous les types d’étapes représentés (pin’s, appariement, puzzle, textes à trous, blind test, nuage de mots, NPS, roue, diapos…).
+- Photos, vidéos (Apollo 11, frères Lumière, télescope James Webb) et extraits musicaux libres de Wikimedia Commons, hébergés par SQuizz, auteur et licence en légende ; illustrations dessinées dans la charte.
+
+### Jeu et éditeur
+
+- Une question avec plusieurs photos les affiche en mosaïque de deux colonnes, au lieu d’une colonne à faire défiler avant les réponses.
+
 ## [1.31.7] — 2026-11-13
 
 ### Super-admin
