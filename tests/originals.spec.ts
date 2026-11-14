@@ -19,6 +19,9 @@ test("les illustrations des Originals existent et restent limitées à leur doss
         if (m.url.startsWith("/originals/"))
           expect(existsSync(path.join(import.meta.dirname, "..", "public", m.url)), m.url).toBe(true);
   expect(safeMediaUrl("/originals/management-fpt/code.webp")).toBe(true);
+  expect(safeMediaUrl("/originals/blind-test/extrait-1.mp3")).toBe(true);
+  expect(safeMediaUrl("/originals/espace/alunissage.mp4")).toBe(true);
+  expect(safeMediaUrl("/originals/espace/script.js")).toBe(false);
   expect(safeMediaUrl("/originals/../.env")).toBe(false);
   expect(safeMediaUrl("/api/admin/audit")).toBe(false);
 });

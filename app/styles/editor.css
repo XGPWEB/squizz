@@ -505,6 +505,22 @@ fieldset {
   line-height: 1.5;
   margin-top: 8px;
 }
+/* Several pictures (a matching question over four photos, say) form a two-column mosaic instead of a
+   column to scroll through before reaching the answers. */
+.question-media:has(> figure:nth-child(2)) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.question-media:has(> figure:nth-child(2)) img,
+.question-media:has(> figure:nth-child(2)) video {
+  aspect-ratio: 4 / 3;
+  max-height: 260px;
+  object-fit: cover;
+}
+.question-media:has(> figure:nth-child(2)) figcaption {
+  font-size: 12px;
+  margin-top: 4px;
+}
 .external-resource {
   display: flex;
   align-items: center;

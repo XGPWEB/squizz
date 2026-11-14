@@ -389,7 +389,7 @@ export function youtubeStart(raw: string): number {
 export function safeMediaUrl(url: string) {
   if (/^\/api\/media\/[a-f0-9-]{36}$/.test(url)) return true;
   // Illustrations of the SQuizz Originals, served by the site itself.
-  if (/^\/originals\/[a-z0-9-]+\/[a-z0-9-]+\.(webp|png|jpg)$/.test(url)) return true;
+  if (/^\/originals\/[a-z0-9-]+\/[a-z0-9-]+\.(webp|png|jpg|mp3|mp4)$/.test(url)) return true;
   try {
     const u = new URL(url);
     return ["http:", "https:"].includes(u.protocol) && !u.username && !u.password;

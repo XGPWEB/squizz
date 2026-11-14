@@ -1,5 +1,15 @@
 import { newQuestion, type Question } from "./question";
 import { managementFpt } from "./originals/management-fpt";
+import { tourDuMonde } from "./originals/tour-du-monde";
+import { espace } from "./originals/espace";
+import { blindTestClassique } from "./originals/blind-test";
+import { peinture } from "./originals/peinture";
+import { inventions } from "./originals/inventions";
+import { francais } from "./originals/francais";
+import { cybersecurite } from "./originals/cybersecurite";
+import { gastronomie } from "./originals/gastronomie";
+import { planete } from "./originals/planete";
+import { corpsHumain } from "./originals/corps-humain";
 import { meeting, retro, training, welcome, yearEnd, type Usage } from "./originals/templates";
 export { USAGES, type Usage } from "./originals/templates";
 export type { Question } from "./question";
@@ -22,6 +32,96 @@ const q = (text: string, options: string[], correct: number): Question => ({
   correctAnswers: [correct],
 });
 export const demos: Quiz[] = [
+  {
+    id: "tour-du-monde",
+    title: "Le tour du monde en 10 escales",
+    tag: "GÉOGRAPHIE",
+    symbol: "✈︎",
+    color: "green",
+    desc: "Photos de merveilles, carte à pin’s, appariement : faites le tour de la planète sans quitter la salle.",
+    questions: tourDuMonde,
+  },
+  {
+    id: "espace",
+    title: "Objectif Lune… et au-delà",
+    tag: "ESPACE",
+    symbol: "☾︎",
+    color: "purple",
+    desc: "Images d’Apollo 11, télescope James Webb, grandes premières : un voyage dans le système solaire.",
+    questions: espace,
+  },
+  {
+    id: "blind-test-classique",
+    title: "Blind test : les grands classiques",
+    tag: "MUSIQUE",
+    symbol: "♫︎",
+    color: "orange",
+    desc: "Beethoven, Vivaldi, Offenbach… Écoutez l’extrait, tapez la réponse : le blind test façon SQuizz.",
+    questions: blindTestClassique,
+  },
+  {
+    id: "peinture",
+    title: "Chefs-d’œuvre : l’œil du connaisseur",
+    tag: "ART",
+    symbol: "✎︎",
+    color: "tangerine",
+    desc: "De la Joconde à la Grande Vague : trouvez le détail caché et reliez chaque tableau à son peintre.",
+    questions: peinture,
+  },
+  {
+    id: "inventions",
+    title: "Ces inventions qui ont changé le monde",
+    tag: "HISTOIRE DES SCIENCES",
+    symbol: "⚙︎",
+    color: "purple",
+    desc: "Premier film des Lumière, premier vol des Wright, première photo d’un humain : remontez le temps.",
+    questions: inventions,
+  },
+  {
+    id: "francais",
+    title: "Les pièges du français",
+    tag: "LANGUE FRANÇAISE",
+    symbol: "Ç",
+    color: "green",
+    desc: "Accords, expressions, palindromes et proverbes : textes à trous et appariements pour amoureux des mots.",
+    questions: francais,
+  },
+  {
+    id: "cybersecurite",
+    title: "Cybersécurité : déjouez les pièges",
+    tag: "CYBERSÉCURITÉ",
+    symbol: "⚠︎",
+    color: "tangerine",
+    desc: "Faux courriel à décortiquer, mots de passe, Wi-Fi public : une sensibilisation qui se joue en équipe.",
+    questions: cybersecurite,
+  },
+  {
+    id: "gastronomie",
+    title: "La France à table",
+    tag: "GASTRONOMIE",
+    symbol: "♨︎",
+    color: "orange",
+    desc: "Spécialités régionales, carte à pin’s, grand débat et roue du sort : un tour de France gourmand.",
+    questions: gastronomie,
+  },
+  {
+    id: "planete",
+    title: "Planète en questions",
+    tag: "ENVIRONNEMENT",
+    symbol: "❀︎",
+    color: "green",
+    desc: "Climat, biodiversité, tri : un quiz sourcé qui se termine par un brainstorming d’équipe.",
+    questions: planete,
+  },
+  {
+    id: "corps-humain",
+    title: "Le corps humain, cette machine incroyable",
+    tag: "SANTÉ",
+    symbol: "♥︎",
+    color: "orange",
+    desc: "Squelette à pin’s, organes à relier, carte de chaleur anonyme : la santé au travail en mode jeu.",
+    questions: corpsHumain,
+  },
   {
     id: "general",
     title: "Le grand mélange",
