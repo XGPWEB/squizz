@@ -18,7 +18,7 @@ org_id = next(o['id'] for o in request(root, 'GET', '/api/admin/organizations')[
 
 # --- The dashboard shows the traffic section, and still opens without Google Analytics set up ---
 home = root.open(BASE + '/super-admin', timeout=60).read().decode()
-assert 'Trafic du site' in home and 'Google Analytics n’est pas encore disponible' in home, home[:300]
+assert 'Trafic du site' in home and 'Google Analytics ne répond pas pour le moment' in home, home[:300]
 
 # --- "View as": only the super-admin can start it; it gives the org-admin view of that organisation ---
 request(admin, 'POST', f'/api/admin/organizations/{org_id}/view', expect=401)  # a client has no super-admin session
