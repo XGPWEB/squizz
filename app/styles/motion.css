@@ -65,7 +65,14 @@
     translate 0.15s,
     box-shadow 0.15s;
 }
+/* Out of the flow, so the button's tappable box is the disc alone: the faded note used to widen it
+   by ~140px over the footer's links on touch screens. */
 .back-to-top-note {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  margin-top: -14px;
+  white-space: nowrap;
   font: 700 12px/1.5 monospace;
   letter-spacing: 1px;
   background: var(--ink);

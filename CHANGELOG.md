@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.33.2] — 2026-11-15
+
+### Site
+
+- Sur tablette, le lien « Pressweb » du pied de page se touche enfin : la bulle invisible de la flèche « remonter en haut » élargissait le bouton par-dessus lui. La zone cliquable de la flèche se limite désormais à la pastille.
+
 ## [1.33.1] — 2026-11-15
 
 ### Site
