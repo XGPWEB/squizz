@@ -290,11 +290,11 @@
   .app-tab {
     padding: 10px 11px;
   }
-  /* Keep the badge inside its tab on narrow screens. */
+  /* Keep the badge inside its tab on narrow screens: 2 px from the edge, so its tilted corners do too. */
   .tab-badge {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 2px;
+    right: 2px;
     min-width: 18px;
     padding: 0 4px;
     font-size: 11px;

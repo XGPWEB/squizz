@@ -2124,6 +2124,8 @@ label.cookie-service {
   border: 2px solid var(--ink);
   border-radius: 999px;
   background: white;
+  /* Always ink on white: the Pro card's white text must not reach the pill. */
+  color: var(--ink);
   font-weight: 800;
   font-size: 15px;
 }

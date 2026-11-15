@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.34.1] — 2026-11-15
+
+### Correctifs
+
+- Tarifs : la pastille « 5 animateurs inclus » de l’offre Pro est de nouveau lisible (texte blanc sur fond blanc).
+- Espace super-admin sur petit écran : la pastille des messages à traiter reste entièrement dans son onglet. Le test de navigation, qui échouait par moments selon qu’un message existait, vérifie maintenant toujours ce cas.
+
 ## [1.34.0] — 2026-11-15
 
 ### Découverte

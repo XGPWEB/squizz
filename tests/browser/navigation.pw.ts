@@ -7,11 +7,23 @@ test("navigation : aucun onglet coupé avec une organisation partenaire et le co
   request,
 }, testInfo) => {
   const account = await newAccount(request);
+  // A message waiting for the super-admin, every time: its badge on the « Messages » tab is the widest case,
+  // and without it the result depended on whether another test had just sent one.
+  const ip = () => `2001:db8:${randomBytes(2).toString("hex")}:${randomBytes(2).toString("hex")}::1`;
+  const sent = await request.post("/api/contact", {
+    data: {
+      name: "Test navigation",
+      email: "navigation@example.test",
+      subject: "Souscrire à un abonnement",
+      message: `Message de test pour la pastille de l’onglet ${randomBytes(4).toString("hex")}.`,
+      consent: true,
+    },
+    headers: { "X-Real-IP": ip() },
+  });
+  expect(sent.ok()).toBe(true);
   const signedIn = await page.request.post("/api/admin/session", {
     data: { email: process.env.SEED_SUPER_ADMIN_EMAIL, password: process.env.SEED_SUPER_ADMIN_PASSWORD },
-    headers: {
-      "X-Real-IP": `2001:db8:${randomBytes(2).toString("hex")}:${randomBytes(2).toString("hex")}::1`,
-    },
+    headers: { "X-Real-IP": ip() },
   });
   expect(signedIn.ok()).toBe(true);
   expect(
@@ -38,6 +50,8 @@ test("navigation : aucun onglet coupé avec une organisation partenaire et le co
     await page.evaluate(() => document.fonts.ready);
     const nav = page.getByRole("navigation", { name: "Navigation de l’espace" });
     await expect(nav.getByRole("link")).toHaveCount(5);
+    if (path.startsWith("/super-admin"))
+      await expect(nav.getByRole("link", { name: /^Messages, \d+ à traiter$/ })).toBeVisible();
     for (const width of [1920, 1440, 1280, 1100, 1024, 1000, 768, 640, 390, 375, 320]) {
       await page.setViewportSize({ width, height: 900 });
       const clipped = await nav.evaluate((element) => {
