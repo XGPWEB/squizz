@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.33.1] — 2026-11-15
+
+### Site
+
+- Sur tablette, le lien « Site conçu par Pressweb » du pied de page n’est plus caché par la flèche « remonter en haut ».
+
 ## [1.33.0] — 2026-11-14
 
 ### Bibliothèque
