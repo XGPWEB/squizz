@@ -1,6 +1,7 @@
 /** The conversions counted on the public site, with their label on the super-admin dashboard. */
 export const CONVERSIONS = {
   signup_cta_click: "Clic « créer mon espace »",
+  demo_cta_click: "Clic « essayer une démo »",
   pricing_cta_click: "Clic sur une offre",
   signup_complete: "Inscription envoyée",
   contact_form_submit: "Message de contact envoyé",

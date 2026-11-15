@@ -3,6 +3,7 @@ import { Dialog } from "radix-ui";
 import { useEffect, useRef, useState } from "react";
 import { CircleAlert, Dices, Play, User, Users, X } from "lucide-react";
 import { MAX_TEAM_NAME, MAX_TEAMS, randomTeamNames, TEAMS } from "@/lib/teams";
+import { onRadioKeys } from "@/lib/client/radio-group";
 
 export type LaunchChoice = { teams: number; teamNames: string[] };
 
@@ -86,11 +87,17 @@ export function LaunchDialog({
             }}
           >
             <p id="launch-help">Comment voulez-vous jouer ?</p>
-            <div className="launch-modes" role="radiogroup" aria-label="Façon de jouer">
+            <div
+              className="launch-modes"
+              role="radiogroup"
+              onKeyDown={onRadioKeys}
+              aria-label="Façon de jouer"
+            >
               <button
                 type="button"
                 role="radio"
                 aria-checked={!teamMode}
+                tabIndex={!teamMode ? 0 : -1}
                 className={!teamMode ? "on" : ""}
                 onClick={() => setTeamMode(false)}
               >
@@ -102,6 +109,7 @@ export function LaunchDialog({
                 type="button"
                 role="radio"
                 aria-checked={teamMode}
+                tabIndex={teamMode ? 0 : -1}
                 className={teamMode ? "on" : ""}
                 onClick={() => setTeamMode(true)}
               >
@@ -112,7 +120,12 @@ export function LaunchDialog({
             </div>
             {teamMode && (
               <div className="launch-teams">
-                <div className="launch-count" role="radiogroup" aria-label="Nombre d’équipes">
+                <div
+                  className="launch-count"
+                  role="radiogroup"
+                  onKeyDown={onRadioKeys}
+                  aria-label="Nombre d’équipes"
+                >
                   <span className="eyebrow">NOMBRE D’ÉQUIPES</span>
                   {Array.from({ length: MAX_TEAMS - 1 }, (_, i) => i + 2).map((n) => (
                     <button
@@ -120,6 +133,7 @@ export function LaunchDialog({
                       type="button"
                       role="radio"
                       aria-checked={count === n}
+                      tabIndex={count === n ? 0 : -1}
                       className={count === n ? "on" : ""}
                       onClick={() => setCount(n)}
                     >

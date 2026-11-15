@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { orgLimits } from "@/lib/plans";
 import { formatSize } from "@/lib/media-limits";
 import { validateProfiles } from "@/lib/profiles";
-import { validateQuestion, type Question } from "@/lib/question";
+import { MAX_STEPS, validateQuestion, type Question } from "@/lib/question";
 import { MAX_TRANSFER_MEDIA_BYTES, TRANSFER_REF, assignRefs } from "@/lib/quiz-file";
 import { fail, validated } from "./http";
 import { checkMedia, isMediaId, mediaPath, removeMedia, storeMedia } from "./media-store";
@@ -135,7 +135,7 @@ export async function importQuiz(user: Member, raw: unknown, clientKey?: unknown
     }));
   if (typeof file.title !== "string" || !file.title.trim() || file.title.length > 90)
     fail("Ajoutez un titre et de 1 à 30 questions.");
-  if (file.questions.length < 1 || file.questions.length > 30)
+  if (file.questions.length < 1 || file.questions.length > MAX_STEPS)
     fail("Ajoutez un titre et de 1 à 30 questions.");
   validated(() => validateProfiles(withUrls(null).map(validateQuestion)));
 

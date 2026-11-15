@@ -105,7 +105,7 @@ export const FEATURES = [
       {
         icon: "ai",
         title: "Un quiz rédigé par l’IA",
-        text: "Collez un texte, un fichier ou un PDF : l’IA propose de 5 à 20 questions, que vous relisez dans l’éditeur. Avec le compte Claude ou ChatGPT de votre organisation, dont la clé reste chiffrée.",
+        text: "Collez un texte, un fichier ou un PDF : l’IA propose de 5 à 20 questions, que vous relisez dans l’éditeur. Avec votre clé API Claude ou ChatGPT, facturée à part par le fournisseur.",
       },
       {
         icon: "import",
@@ -249,7 +249,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Peut-on créer un quiz avec l’intelligence artificielle ?",
-    a: "Oui. Collez un texte ou envoyez un fichier (texte ou PDF) : l’IA propose de 5 à 20 questions, que vous relisez et modifiez dans l’éditeur. La génération utilise le compte Claude ou ChatGPT de votre organisation : un administrateur enregistre sa clé une fois, chiffrée et jamais réaffichée. Vous pouvez aussi importer vos questions depuis Excel ou un fichier CSV.",
+    a: "Oui. Collez un texte ou envoyez un fichier (texte ou PDF) : l’IA propose de 5 à 20 questions, que vous relisez et modifiez dans l’éditeur. Elle demande une clé API Claude ou ChatGPT de votre organisation, enregistrée une fois par un administrateur, chiffrée et jamais réaffichée. Chaque génération est facturée à part par ce fournisseur ; un abonnement ChatGPT Plus ou Claude Pro ne donne pas d’accès API. Vous pouvez aussi importer vos questions depuis Excel ou un fichier CSV.",
   },
   {
     q: "Peut-on jouer en équipes ?",
@@ -271,7 +271,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Peut-on utiliser SQuizz pour un seul événement, sans abonnement ?",
-    a: `Oui. Le ${EVENT_PASS.label} coûte ${EVENT_PASS.price} € en une seule fois : pendant ${EVENT_PASS.days} jours, jusqu’à ${PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie, sans abonnement ni renouvellement.`,
+    a: `Oui. Le ${EVENT_PASS.label} coûte ${EVENT_PASS.price} € en une seule fois : pendant ${EVENT_PASS.days} jours à compter du paiement, jusqu’à ${PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie et ${PLANS[EVENT_PASS.plan].maxMembers} animateurs, sans abonnement ni renouvellement.`,
   },
   {
     q: "Peut-on faire un blind test avec SQuizz ?",
@@ -279,7 +279,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Pour qui est fait SQuizz ?",
-    a: "Entreprises (séminaires, réunions, formations, onboarding, bilans d’équipe), écoles et formateurs (révisions, évaluations ludiques, quiz à faire en autonomie), associations et événements (soirées quiz, mariages, jeux en équipes).",
+    a: "Associations et services jeunesse (accueil des bénévoles, ateliers, animations, soirées quiz), petites équipes et entreprises (séminaires, réunions, onboarding, bilans d’équipe), écoles et formateurs (révisions, évaluations ludiques, quiz à faire en autonomie) et événements (mariages, jeux en équipes). Les animateurs d’une même organisation partagent leurs quiz dans un espace commun.",
   },
   {
     q: "Qui édite SQuizz ?",

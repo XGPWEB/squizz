@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { assertJson, assertSameOrigin, HttpError } from "./http";
-import { errorMessage, reportAlert } from "./monitoring";
+import { errorMessage, redactSecrets, reportAlert } from "./monitoring";
 
 type Ctx<P> = { params: Promise<P> };
 
@@ -19,7 +19,8 @@ export function route<P = Record<string, never>>(fn: (req: Request, params: P) =
         return Response.json({ ...e.details, error: e.message }, { status: e.status });
       if (e instanceof z.ZodError)
         return Response.json({ error: e.issues[0]?.message ?? "Données invalides." }, { status: 400 });
-      console.error(e);
+      // The stack (message included), never the raw error object, whose fields could carry a request.
+      console.error(redactSecrets(e instanceof Error ? (e.stack ?? errorMessage(e)) : String(e)));
       void reportAlert({
         type: "server",
         message: errorMessage(e),

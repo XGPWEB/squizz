@@ -21,6 +21,7 @@ import {
   aggregateAnswers,
   asksNothing,
   evaluateAnswer,
+  speedPoints,
   isScored,
   publicQuestion,
   type AnswerPayload,
@@ -368,11 +369,7 @@ export async function submitAnswer(g: GameContext, body: Body) {
   if (Date.now() < room.started) fail("La question n’a pas encore commencé.");
   if (body.question !== room.question) fail("Cette question est terminée.");
   const result = validated(() => evaluateAnswer(question, body.answer ?? { choices: [body.choice] }));
-  const speed = Math.max(0, 1 - (Date.now() - room.started) / duration);
-  const points =
-    result.correct && question.points !== "none"
-      ? Math.round(500 + 500 * speed) * (question.points === "double" ? 2 : 1)
-      : 0;
+  const points = speedPoints(question, !!result.correct, Date.now() - room.started);
   // The WHERE clause re-checks the phase and deadline atomically with the insert.
   const inserted = await prisma.$executeRaw`
     INSERT INTO "Answer" ("code", "player", "question", "choice", "points", "payload", "correctness")

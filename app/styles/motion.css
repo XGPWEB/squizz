@@ -521,3 +521,82 @@ html.motion .intro .eyebrow.hero-in {
     display: none;
   }
 }
+
+/* Home: the « ? » of the join card is a door to the demo. It knocks now and then, says « Joue ! » when
+   pointed at; on touch screens (no hover) the bubble stays out. Without motion: no knock, bubble shown. */
+.hero-join .shape.demo-door {
+  pointer-events: auto;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+}
+.demo-door-mark {
+  display: block;
+  transform-origin: 70% 90%;
+}
+html.motion .demo-door-mark {
+  animation: door-knock 6s ease-in-out 2.5s infinite;
+}
+@keyframes door-knock {
+  0%,
+  88%,
+  100% {
+    transform: rotate(0);
+  }
+  90%,
+  94% {
+    transform: rotate(-12deg) scale(1.05);
+  }
+  92%,
+  96% {
+    transform: rotate(5deg);
+  }
+}
+.demo-door-bubble {
+  position: absolute;
+  right: calc(100% + 8px);
+  bottom: -4px;
+  padding: 6px 12px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background: var(--pink);
+  box-shadow: 3px 3px 0 var(--ink);
+  font:
+    400 22px/1 Anton,
+    Impact,
+    sans-serif;
+  white-space: nowrap;
+  rotate: 10deg;
+  opacity: 0;
+  scale: 0.6;
+  transition:
+    opacity 0.18s,
+    scale 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.demo-door:hover .demo-door-bubble {
+  opacity: 1;
+  scale: 1;
+}
+.demo-door:hover {
+  scale: 1.08;
+}
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .demo-door-bubble {
+    opacity: 1;
+    scale: 1;
+  }
+}
+.join .hint .demo-link {
+  color: var(--ink);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.join .hint .demo-link span {
+  display: inline-block;
+  transition: translate 0.2s;
+}
+.join .hint .demo-link:hover span {
+  translate: 4px 0;
+}

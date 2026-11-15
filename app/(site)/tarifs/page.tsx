@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, Users } from "lucide-react";
 import { Faq } from "@/components/site/seo-sections";
-import { EVENT_PASS, PLAN_KEYS, PLANS, sizeLabel, type PlanLimits } from "@/lib/plans";
+import { EVENT_PASS, PLAN_KEYS, PLANS, seatsLabel, sizeLabel, type PlanLimits } from "@/lib/plans";
+import { MAX_STEPS } from "@/lib/question";
 import { QUESTION_COUNT } from "@/lib/seo";
+import { AI_PREREQUISITE } from "@/lib/ai-quiz";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/tarifs" },
@@ -26,15 +28,11 @@ function features(p: PlanLimits) {
       ? "Quiz illimités"
       : `${p.maxQuizzes} quiz enregistré${p.maxQuizzes > 1 ? "s" : ""}`,
     `Jusqu’à ${p.maxPlayersPerGame} joueurs par partie`,
-    p.maxMembers === null
-      ? "Animateurs illimités"
-      : p.maxMembers === 1
-        ? "1 animateur"
-        : `${p.maxMembers} animateurs dans l’équipe`,
     `${sizeLabel(p.mediaBytes)} de médias`,
     `Les ${QUESTION_COUNT} types de questions, les diapos et la roue`,
     "Équipes, télécommande, questions du public, quiz en autonomie",
-    "IA, import Excel, résultats et export",
+    "Import Excel, résultats et export",
+    `IA ${AI_PREREQUISITE.short}`,
     ...(p.price > 0
       ? ["Logo, couleur, mention « SQuizz » masquable"]
       : ["Logo et couleur de votre organisation"]),
@@ -45,11 +43,23 @@ function features(p: PlanLimits) {
 const PRICING_FAQ = [
   {
     q: "J’organise un seul événement : dois-je m’abonner ?",
-    a: `Non. Le ${EVENT_PASS.label} coûte ${EVENT_PASS.price} € en une fois : pendant ${EVENT_PASS.days} jours à partir du paiement, votre espace accueille jusqu’à ${PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie, avec les limites de l’offre Premium. Rien n’est renouvelé ; ensuite votre espace retrouve son offre habituelle et vos quiz sont conservés.`,
+    a: `Non. Le ${EVENT_PASS.label} coûte ${EVENT_PASS.price} € en une fois : pendant ${EVENT_PASS.days} jours (${EVENT_PASS.days * 24} heures) à compter du paiement, votre espace accueille jusqu’à ${PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie et ${PLANS[EVENT_PASS.plan].maxMembers} animateurs, avec toutes les limites de l’offre ${PLANS[EVENT_PASS.plan].label}. Un second pack acheté avant la fin du premier s’ajoute à la suite. Rien n’est renouvelé : ensuite votre espace retrouve son offre habituelle et vos quiz sont conservés.`,
+  },
+  {
+    q: "Combien d’animateurs sont inclus ?",
+    a: `Une offre couvre toute votre organisation, pas une seule personne : ${PLAN_KEYS.map((k) => `${PLANS[k].label} ${PLANS[k].maxMembers}`).join(", ")}. Chaque membre invité peut préparer et lancer des parties avec la bibliothèque commune ; les administrateurs gèrent aussi l’équipe et l’abonnement.`,
+  },
+  {
+    q: "Combien de questions peut contenir un quiz ?",
+    a: `${MAX_STEPS} étapes au plus par quiz, quelle que soit l’offre : les questions, les diapos et les roues comptent chacune pour une étape. Pour une soirée plus longue, enchaînez plusieurs quiz.`,
   },
   {
     q: "Toutes les fonctions sont-elles incluses dans chaque offre ?",
-    a: "Oui. Toutes les offres, y compris Gratuit, donnent accès à tous les types de questions, au mode équipes, à la télécommande, aux questions du public, aux quiz en autonomie, à la création par IA, à l’import Excel et aux résultats. Les offres se distinguent par le nombre de quiz, de joueurs, d’animateurs et l’espace pour les médias ; masquer la mention « SQuizz » demande une offre payante ou le Pack Événement.",
+    a: "Oui. Toutes les offres, y compris Gratuit, donnent accès à tous les types de questions, au mode équipes, à la télécommande, aux questions du public, aux quiz en autonomie, à la création par IA (avec votre propre clé API, facturée par le fournisseur), à l’import Excel et aux résultats. Les offres se distinguent par le nombre de quiz, de joueurs, d’animateurs et l’espace pour les médias ; masquer la mention « SQuizz » demande une offre payante ou le Pack Événement.",
+  },
+  {
+    q: "La création par IA est-elle comprise dans l’abonnement ?",
+    a: AI_PREREQUISITE.long,
   },
   {
     q: "Suis-je engagé ?",
@@ -109,6 +119,9 @@ export default function PricingPage() {
                     ? "Sans engagement, arrêt à tout moment"
                     : "Sans carte bancaire"}
               </p>
+              <p className="price-seats">
+                <Users size={18} aria-hidden /> {seatsLabel(p)}
+              </p>
               <p className="hint">{p.pitch}</p>
               <ul>
                 {features(p).map((f) => (
@@ -143,9 +156,9 @@ export default function PricingPage() {
             {EVENT_PASS.label} · {EVENT_PASS.price} € <small>une seule fois</small>
           </h2>
           <p>
-            Mariage, séminaire, soirée quiz : {EVENT_PASS.days} jours avec jusqu’à{" "}
-            {PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie et toutes les limites de l’offre
-            Premium. Sans abonnement, rien à résilier.
+            Mariage, séminaire, soirée : {EVENT_PASS.days} jours dès le paiement, jusqu’à{" "}
+            {PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs et {PLANS[EVENT_PASS.plan].maxMembers}{" "}
+            animateurs. Paiement unique, rien à résilier.
           </p>
         </div>
         <Link

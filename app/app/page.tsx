@@ -21,6 +21,16 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
   const quizzes = await listQuizzes(member);
   const limits = orgLimits(member.organization);
   const count = await prisma.quiz.count({ where: { organizationId: member.organizationId } });
+  // A game leaves a report (kept 12 months) or, for the first day, its room: either means no more guide.
+  const played =
+    (await prisma.gameReport.findFirst({
+      where: { organizationId: member.organizationId },
+      select: { id: true },
+    })) ??
+    (await prisma.room.findFirst({
+      where: { organizationId: member.organizationId },
+      select: { code: true },
+    }));
   const { ok } = await searchParams;
   return (
     <Library
@@ -29,6 +39,8 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
       firstName={user.name.split(" ")[0]}
       quota={{ used: count, max: limits.maxQuizzes, players: limits.maxPlayersPerGame }}
       notice={ok === "cree" ? "created" : ok === "modifie" ? "updated" : ""}
+      userId={user.id}
+      firstGame={!played}
     />
   );
 }

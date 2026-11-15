@@ -155,7 +155,7 @@ export function EditorPage({
       const link = (e.target as HTMLElement).closest?.("a[href]") as HTMLAnchorElement | null;
       if (!link || leaving.current || link.target === "_blank" || e.defaultPrevented) return;
       if (new URL(link.href, location.href).origin !== location.origin) return;
-      if (!confirm(`${message}\nVotre brouillon reste gardé sur cet appareil.`)) {
+      if (!confirm(`${message}\nUne copie de secours reste sur cet appareil.`)) {
         e.preventDefault();
         e.stopPropagation();
       } else if (!found) keepDraft();
@@ -228,7 +228,7 @@ export function EditorPage({
       }
       setError(
         e instanceof UncertainError
-          ? "Enregistrement non confirmé : la connexion est lente ou coupée. Votre travail est gardé en brouillon sur cet appareil ; réessayez dans un instant."
+          ? "Enregistrement non confirmé : la connexion est lente ou coupée. Une copie de secours reste sur cet appareil ; réessayez dans un instant."
           : (e as Error).message,
       );
     }
@@ -262,12 +262,12 @@ export function EditorPage({
       : !dirty
         ? quiz
           ? "Tout est enregistré."
-          : "Commencez votre quiz : il est gardé sur cet appareil au fil de l’eau."
+          : "À vous ! Une copie de secours est gardée ici en attendant."
         : state === "unsaved"
-          ? "Brouillon impossible à garder sur cet appareil : enregistrez bientôt."
+          ? "Copie de secours impossible sur cet appareil : enregistrez bientôt."
           : draftAt
-            ? `Brouillon gardé sur cet appareil à ${time(draftAt)} · pas encore enregistré`
-            : "Modifications non enregistrées";
+            ? `Copie de secours sur cet appareil à ${time(draftAt)} · pas encore enregistrée`
+            : "Non enregistré";
 
   return (
     <>
@@ -283,8 +283,8 @@ export function EditorPage({
       {found && (
         <div className="info-box draft-found" role="status">
           <p>
-            <strong>Brouillon retrouvé</strong> : des modifications du {when(found.savedAt)} n’ont pas été
-            enregistrées.
+            <strong>Copie de secours retrouvée sur cet appareil</strong> : des modifications du{" "}
+            {when(found.savedAt)} n’ont pas été enregistrées sur SQuizz.
             {quiz &&
               found.baseVersion !== null &&
               found.baseVersion < quiz.version &&
@@ -292,10 +292,10 @@ export function EditorPage({
           </p>
           <div className="row">
             <button className="button small" onClick={() => restore(found)}>
-              Restaurer le brouillon
+              Restaurer ces modifications
             </button>
             <button className="button small secondary" onClick={dismiss}>
-              L’ignorer et le supprimer
+              Les ignorer et les supprimer
             </button>
           </div>
         </div>
@@ -346,7 +346,7 @@ export function EditorPage({
                   {conflict.byMe
                     ? `Vous avez enregistré ce quiz depuis un autre onglet ou appareil le ${when(conflict.updatedAt)}, pendant que vous le modifiiez ici.`
                     : `${conflict.updatedBy ?? "Un autre membre"} a enregistré ce quiz le ${when(conflict.updatedAt)}, pendant que vous le modifiiez.`}{" "}
-                  Rien n’a été écrasé : votre travail est toujours là, gardé en brouillon sur cet appareil.
+                  Rien n’a été écrasé : votre travail est toujours là, en copie de secours sur cet appareil.
                 </Dialog.Description>
                 <ul className="conflict-summary">
                   <li>

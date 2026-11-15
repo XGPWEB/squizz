@@ -2,6 +2,36 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.34.0] — 2026-11-15
+
+### Découverte
+
+- **Démo jouable sans inscription** (`/demo`) : cinq étapes des SQuizz Originals, correction, classement et podium avec les écrans réels du joueur, contre quatre joueurs fictifs annoncés comme tels. Tout se passe dans le navigateur : rien n’est créé sur le serveur, aucun appel à l’IA. Mode « sans chrono », focus à chaque écran. À la fin, un marqueur rose barre les joueurs fictifs : « Place à vos vrais joueurs. »
+- Accueil inchangé, avec deux portes discrètes vers la démo : « Pas de code ? Joue une partie d’essai → » sous « Rejoindre la partie », et le « ? » de la carte, qui toque de temps en temps et dit « Joue ! » au survol.
+
+### Bibliothèque
+
+- Guide « Premiers pas » jusqu’à la première partie de l’organisation : trois exemples courts à lancer tels quels (sans créer de quiz) ou à personnaliser (copie comptée dans le quota), puis rejoindre avec son téléphone. Masquable, ne crée rien seul, ne coche aucune étape ; avec le quota Gratuit atteint, « Lancer » reste possible et l’explication remplace l’impasse.
+- Inscription : « Nom de votre structure ou de votre équipe » expliqué (modifiable plus tard), adresse e-mail et lien de confirmation annoncés ; le message d’erreur d’un formulaire de connexion ou d’inscription prend le focus.
+
+### IA et offres
+
+- Le prérequis de l’IA est annoncé partout où elle est présentée (tarifs, FAQ, fonctionnalités, notice, fenêtre IA) : clé API Claude ou ChatGPT de l’organisation, facturée à part par le fournisseur ; un abonnement ChatGPT Plus ou Claude Pro ne donne pas d’accès API. Un membre non administrateur lit que son administrateur doit configurer l’accès. Lien vers la console du fournisseur.
+- Les clés de type `sk-…` et les jetons « Bearer » sont masqués dans les journaux du serveur et les alertes du monitoring.
+- Tarifs : animateurs inclus en évidence sous chaque prix, une offre couvre toute l’organisation ; limite de 30 étapes par quiz, diapos comprises (tarifs, FAQ, éditeur, import) ; Premium décrit par son vrai plafond (80 joueurs) au lieu de « grandes organisations » ; Pack Événement : 7 jours à compter du paiement, 80 joueurs et 10 animateurs, un second pack s’ajoute à la suite. Montants, identifiants Stripe et droits inchangés.
+
+### Accessibilité
+
+- Les groupes de choix (façon de jouer, nombre d’équipes, fournisseur IA, format et partage du quiz, contenu de la roue, durée d’un lien en autonomie, style des parties) se pilotent aux flèches, Début et Fin, avec un seul arrêt de tabulation.
+- Éditeur : « Déplacer en position » envoie l’étape où l’on veut en un geste, à côté de Monter / Descendre ; le déplacement est annoncé.
+- Éditeur : « copie de secours sur cet appareil » et « enregistré sur SQuizz » distingués dans chaque message ; restauration et gestion des conflits inchangées.
+
+### Fiabilité
+
+- Test de charge : conditions dégradées optionnelles (rafale simultanée, latence, réponses perdues puis renvoyées, coupures et retours) et contrôle de cohérence des scores. 3 salles × 80 joueurs en local : 0 erreur ([AUDIT-CHARGE-2026-11-15.md](AUDIT-CHARGE-2026-11-15.md)).
+- `scripts/restore-drill.sh` : exercice de restauration d’une sauvegarde dans une base jetable, réussi sur la base locale ; pas encore sur une sauvegarde de production.
+- Règle des points partagée (`speedPoints`) entre parties en direct, liens en autonomie et démo.
+
 ## [1.33.2] — 2026-11-15
 
 ### Site

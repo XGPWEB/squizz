@@ -408,19 +408,20 @@ export function GroupProfile({ game }: { game: Game }) {
   );
 }
 export function Podium({ players }: { players: RankedPlayer[] }) {
+  const say = useSay();
   const top = players.filter((p) => p.rank <= 3);
   const order = top.length >= 2 ? [top[1], top[0], ...top.slice(2)] : top;
   return (
     <div className="podium" aria-label="Podium final">
       {order.map((p) => (
-        <div key={p.name} className={`podium-player place-${Math.min(p.rank, 3)}`}>
+        <div key={p.name} className={`podium-player place-${Math.min(p.rank, 3)}${p.me ? " is-me" : ""}`}>
           <span className="podium-name">
-            {p.rank === 1 && <Trophy size={30} />} {p.name}
+            {p.rank === 1 && <Trophy size={30} />} <span className="podium-label">{p.name}</span>
           </span>
           <div className="podium-step">
             <strong>{p.rank}</strong>
             <span>{p.score.toLocaleString("fr-FR")} pts</span>
-            {p.me && <b>C’EST TOI !</b>}
+            {p.me && <b>{say("C’EST TOI !", "C’EST VOUS !")}</b>}
           </div>
         </div>
       ))}

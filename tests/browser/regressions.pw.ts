@@ -89,13 +89,13 @@ test("éditeur : une étape non ajoutée est restaurée après rechargement puis
   await wizard.getByLabel("Réponse 3", { exact: true }).fill("Lyon");
   await wizard.getByLabel("Réponse 4", { exact: true }).fill("Lille");
   await page.keyboard.press("Escape");
-  await expect(page.locator(".save-status.dirty")).toContainText("Brouillon gardé");
+  await expect(page.locator(".save-status.dirty")).toContainText("Copie de secours sur cet appareil");
   page.once("dialog", (dialog) => dialog.accept());
   await page.reload();
-  await expect(page.getByRole("button", { name: "Restaurer le brouillon" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Restaurer ces modifications" })).toBeVisible();
   // Offering a draft must not erase it before the person decides to restore it.
   await page.reload();
-  await page.getByRole("button", { name: "Restaurer le brouillon" }).click();
+  await page.getByRole("button", { name: "Restaurer ces modifications" }).click();
   // Saving cannot silently throw away a step still waiting in the wizard.
   await page.getByRole("button", { name: "Enregistrer les modifications" }).click();
   await expect(wizard.getByLabel("Votre question")).toHaveValue("Capitale à conserver ?");

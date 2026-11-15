@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Zap } from "lucide-react";
@@ -34,7 +35,12 @@ export function JoinBox() {
       <button className="button dark" type="submit">
         Rejoindre la partie
       </button>
-      <span className="hint">Un pseudo suffit pour participer.</span>
+      <span className="hint">
+        Pas de code ?{" "}
+        <Link href="/demo" className="demo-link" data-conversion="demo_cta_click">
+          Joue une partie d’essai <span aria-hidden="true">→</span>
+        </Link>
+      </span>
     </form>
   );
 }

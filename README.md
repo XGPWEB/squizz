@@ -30,6 +30,7 @@ Les types et leur validation sont définis dans `lib/question.ts`.
 |---|---|---|
 | Site public | `/`, `/tarifs`, `/alternative-kahoot`, formulaire de contact, pages légales, inscription et connexion | Visiteurs |
 | Jeu | `/jouer` (saisie du code), `/partie/[code]` (partie en cours : grand écran pour l'animateur, téléphone pour les joueurs) | Joueurs et animateurs |
+| Démo | `/demo` : partie d'essai jouée dans le navigateur contre des joueurs fictifs (`lib/demo-game.ts`), sans aucun appel au serveur de jeu ni à l'IA, rien n'est enregistré | Visiteurs |
 | Espace organisation | `/app` : bibliothèque de quiz, éditeur, équipe, compte | Membres d'une organisation |
 | Super-admin | `/super-admin` : organisations, utilisateurs, messages de contact, journal | Pressweb |
 
@@ -125,10 +126,11 @@ npm run dev -- --port 5173
 
 ## Éditeur et bibliothèque
 
-- **Brouillons** (`lib/client/drafts.ts`) : le travail en cours est gardé dans le navigateur une seconde après chaque changement, par compte et par quiz (`new` pour un quiz pas encore enregistré), proposé à la restauration après un rechargement, effacé après un enregistrement réussi et au plus tard après 7 jours (même durée que la grâce des médias inutilisés dans `deploy/purge.mjs`). Un autre compte du même navigateur ne le voit jamais. L'état (« Brouillon gardé sur cet appareil… », « Tout est enregistré ») s'affiche près du bouton, et le navigateur prévient avant de quitter avec des modifications non enregistrées.
+- **Brouillons** (`lib/client/drafts.ts`) : le travail en cours est gardé dans le navigateur une seconde après chaque changement, par compte et par quiz (`new` pour un quiz pas encore enregistré), proposé à la restauration après un rechargement, effacé après un enregistrement réussi et au plus tard après 7 jours (même durée que la grâce des médias inutilisés dans `deploy/purge.mjs`). Un autre compte du même navigateur ne le voit jamais. L'état (« Copie de secours sur cet appareil… pas encore enregistrée sur SQuizz », « Tout est enregistré sur SQuizz ») s'affiche près du bouton, et le navigateur prévient avant de quitter avec des modifications non enregistrées.
 - **Conflits d'édition** : chaque quiz a une `version`. L'éditeur envoie celle qu'il a ouverte ; le serveur n'écrit que si elle n'a pas changé (un seul `UPDATE … WHERE version = …`). Sinon, réponse 409 avec l'autre version : la personne choisit (enregistrer la sienne comme nouveau quiz, remplacer, reprendre l'autre, continuer). Rien n'est écrasé sans ce choix.
 - **Étapes** : dupliquer, annuler la dernière suppression. **Quiz** : dupliquer un quiz de l'équipe ou copier un SQuizz Original (la copie appartient à celui qui copie, compte dans le quota, réutilise les mêmes médias).
 - **Export / import** (`lib/server/quiz-transfer.ts`) : « Exporter » sur une carte télécharge un fichier `.squizz` (le quiz et les médias de l'organisation qu'il utilise, en base64 ; les liens externes et les illustrations des Originals restent des liens). « Importer » crée un nouveau quiz à partir de ce fichier, avec les mêmes contrôles que l'éditeur et l'envoi de photo (format réel des fichiers, poids, quotas de quiz et de médias). Tout est vérifié avant d'enregistrer quoi que ce soit : un import refusé ne laisse ni quiz ni fichier. Le même plafond s'applique des deux côtés (`lib/quiz-file.ts`) : 14 Mo de médias par quiz, soit un fichier de 20 Mo au plus ; au-delà, l'export est refusé avec une explication.
+- **Premiers pas** (`components/squizz/first-steps.tsx`) : tant que l'organisation n'a joué aucune partie (ni rapport ni salle), la bibliothèque propose trois exemples à lancer tels quels ou à personnaliser, puis de rejoindre avec son téléphone. Masquable (gardé dans le navigateur, par compte) ; il ne crée rien seul et ne coche aucune étape.
 - **Bibliothèque** : recherche par titre (sans tenir compte des accents), tri (dernière modification, titre, ancienneté), filtre « Mes quiz », durée estimée à partir des réglages réels (`lib/quiz-duration.ts`, indicative).
 
 ## Résultats des parties
@@ -189,6 +191,8 @@ Intégration : `game-flow`, `rich-game-flow`, `game-live` (plafond de joueurs en
 
 Ils tournent sur le serveur de développement : le préchargement des pages, propre au site de production, n'est pas exercé.
 
+**Charge** (local uniquement, base jetable, build de production à jour) : `LOAD_CLIENTS=3 bash scripts/e2e.sh load-multiclient` (de 1 à 20 salles de 80 joueurs). Conditions dégradées optionnelles : `LOAD_BURST=1` (réponses simultanées), `LOAD_LATENCY_MS=400`, `LOAD_LOSS=0.05` (réponses perdues puis renvoyées), `LOAD_RECONNECT=0.1` (coupures puis retours). Résultats dans `audit/load-<n>x80[-degraded].json` ; voir [AUDIT-CHARGE-2026-11-15.md](AUDIT-CHARGE-2026-11-15.md).
+
 **Intégration continue** (`.github/workflows/ci.yml`) : à chaque envoi sur `main`/`plateforme` et pour chaque pull request, types, lint, formatage et tests unitaires, puis les scénarios d'intégration et les parcours en navigateur sur un PostgreSQL jetable (traces Playwright gardées 7 jours en cas d'échec).
 
 ## Versions
@@ -231,6 +235,6 @@ gunzip -c /opt/backups/squizz-db/pre-deploy-AAAAMMJJ-HHMMSS.sql.gz | psql "$U"  
 tar -xzf /opt/backups/squizz-db/squizz-media-AAAAMMJJ-HHMM.tar.gz -C /opt && chown -R squizz:squizz /opt/squizz-media
 ```
 
-Tester d'abord la restauration dans une base temporaire (`createdb squizz_restore`) avant d'écraser la production.
+Tester d'abord la restauration dans une base jetable : `bash scripts/restore-drill.sh <sauvegarde.sql.gz>` (depuis une copie du dépôt ; `MEDIA_ARCHIVE=<médias.tar.gz>` pour l'archive des médias) restaure dans `squizz_restore_drill`, vérifie tables, migrations et nombres de lignes, puis supprime cette base. Voir [AUDIT-CHARGE-2026-11-15.md](AUDIT-CHARGE-2026-11-15.md) : l'exercice a réussi en local, pas encore sur une sauvegarde de production.
 
 **Super-admin** : `cd /opt/squizz/app && set -a && . /opt/squizz-secrets.env && set +a && /opt/node24/bin/node create-super-admin.mjs contact@pressweb.fr` affiche un lien valable 1 heure pour choisir le mot de passe.

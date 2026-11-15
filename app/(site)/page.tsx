@@ -96,9 +96,19 @@ export default function HomePage() {
         <div className="hero-join" data-reveal="pop">
           {/* Two shapes pinned to the join box itself, so they stick out of its corners at every width. */}
           <span className="shape shape-square" data-parallax="0.06" aria-hidden="true" />
-          <span className="shape shape-question" data-parallax="-0.05" aria-hidden="true">
-            ?
-          </span>
+          {/* The « ? » is a door to the demo for the mouse and the finger; the link of the join box is the
+              same door for the keyboard and screen readers, so this one stays out of their way. */}
+          <Link
+            href="/demo"
+            className="shape shape-question demo-door"
+            data-parallax="-0.05"
+            data-conversion="demo_cta_click"
+            aria-hidden="true"
+            tabIndex={-1}
+          >
+            <span className="demo-door-mark">?</span>
+            <span className="demo-door-bubble">Joue !</span>
+          </Link>
           <JoinBox />
         </div>
       </section>

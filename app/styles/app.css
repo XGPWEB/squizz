@@ -2343,3 +2343,123 @@ main:focus {
     white-space: normal;
   }
 }
+
+/* Library: the first-steps guide, until the organisation's first game */
+.first-steps {
+  margin: 0 0 30px;
+  padding: 26px;
+  background: white;
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.first-steps-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.first-steps-head h2 {
+  margin: 0;
+}
+.first-steps-close {
+  gap: 6px;
+  align-items: center;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.first-steps-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+  padding: 0;
+  list-style: none;
+}
+.first-steps-list li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.first-steps-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--acid);
+  font:
+    400 20px/1 Anton,
+    Impact,
+    sans-serif;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.first-steps-list h3 {
+  margin: 0;
+  font-size: 20px;
+}
+.first-steps-list p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.first-steps-list svg {
+  vertical-align: -2px;
+}
+.first-steps-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.first-steps-pick {
+  padding: 16px;
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  background: var(--cream);
+  border-top-width: 8px;
+}
+.first-steps-pick.pick-green {
+  border-top-color: #2fbf71;
+}
+.first-steps-pick.pick-purple {
+  border-top-color: var(--electric);
+}
+.first-steps-pick.pick-orange,
+.first-steps-pick.pick-tangerine {
+  border-top-color: var(--orange);
+}
+.first-steps-pick h3 {
+  margin: 4px 0;
+  font-size: 22px;
+  line-height: 1.15;
+}
+.first-steps-pick .hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 12px;
+}
+.first-steps-quota {
+  margin: 16px 0 0;
+}
+.first-steps-phone {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0 0;
+}
+@media (max-width: 600px) {
+  .first-steps {
+    padding: 18px 16px;
+  }
+  .first-steps-pick .button {
+    flex: 1 1 auto;
+  }
+}

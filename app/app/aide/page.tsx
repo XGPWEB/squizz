@@ -100,8 +100,10 @@ const CHAPTERS: Chapter[] = [
               relisez-le avant de l’enregistrer.
             </p>
             <p>
-              L’IA utilise le compte Claude ou ChatGPT de votre organisation. Un administrateur enregistre sa
-              clé une fois, dans cette même fenêtre ; elle est chiffrée et jamais réaffichée.
+              L’IA utilise une <B>clé API</B> Claude ou ChatGPT de votre organisation. Un administrateur
+              l’enregistre une fois, dans cette même fenêtre ; elle est chiffrée et jamais réaffichée. Chaque
+              génération est facturée à part par le fournisseur ; un abonnement ChatGPT Plus ou Claude Pro ne
+              donne pas d’accès API.
             </p>
           </>
         ),

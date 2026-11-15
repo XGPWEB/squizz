@@ -1,0 +1,121 @@
+{
+  "clients": 3,
+  "players_per_game": 80,
+  "players": 240,
+  "rounds": 3,
+  "mode": "local production build, one Node worker, isolated database; HTTP clients, not rendered browsers",
+  "conditions": {
+    "burst": true,
+    "latency_ms": 400,
+    "loss": 0.05,
+    "reconnect": 0.1
+  },
+  "events": {
+    "lost_answers_resent": 41,
+    "offline_windows": 85
+  },
+  "polling_delay_ms": 900,
+  "load_seconds": 151,
+  "total_seconds": 155,
+  "response_MB": 261,
+  "polling_requests_per_second": 214,
+  "summary": {
+    "join": {
+      "requests": 240,
+      "ok": 240,
+      "errors": 0,
+      "statuses": {
+        "200": 240
+      },
+      "p50_ms": 5,
+      "p95_ms": 255,
+      "p99_ms": 318,
+      "max_ms": 347
+    },
+    "player_poll": {
+      "requests": 32005,
+      "ok": 32005,
+      "errors": 0,
+      "statuses": {
+        "200": 32005
+      },
+      "p50_ms": 1,
+      "p95_ms": 6,
+      "p99_ms": 22,
+      "max_ms": 289
+    },
+    "library": {
+      "requests": 87,
+      "ok": 87,
+      "errors": 0,
+      "statuses": {
+        "200": 87
+      },
+      "p50_ms": 13,
+      "p95_ms": 34,
+      "p99_ms": 131,
+      "max_ms": 131
+    },
+    "host_action": {
+      "requests": 12,
+      "ok": 12,
+      "errors": 0,
+      "statuses": {
+        "200": 12
+      },
+      "p50_ms": 19,
+      "p95_ms": 49,
+      "p99_ms": 49,
+      "max_ms": 49
+    },
+    "host_poll": {
+      "requests": 408,
+      "ok": 408,
+      "errors": 0,
+      "statuses": {
+        "200": 408
+      },
+      "p50_ms": 2,
+      "p95_ms": 9,
+      "p99_ms": 34,
+      "max_ms": 224
+    },
+    "answer": {
+      "requests": 720,
+      "ok": 720,
+      "errors": 0,
+      "statuses": {
+        "200": 720
+      },
+      "p50_ms": 4,
+      "p95_ms": 21,
+      "p99_ms": 28,
+      "max_ms": 36
+    },
+    "answer_resent": {
+      "requests": 41,
+      "ok": 41,
+      "errors": 0,
+      "statuses": {
+        "200": 41
+      },
+      "p50_ms": 3,
+      "p95_ms": 6,
+      "p99_ms": 17,
+      "max_ms": 17
+    },
+    "validation": {
+      "requests": 12,
+      "ok": 12,
+      "errors": 0,
+      "statuses": {
+        "200": 12
+      },
+      "p50_ms": 2,
+      "p95_ms": 6,
+      "p99_ms": 6,
+      "max_ms": 6
+    }
+  },
+  "failures": []
+}

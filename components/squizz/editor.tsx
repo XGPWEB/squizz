@@ -30,10 +30,12 @@ import {
   validateQuestion,
   type Question,
   type QuestionType,
+  MAX_STEPS,
 } from "@/lib/question";
 import { StepWizard } from "./step-wizard";
 import { QuestionPreview } from "./question-preview";
 import { QuestionFields } from "./question-fields";
+import { onRadioKeys } from "@/lib/client/radio-group";
 const FORMATS = [
   {
     id: "points",
@@ -194,12 +196,25 @@ export function QuizEditor({
     setActive(Math.max(0, index - 1));
   };
   const undoRemove = () => {
-    if (!removed || questions.length >= 30) return;
+    if (!removed || questions.length >= MAX_STEPS) return;
     const at = Math.min(removed.index, questions.length);
     setQuestions([...questions.slice(0, at), removed.step, ...questions.slice(at)]);
     setActive(at);
     setRemoved(null);
     setRetyped(null);
+  };
+  // Any step to any position in one move (a native list, usable with the keyboard and screen readers),
+  // next to the one-place moves; the new position is announced.
+  const [moved, setMoved] = useState("");
+  const moveTo = (to: number) => {
+    if (to === index || to < 0 || to >= questions.length) return;
+    const items = [...questions];
+    const [step] = items.splice(index, 1);
+    items.splice(to, 0, step);
+    setQuestions(items);
+    setActive(to);
+    setRetyped(null);
+    setMoved(`Étape déplacée en position ${to + 1} sur ${items.length}.`);
   };
   const add = (step: Question) => {
     setQuestions([...questions, step]);
@@ -273,7 +288,12 @@ export function QuizEditor({
                 général du groupe. Choisissez-le avant d’écrire vos questions.
               </p>
             </div>
-            <div className="quiz-format" role="radiogroup" aria-labelledby="format-heading">
+            <div
+              className="quiz-format"
+              role="radiogroup"
+              onKeyDown={onRadioKeys}
+              aria-labelledby="format-heading"
+            >
               {FORMATS.map((format) => {
                 const selected = (format.id === "profiles") === profileQuiz;
                 return (
@@ -282,6 +302,7 @@ export function QuizEditor({
                     type="button"
                     role="radio"
                     aria-checked={selected}
+                    tabIndex={selected ? 0 : -1}
                     className={`${format.id} ${selected ? "selected" : ""}`}
                     onClick={() => setFormat(format.id === "profiles")}
                   >
@@ -314,13 +335,19 @@ export function QuizEditor({
                   <p className="hint">Ce réglage appartient à {author ?? "l’auteur du quiz"}.</p>
                 )}
               </div>
-              <div className="quiz-sharing" role="radiogroup" aria-labelledby="sharing-heading">
+              <div
+                className="quiz-sharing"
+                role="radiogroup"
+                onKeyDown={onRadioKeys}
+                aria-labelledby="sharing-heading"
+              >
                 {SHARING.map((option) => (
                   <button
                     key={option.id}
                     type="button"
                     role="radio"
                     aria-checked={sharing.visibility === option.id}
+                    tabIndex={sharing.visibility === option.id ? 0 : -1}
                     className={sharing.visibility === option.id ? "selected" : ""}
                     disabled={!setSharing}
                     onClick={() => setSharing?.({ ...sharing, visibility: option.id })}
@@ -381,12 +408,14 @@ export function QuizEditor({
               <button
                 type="button"
                 className="button small secondary"
-                disabled={questions.length >= 30}
+                disabled={questions.length >= MAX_STEPS}
                 onClick={() => setPicker(true)}
               >
                 <Plus size={16} /> Ajouter une étape
               </button>
-              <p className="hint">{questions.length} / 30 étapes</p>
+              <p className="hint">
+                {questions.length} / {MAX_STEPS} étapes, diapos comprises
+              </p>
               {profileQuiz && (
                 <div className="editor-profiles">
                   <h3>Les profils</h3>
@@ -436,7 +465,7 @@ export function QuizEditor({
                   <button
                     type="button"
                     className="button small secondary"
-                    disabled={questions.length >= 30}
+                    disabled={questions.length >= MAX_STEPS}
                     onClick={duplicate}
                     title="Ajoute une copie de cette étape juste après"
                   >
@@ -457,7 +486,7 @@ export function QuizEditor({
                     type="button"
                     className="text-button"
                     onClick={undoRemove}
-                    disabled={questions.length >= 30}
+                    disabled={questions.length >= MAX_STEPS}
                   >
                     <Undo2 size={16} /> Annuler la suppression
                   </button>
@@ -485,31 +514,35 @@ export function QuizEditor({
                   type="button"
                   className="button small secondary"
                   disabled={index === 0}
-                  onClick={() => {
-                    const items = [...questions];
-                    [items[index - 1], items[index]] = [items[index], items[index - 1]];
-                    setQuestions(items);
-                    setActive(index - 1);
-                    setRetyped(null);
-                  }}
+                  onClick={() => moveTo(index - 1)}
                 >
                   <ArrowUp size={16} /> Monter l’étape
                 </button>
+                {questions.length > 2 && (
+                  <label className="editor-move-to">
+                    Déplacer en position
+                    <select value={index} onChange={(e) => moveTo(Number(e.target.value))}>
+                      {questions.map((_, i) => (
+                        <option key={i} value={i}>
+                          {i + 1}
+                          {i === index ? " (actuelle)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
                 <button
                   type="button"
                   className="button small secondary"
                   disabled={index === questions.length - 1}
-                  onClick={() => {
-                    const items = [...questions];
-                    [items[index + 1], items[index]] = [items[index], items[index + 1]];
-                    setQuestions(items);
-                    setActive(index + 1);
-                    setRetyped(null);
-                  }}
+                  onClick={() => moveTo(index + 1)}
                 >
                   <ArrowDown size={16} /> Descendre l’étape
                 </button>
               </div>
+              <p className="sr-only" role="status">
+                {moved}
+              </p>
             </section>
           </div>
           <StepWizard

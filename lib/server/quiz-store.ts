@@ -2,14 +2,14 @@ import "server-only";
 import type { Plan, Prisma, Quiz as QuizRow, QuizVisibility, UserRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { demos, type Quiz } from "@/lib/quizzes";
-import { normalizeQuestion, validateQuestion, type Question } from "@/lib/question";
+import { MAX_STEPS, normalizeQuestion, validateQuestion, type Question } from "@/lib/question";
 import { orgLimits } from "@/lib/plans";
 import { isProfileQuiz, quizProfiles, validateProfiles } from "@/lib/profiles";
 import { withOrgLock } from "./org-lock";
 import { fail, validated } from "./http";
 import type { SessionUser } from "./guard";
 
-export const MAX_QUESTIONS = 30;
+export const MAX_QUESTIONS = MAX_STEPS;
 export const MAX_TITLE = 90;
 
 type Member = SessionUser & { organizationId: string; organization: { plan: Plan; partner: boolean } };

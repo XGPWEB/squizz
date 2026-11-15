@@ -53,5 +53,15 @@ export async function reportAlert(alert: {
   }
 }
 
-/** The message of anything thrown, without its stack. */
-export const errorMessage = (e: unknown) => (e instanceof Error ? `${e.name} : ${e.message}` : String(e));
+/**
+ * API keys never reach a log or an alert, even if a provider's error were to quote one: anything shaped
+ * like an Anthropic or OpenAI key (« sk-… ») or a bearer token is masked.
+ */
+export const redactSecrets = (text: string) =>
+  text
+    .replace(/\bsk-[A-Za-z0-9_-]{8,}/g, "sk-[masquée]")
+    .replace(/\b(Bearer|x-api-key[:=]?)\s+[A-Za-z0-9._~+/=-]{8,}/gi, "$1 [masqué]");
+
+/** The message of anything thrown, without its stack, secrets masked. */
+export const errorMessage = (e: unknown) =>
+  redactSecrets(e instanceof Error ? `${e.name} : ${e.message}` : String(e));

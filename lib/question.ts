@@ -211,6 +211,8 @@ export type AnswerPayload = {
   /** Matching: the target chosen for each option. */
   matches?: number[];
 };
+/** Steps in a quiz at most, slides and wheels included (checked by the server on every save and import). */
+export const MAX_STEPS = 30;
 export const durations = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240];
 export const isScored = (type: QuestionType) =>
   ["quiz", "truefalse", "text", "blindtest", "slider", "pin", "puzzle", "fill", "match"].includes(type);
@@ -615,6 +617,16 @@ const normalizeText = (s: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase("fr")
     .replace(/\s+/g, " ");
+/**
+ * Points of an answer, the same in live games, self-paced links and the demo: a right answer earns 500 to
+ * 1 000 points depending on how fast it came (doubled for « points doubles »), anything else earns none.
+ */
+export function speedPoints(q: Pick<Question, "points" | "duration">, correct: boolean, elapsedMs: number) {
+  if (!correct || q.points === "none") return 0;
+  const duration = q.duration * 1000;
+  const speed = Math.max(0, 1 - Math.min(Math.max(0, elapsedMs), duration) / duration);
+  return Math.round(500 + 500 * speed) * (q.points === "double" ? 2 : 1);
+}
 export function evaluateAnswer(
   q: Question,
   raw: unknown,

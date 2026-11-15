@@ -63,15 +63,25 @@ export function SignupForm({ next }: { next: string }) {
       }
     >
       <label>
-        Nom de l’organisation
-        <input name="organization" required maxLength={80} placeholder="Ex. Lycée Jean Moulin, Acme…" />
+        Votre structure ou votre équipe
+        <input
+          name="organization"
+          required
+          maxLength={80}
+          placeholder="Ex. Association Les Curieux, Service jeunesse…"
+          aria-describedby="organization-hint"
+        />
       </label>
+      {/* Outside the label: the hint describes the field without lengthening its name. */}
+      <small className="field-hint" id="organization-hint">
+        Pour un usage perso, votre nom suffit. Modifiable plus tard.
+      </small>
       <label>
         Votre nom
         <input name="name" required maxLength={80} autoComplete="name" />
       </label>
       <label>
-        Email professionnel
+        Adresse e-mail
         <input name="email" type="email" required autoComplete="email" />
       </label>
       <label>

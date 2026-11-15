@@ -1,5 +1,5 @@
 "use client";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 /** Form shell with busy state and a French error banner; `onSubmit` throws to show an error. */
 export function AuthForm({
@@ -18,7 +18,14 @@ export function AuthForm({
   footer?: React.ReactNode;
 }) {
   const [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    // Bumped on each failure: the same message shown twice still takes the focus again.
+    [failures, setFailures] = useState(0);
+  const alertRef = useRef<HTMLDivElement>(null);
+  // The message takes the focus: read out at once, and in view on a phone where the form is long.
+  useEffect(() => {
+    if (failures) alertRef.current?.focus();
+  }, [failures]);
   // False on the server and until hydration: the form cannot be submitted before its handler exists.
   const ready = useSyncExternalStore(
     () => () => {},
@@ -30,7 +37,7 @@ export function AuthForm({
       <p className="eyebrow">{eyebrow}</p>
       <h1 className="auth-title">{title}</h1>
       {error && (
-        <div className="error" role="alert">
+        <div className="error" role="alert" ref={alertRef} tabIndex={-1}>
           {error}
         </div>
       )}
@@ -47,6 +54,7 @@ export function AuthForm({
             await onSubmit(new FormData(e.currentTarget));
           } catch (err) {
             setError((err as Error).message);
+            setFailures((n) => n + 1);
           } finally {
             setBusy(false);
           }

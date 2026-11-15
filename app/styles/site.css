@@ -2098,3 +2098,32 @@ label.cookie-service {
     transition: none;
   }
 }
+
+/* Sign-up: one line on what the free plan gives, a hint under the fields that need one. */
+.field-hint {
+  display: block;
+  margin-top: -12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #54504b;
+}
+.panel .error[tabindex="-1"]:focus-visible {
+  outline: 3px solid var(--electric);
+  outline-offset: 3px;
+}
+/* Pricing: the members included, right under the price — an offer covers the whole organisation. */
+.price-seats {
+  display: inline-flex;
+  width: fit-content;
+  justify-self: start;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 6px;
+  padding: 4px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: white;
+  font-weight: 800;
+  font-size: 15px;
+}

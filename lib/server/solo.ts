@@ -8,6 +8,7 @@ import {
   aggregateAnswers,
   asksNothing,
   evaluateAnswer,
+  speedPoints,
   isScored,
   isSoundtrack,
   publicQuestion,
@@ -218,11 +219,7 @@ export async function soloAnswer(who: string, id: unknown, body: Body) {
   const elapsed = Date.now() - Number(run.startedAt);
   if (elapsed > duration + GRACE_MS) fail("Le temps est écoulé pour cette question.");
   const result = validated(() => evaluateAnswer(question, body.answer));
-  const speed = Math.max(0, 1 - Math.min(elapsed, duration) / duration);
-  const points =
-    result.correct && question.points !== "none"
-      ? Math.round(500 + 500 * speed) * (question.points === "double" ? 2 : 1)
-      : 0;
+  const points = speedPoints(question, !!result.correct, elapsed);
   const entry: Stored = {
     question: run.index,
     payload: result.payload,

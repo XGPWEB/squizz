@@ -23,9 +23,9 @@ test("offre choisie sur la page Tarifs : compte, connexion, puis directement la 
   await expect(page).toHaveURL(/\/inscription\?suite=/);
   await expect(page.getByText("OFFRE PRO · 30 € / MOIS")).toBeVisible();
 
-  await page.getByLabel("Nom de l’organisation").fill(account.organization);
+  await page.getByLabel("Votre structure ou votre équipe").fill(account.organization);
   await page.getByLabel("Votre nom").fill("Admin Test");
-  await page.getByLabel("Email professionnel").fill(account.email);
+  await page.getByLabel("Adresse e-mail").fill(account.email);
   await page.locator('input[name="password"]').fill(account.password);
   await page.locator('input[name="confirm"]').fill(account.password);
   await page.getByRole("checkbox").check();

@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { USAGES, type Quiz, type Usage } from "@/lib/quizzes";
+import { MAX_STEPS } from "@/lib/question";
 import type { OrgQuiz } from "@/lib/server/quiz-store";
 import { gameApi, newClientKey, UncertainError, withRetry } from "@/lib/client/api";
 import { estimateLabel } from "@/lib/quiz-duration";
@@ -31,6 +32,7 @@ import { parseCsv, readXlsx } from "@/lib/sheet";
 import { rowsToQuestions, titleFromFile, type ImportResult } from "@/lib/sheet-import";
 import { SoloLinkDialog } from "@/components/squizz/solo-link";
 import { AiDialog } from "@/components/squizz/ai-dialog";
+import { FIRST_STEPS_PICKS, FirstSteps } from "@/components/squizz/first-steps";
 
 type Props = {
   quizzes: OrgQuiz[];
@@ -38,6 +40,9 @@ type Props = {
   firstName: string;
   quota: { used: number; max: number | null; players: number };
   notice: "" | "created" | "updated";
+  userId: string;
+  /** The organisation has never played a game: the first-steps guide is offered. */
+  firstGame: boolean;
 };
 type Sort = "recent" | "title" | "oldest";
 type Imported = { id: string; title: string; count: number; notes: ImportResult["skipped"]; extra: number };
@@ -55,7 +60,7 @@ async function readCsv(file: File) {
 /** Lowercase without accents, so « équipe » matches « equipe ». */
 const fold = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
+export function Library({ quizzes, demos, firstName, quota, notice, userId, firstGame }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -367,7 +372,7 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
                   <b>
                     {imported.extra} ligne{imported.extra > 1 ? "s" : ""}
                   </b>{" "}
-                  en trop : un quiz compte 30 étapes au plus.
+                  en trop : un quiz compte {MAX_STEPS} étapes au plus, diapos comprises.
                 </li>
               )}
               {imported.notes.some((n) => !n.kept) && (
@@ -428,6 +433,17 @@ export function Library({ quizzes, demos, firstName, quota, notice }: Props) {
           </div>
         )}
       </div>
+      {firstGame && (
+        <FirstSteps
+          userId={userId}
+          examples={FIRST_STEPS_PICKS.flatMap((id) => demos.filter((q) => q.id === id))}
+          full={full}
+          maxQuizzes={quota.max}
+          busy={busy}
+          onLaunch={launch}
+          onCopy={duplicate}
+        />
+      )}
       <div className="library-tools" role="search">
         <label className="library-search">
           <Search size={18} aria-hidden />

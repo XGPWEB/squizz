@@ -4,6 +4,24 @@
  */
 import { newQuestion, validateQuestion, type Question } from "./question";
 
+/**
+ * What the AI needs, said the same way wherever it is offered (pricing, FAQ, help, the AI window), so
+ * nobody discovers it on the settings screen: an API key of the organisation, billed by the provider.
+ */
+export const AI_PREREQUISITE = {
+  short: "avec votre clé API Claude ou ChatGPT, facturée par le fournisseur",
+  long:
+    "L’IA utilise une clé API Claude ou ChatGPT de votre organisation, enregistrée par un administrateur. " +
+    "Le fournisseur facture chaque génération séparément ; SQuizz ne facture rien pour l’IA. Un abonnement " +
+    "ChatGPT Plus ou Claude Pro ne suffit pas : l’accès API se crée et se paie à part.",
+  member: "IA pas encore activée : demandez à votre administrateur d’ajouter une clé API Claude ou ChatGPT.",
+} as const;
+/** Where an administrator creates the key (the providers' own consoles). */
+export const AI_CONSOLES = {
+  anthropic: "https://console.anthropic.com/settings/keys",
+  openai: "https://platform.openai.com/api-keys",
+} as const;
+
 export const AI_TYPES = [
   ["quiz", "Quiz"],
   ["truefalse", "Vrai ou faux"],

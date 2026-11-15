@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { Check, ImagePlus, Trash2, X } from "lucide-react";
 import { ACCENT_CHOICES, isHex, readableAccent, type Brand, type Theme } from "@/lib/brand";
 import { postJson } from "@/lib/client/api";
+import { onRadioKeys } from "@/lib/client/radio-group";
 
 const LOGO_MAX = 1024 * 1024;
 
@@ -110,13 +111,19 @@ export function AppearanceManager({
         <div className="appearance-settings">
           <section className="panel">
             <h2>1. Le style</h2>
-            <div className="theme-cards" role="radiogroup" aria-label="Style des parties">
+            <div
+              className="theme-cards"
+              role="radiogroup"
+              onKeyDown={onRadioKeys}
+              aria-label="Style des parties"
+            >
               {themes.map((t) => (
                 <button
                   key={t.id}
                   type="button"
                   role="radio"
                   aria-checked={brand.theme === t.id}
+                  tabIndex={brand.theme === t.id ? 0 : -1}
                   className={`theme-card ${brand.theme === t.id ? "on" : ""}`}
                   onClick={() => patch({ theme: t.id })}
                 >

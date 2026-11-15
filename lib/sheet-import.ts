@@ -5,12 +5,13 @@ import {
   validateQuestion,
   type Question,
   type QuestionType,
+  MAX_STEPS,
 } from "./question";
 import type { Rows } from "./sheet";
 import type { Sheet } from "./xlsx";
 
 /** Same limits as the editor (lib/server/quiz-store.ts). */
-export const IMPORT_MAX_QUESTIONS = 30;
+export const IMPORT_MAX_QUESTIONS = MAX_STEPS;
 const MAX_OPTIONS = 6;
 
 const fold = (s: string) =>
@@ -390,7 +391,7 @@ export function importTemplate(): Sheet[] {
         ["", ""],
         [
           "Bon à savoir",
-          "Les fichiers .csv et le modèle de tableur de Kahoot sont aussi acceptés. Les lignes vides sont ignorées ; les lignes qui posent problème sont signalées après l’import. Un quiz compte 30 étapes au plus. Les images et vidéos s’ajoutent ensuite dans l’éditeur.",
+          `Les fichiers .csv et le modèle de tableur de Kahoot sont aussi acceptés. Les lignes vides sont ignorées ; les lignes qui posent problème sont signalées après l’import. Un quiz compte ${MAX_STEPS} étapes au plus, diapos comprises. Les images et vidéos s’ajoutent ensuite dans l’éditeur.`,
         ],
       ],
     },

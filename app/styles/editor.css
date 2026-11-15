@@ -1777,3 +1777,24 @@ fieldset {
     animation: none;
   }
 }
+
+/* Editor: move the current step straight to any position (next to « Monter » / « Descendre »). */
+.editor-move-to {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.editor-move-to select {
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: white;
+  font: inherit;
+}
+.editor-move-to select:focus-visible {
+  outline: 3px solid var(--electric);
+  outline-offset: 3px;
+}

@@ -1968,3 +1968,158 @@
     animation: none;
   }
 }
+
+/* Public demo (/demo): the player's screen, with a band that never lets anyone forget it is a demo. */
+.demo-banner {
+  max-width: 900px;
+  margin: 0 auto 6px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: white;
+  border: 2px dashed var(--ink);
+  border-radius: 14px;
+}
+.demo-banner .sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.demo-banner p {
+  flex: 1 1 260px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.demo-banner .text-button {
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.demo-intro h1 {
+  font-size: clamp(38px, 6vw, 56px);
+  margin: 8px 0 14px;
+}
+.demo-intro .response-form > .button {
+  justify-self: start;
+}
+.response-form label.demo-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.demo-check button[role="checkbox"] {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: white;
+}
+.demo-check button[role="checkbox"][data-state="checked"] {
+  background: var(--acid);
+  color: var(--ink);
+}
+.demo-check button[role="checkbox"]:focus-visible {
+  outline: 3px solid var(--electric);
+  outline-offset: 3px;
+}
+.personal-result .demo-result-title {
+  font:
+    400 30px/1.2 Anton,
+    Impact,
+    sans-serif;
+  margin: 8px 0;
+}
+.demo-shell .question-title:focus {
+  outline: none;
+}
+.demo-shell .question-title:focus-visible {
+  outline: 3px solid var(--electric);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+.demo-ranking {
+  margin-top: 26px;
+}
+.demo-ranking h3 {
+  font-size: 24px;
+  margin: 0 0 10px;
+}
+.demo-next {
+  margin: 28px auto 0;
+  max-width: 620px;
+  padding: 22px;
+  background: var(--acid);
+  border: 3px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.demo-next-line {
+  margin: 0 0 14px;
+  font:
+    400 30px/1.2 Anton,
+    Impact,
+    sans-serif;
+}
+.demo-actions {
+  justify-content: center;
+}
+.final-panel h2:focus {
+  outline: none;
+}
+@media (max-width: 600px) {
+  .demo-shell .panel {
+    padding: 22px 16px;
+  }
+  .demo-actions .button {
+    width: 100%;
+  }
+  .demo-intro .response-form > .button {
+    justify-self: stretch;
+  }
+}
+.ai-console {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* End of the demo: a pink marker crosses out each fictional player, one after the other. Without motion
+   the names are simply shown crossed out. */
+.demo-podium .podium-player:not(.is-me) .podium-label {
+  position: relative;
+  opacity: 0.6;
+}
+.demo-podium .podium-player:not(.is-me) .podium-label::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  top: 50%;
+  height: 5px;
+  margin-top: -2px;
+  border-radius: 6px;
+  background: var(--pink);
+  transform-origin: left center;
+  rotate: -4deg;
+  animation: marker-strike 0.35s cubic-bezier(0.6, 0, 0.3, 1) both;
+  animation-delay: calc(0.8s + var(--strike, 0) * 0.35s);
+}
+.demo-podium .podium-player:not(.is-me):nth-child(2) .podium-label::after {
+  --strike: 1;
+}
+.demo-podium .podium-player:not(.is-me):nth-child(3) .podium-label::after {
+  --strike: 2;
+}
+@keyframes marker-strike {
+  from {
+    transform: scaleX(0);
+  }
+}

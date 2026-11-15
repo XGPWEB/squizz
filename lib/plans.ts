@@ -63,7 +63,7 @@ export const PLANS: Record<Plan, PlanLimits> = {
     label: "Premium annuel",
     price: 310,
     period: "an",
-    pitch: "Pour les événements et les grandes organisations, toute l’année.",
+    pitch: "Jusqu’à 80 joueurs, toute l’année, en équipe.",
     maxQuizzes: 50,
     maxPlayersPerGame: 80,
     maxMembers: 10,
@@ -128,13 +128,21 @@ export const isPaid = (plan: Plan) => plan !== "FREE";
 /** « 15 € / mois », « 0 € ». */
 export const priceLabel = (p: PlanLimits) => `${p.price} €${p.period ? ` / ${p.period}` : ""}`;
 
+/** « 2 animateurs inclus » : every member of the organisation can host games (administrators too). */
+export const seatsLabel = (p: PlanLimits) =>
+  p.maxMembers === null
+    ? "Animateurs illimités"
+    : `${p.maxMembers} animateur${p.maxMembers > 1 ? "s" : ""} inclus`;
+
 export const sizeLabel = (bytes: number) => (bytes >= GB ? `${bytes / GB} Go` : `${bytes / MB} Mo`);
 
-/** « 5 quiz, 15 joueurs par partie, 2 membres, 250 Mo de médias » — used in emails and summaries. */
+/** « 5 quiz, 15 joueurs par partie, 2 animateurs, 250 Mo de médias » — used in emails and summaries. */
 export const limitsSummary = (p: PlanLimits) =>
   [
     p.maxQuizzes === null ? "quiz illimités" : `${p.maxQuizzes} quiz`,
     `${p.maxPlayersPerGame} joueurs par partie`,
-    p.maxMembers === null ? "membres illimités" : `${p.maxMembers} membre${p.maxMembers > 1 ? "s" : ""}`,
+    p.maxMembers === null
+      ? "animateurs illimités"
+      : `${p.maxMembers} animateur${p.maxMembers > 1 ? "s" : ""}`,
     `${sizeLabel(p.mediaBytes)} de médias`,
   ].join(", ");

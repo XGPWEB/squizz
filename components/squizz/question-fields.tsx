@@ -21,6 +21,7 @@ import {
 } from "@/lib/question";
 import { Choice } from "./settings";
 import { MediaEditor, PinImage } from "./media";
+import { onRadioKeys } from "@/lib/client/radio-group";
 
 /**
  * The fields of one quiz step, shown the same way in the editor and in the creation window.
@@ -498,11 +499,12 @@ function WheelEditor({ q, patch }: { q: Question; patch: (value: Partial<Questio
   return (
     <section className="answer-editor wheel-editor">
       <h3>Ce que la roue tire au sort</h3>
-      <div className="wheel-modes" role="radiogroup" aria-label="Contenu de la roue">
+      <div className="wheel-modes" role="radiogroup" onKeyDown={onRadioKeys} aria-label="Contenu de la roue">
         <button
           type="button"
           role="radio"
           aria-checked={!q.options.length}
+          tabIndex={!q.options.length ? 0 : -1}
           className={!q.options.length ? "on" : ""}
           onClick={() => {
             setText("");
@@ -516,6 +518,7 @@ function WheelEditor({ q, patch }: { q: Question; patch: (value: Partial<Questio
           type="button"
           role="radio"
           aria-checked={!!q.options.length}
+          tabIndex={!!q.options.length ? 0 : -1}
           className={q.options.length ? "on" : ""}
           onClick={() => {
             if (q.options.length) return;

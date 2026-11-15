@@ -3,6 +3,7 @@ import { Dialog } from "radix-ui";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import { Check, Copy, X } from "lucide-react";
+import { onRadioKeys } from "@/lib/client/radio-group";
 
 /**
  * A self-paced link, once made: its address, a QR code to scan and a copy button. `days` offers the
@@ -69,13 +70,14 @@ export function SoloLinkDialog({
               arrivent dans l’onglet Résultats au fur et à mesure.
             </p>
             {days && !link && (
-              <div className="solo-days" role="radiogroup" aria-label="Durée du lien">
+              <div className="solo-days" role="radiogroup" onKeyDown={onRadioKeys} aria-label="Durée du lien">
                 {[1, 7, 30].map((d) => (
                   <button
                     key={d}
                     type="button"
                     role="radio"
                     aria-checked={span === d}
+                    tabIndex={span === d ? 0 : -1}
                     className={span === d ? "on" : ""}
                     onClick={() => setSpan(d)}
                   >

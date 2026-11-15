@@ -3,9 +3,19 @@ import { Dialog } from "radix-ui";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { FileText, KeyRound, Sparkles, Trash2, X } from "lucide-react";
-import { AI_COUNTS, AI_LEVELS, AI_MAX_PDF, AI_MAX_TEXT, AI_TYPES, type AiType } from "@/lib/ai-quiz";
+import {
+  AI_CONSOLES,
+  AI_COUNTS,
+  AI_LEVELS,
+  AI_MAX_PDF,
+  AI_MAX_TEXT,
+  AI_PREREQUISITE,
+  AI_TYPES,
+  type AiType,
+} from "@/lib/ai-quiz";
 import type { Question } from "@/lib/question";
 import { gameApi, getJson, newClientKey, postJson, withRetry } from "@/lib/client/api";
+import { onRadioKeys } from "@/lib/client/radio-group";
 
 type Settings = {
   ready: boolean;
@@ -54,17 +64,22 @@ function AiConnect({ settings, onSaved }: { settings: Settings; onSaved: (s: Set
       }}
     >
       <p>
-        L’IA fonctionne avec le compte de votre organisation : les questions sont générées par Claude ou
-        ChatGPT, et facturées par eux sur ce compte. La clé est chiffrée dès son enregistrement et n’est plus
-        jamais affichée.
+        Collez une <strong>clé API</strong> Claude ou ChatGPT : le fournisseur la{" "}
+        <strong>facture à l’usage</strong> (un abonnement Plus ou Pro ne suffit pas). Créez-la sur la{" "}
+        <a className="ai-console" href={AI_CONSOLES[provider]} target="_blank" rel="noopener noreferrer">
+          console {provider === "anthropic" ? "Anthropic" : "OpenAI"}
+        </a>
+        .
       </p>
-      <div className="ai-providers" role="radiogroup" aria-label="Fournisseur">
+      <p className="hint">Clé chiffrée, jamais réaffichée.</p>
+      <div className="ai-providers" role="radiogroup" onKeyDown={onRadioKeys} aria-label="Fournisseur">
         {(["anthropic", "openai"] as const).map((p) => (
           <button
             key={p}
             type="button"
             role="radio"
             aria-checked={provider === p}
+            tabIndex={provider === p ? 0 : -1}
             className={provider === p ? "on" : ""}
             onClick={() => setProvider(p)}
           >
@@ -216,10 +231,7 @@ export function AiDialog({ disabled }: { disabled: boolean }) {
               </p>
             )}
             {settings?.ready && !settings.provider && !settings.canEdit && (
-              <p className="info-box">
-                Votre organisation n’a pas encore connecté de compte Claude ou ChatGPT : demandez-le à un
-                administrateur.
-              </p>
+              <p className="info-box">{AI_PREREQUISITE.member}</p>
             )}
             {settings?.ready && settings.canEdit && (!settings.provider || editing) && (
               <AiConnect
