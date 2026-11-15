@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AnchorLink } from "@/components/site/anchor-link";
 import { Brand } from "@/components/site/brand";
 import { CookieSettingsLink } from "@/components/site/cookie-consent";
+import { AUDIENCES } from "@/lib/audiences";
 import { APP_VERSION } from "@/lib/version";
 
 const columns = [
@@ -15,6 +16,10 @@ const columns = [
       { href: "/alternative-kahoot", label: "Alternative à Kahoot!" },
       { href: "/inscription", label: "Créer un compte" },
     ],
+  },
+  {
+    title: "Pour qui ?",
+    links: AUDIENCES.map((a) => ({ href: `/pour/${a.slug}`, label: a.name })),
   },
   {
     title: "Informations",

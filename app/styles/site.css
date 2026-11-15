@@ -56,7 +56,7 @@ a.button {
 }
 .footer-main {
   display: grid;
-  grid-template-columns: 1.6fr repeat(3, 1fr);
+  grid-template-columns: 1.6fr repeat(4, 1fr);
   gap: 32px;
   padding: 34px;
   background: var(--cream);
@@ -191,7 +191,7 @@ a.button {
 }
 @media (max-width: 1000px) {
   .footer-main {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
   .footer-intro {
     grid-column: 1 / -1;
@@ -2241,4 +2241,59 @@ label.cookie-service {
   .demo-board {
     margin-right: 0;
   }
+}
+
+/* Pages by usage (/pour/…): a short heading, three points, the quizzes that fit. */
+.usage-cta {
+  justify-content: center;
+  margin-top: 24px;
+}
+.usage-points {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin: 0 0 50px;
+  padding: 0;
+  list-style: none;
+}
+.usage-points li {
+  padding: 20px 22px;
+  background: white;
+  border: 3px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.usage-points li:nth-child(1) {
+  background: var(--acid);
+}
+.usage-points li:nth-child(2) {
+  background: #ffc4e3;
+}
+.usage-points h2 {
+  margin: 0 0 6px;
+  font-size: 24px;
+}
+.usage-points p {
+  margin: 0;
+  line-height: 1.5;
+}
+.usage-others {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 10px 0 30px;
+  font-weight: 700;
+}
+.usage-others a {
+  padding: 6px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: white;
+  color: var(--ink);
+  text-decoration: none;
+}
+.usage-others a:hover {
+  background: var(--acid);
 }

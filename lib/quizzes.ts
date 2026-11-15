@@ -10,6 +10,8 @@ import { cybersecurite } from "./originals/cybersecurite";
 import { gastronomie } from "./originals/gastronomie";
 import { planete } from "./originals/planete";
 import { corpsHumain } from "./originals/corps-humain";
+import { republique } from "./originals/republique";
+import { seminar } from "./originals/seminaire";
 import {
   kickoff,
   meeting,
@@ -131,6 +133,15 @@ export const demos: Quiz[] = [
     color: "orange",
     desc: "Squelette à pin’s, organes à relier, carte de chaleur anonyme : la santé au travail en mode jeu.",
     questions: corpsHumain,
+  },
+  {
+    id: "republique",
+    title: "La République en questions",
+    tag: "CITOYENNETÉ",
+    symbol: "★",
+    color: "purple",
+    desc: "Devise, élections, collectivités, lieux du pouvoir : les classiques du citoyen, puis la parole à la salle.",
+    questions: republique,
   },
   {
     id: "general",
@@ -265,6 +276,16 @@ export const demos: Quiz[] = [
     desc: "Le bateau de l’équipe, ce qui pousse, ce qui freine, le chantier prioritaire : un bilan anonyme.",
     usage: "bilan",
     questions: retro,
+  },
+  {
+    id: "modele-seminaire",
+    title: "Séminaire : ouverture et clôture",
+    tag: "SÉMINAIRE",
+    symbol: "✺",
+    color: "green",
+    desc: "Attentes en nuage de mots, énergie du jour, questions anonymes, satisfaction (NPS) et tirage au sort du lot.",
+    usage: "reunion",
+    questions: seminar,
   },
   {
     id: "modele-fin-annee",

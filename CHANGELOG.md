@@ -2,6 +2,17 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.35.0] — 2026-11-15
+
+### Site
+
+- Huit pages par usage, chacune avec ses quiz prêts à lancer : entreprises (style sobre à vos couleurs), collectivités, associations, services jeunesse, formateurs, petites équipes, particuliers et agences événementielles (`/pour/…`). Titre et description écrits pour les recherches de chaque public, réponse courte en tête de FAQ pour les assistants IA, données structurées, sitemap, `/llms.txt` et colonne « Pour qui ? » dans le pied de page.
+
+### Bibliothèque
+
+- Nouvel Original **La République en questions** : devise, mandat municipal, régions, collectivités, droit de vote, lieux du pouvoir, puis deux questions d’avis anonymes pour consulter la salle.
+- Nouveau modèle **Séminaire : ouverture et clôture** : attentes, énergie, questions anonymes, satisfaction (NPS) et tirage au sort du lot.
+
 ## [1.34.3] — 2026-11-15
 
 ### Tests

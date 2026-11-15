@@ -1,6 +1,7 @@
 import { ADVANTAGES, FAQ, FEATURES, QUESTION_COUNT, TYPE_DETAILS, TYPE_FAMILIES, SUMMARY } from "@/lib/seo";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { EVENT_PASS, PLAN_KEYS, PLANS, limitsSummary, priceLabel } from "@/lib/plans";
+import { AUDIENCES } from "@/lib/audiences";
 
 export const dynamic = "force-static";
 
@@ -24,6 +25,10 @@ ${PLAN_KEYS.map((k) => `- ${PLANS[k].label} (${priceLabel(PLANS[k])}) : ${limits
 - ${EVENT_PASS.label} (${EVENT_PASS.price} € en une fois) : ${EVENT_PASS.days} jours, jusqu’à ${PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs par partie, sans abonnement.
 
 Offres payantes sans engagement, résiliables à tout moment. TVA non applicable, art. 293 B du CGI.
+
+## Pour qui
+
+${AUDIENCES.map((a) => `### ${a.name} (${site}/pour/${a.slug})\n\n${a.summary}`).join("\n\n")}
 
 ## Types de questions
 
@@ -50,6 +55,8 @@ ${FAQ.map(({ q, a }) => `### ${q}\n\n${a}`).join("\n\n")}
 - [Fonctionnalités](${site}/fonctionnalites) : chaque type de question et chaque fonction, en détail
 - [Alternative à Kahoot!](${site}/alternative-kahoot) : comparatif avec Kahoot!, Mentimeter et Wooclap
 - [Tarifs](${site}/tarifs) : offres Gratuit, Essentiel, Pro et Premium annuel
+- [Démo jouable](${site}/demo) : une partie d’essai dans le navigateur, sans inscription
+${AUDIENCES.map((a) => `- [${a.name}](${site}/pour/${a.slug}) : ${a.description}`).join("\n")}
 - [Rejoindre une partie](${site}/jouer) : saisir le code de la partie
 - [Créer un espace](${site}/inscription)
 - [Confidentialité](${site}/confidentialite) : hébergement et durées de conservation
