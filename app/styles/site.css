@@ -182,6 +182,13 @@ a.button {
   text-decoration-color: var(--pink);
   text-decoration-thickness: 2px;
 }
+/* The back-to-top sticker is fixed 22px from the right edge. Once the footer reaches that edge
+   (tablets, small laptops), keep the bottom band's text clear of it. */
+@media (max-width: 1360px) {
+  .footer-bottom {
+    padding-right: 96px;
+  }
+}
 @media (max-width: 1000px) {
   .footer-main {
     grid-template-columns: repeat(3, 1fr);
@@ -203,7 +210,7 @@ a.button {
     grid-column: 1 / -1;
   }
   .footer-bottom {
-    padding: 14px 20px;
+    padding: 14px 72px 14px 20px;
   }
 }
 @media (max-width: 700px) {
