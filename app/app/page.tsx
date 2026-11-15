@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { demos } from "@/lib/quizzes";
 import { offerOf, orgLimits } from "@/lib/plans";
 import { listQuizzes } from "@/lib/server/quiz-store";
+import { finishedReportWhere, finishedRoomWhere } from "@/lib/first-game";
 import { Library } from "./library";
 
 export const metadata: Metadata = { title: "Mes quiz" };
@@ -21,14 +22,15 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
   const quizzes = await listQuizzes(member);
   const limits = orgLimits(member.organization);
   const count = await prisma.quiz.count({ where: { organizationId: member.organizationId } });
-  // A game leaves a report (kept 12 months) or, for the first day, its room: either means no more guide.
-  const played =
+  // The guide stays until a live game has been played to its end (lib/first-game.ts): a waiting room or a
+  // game left halfway keeps it. Reports are kept 12 months, finished rooms for a day.
+  const finished =
     (await prisma.gameReport.findFirst({
-      where: { organizationId: member.organizationId },
+      where: finishedReportWhere(member.organizationId),
       select: { id: true },
     })) ??
     (await prisma.room.findFirst({
-      where: { organizationId: member.organizationId },
+      where: finishedRoomWhere(member.organizationId),
       select: { code: true },
     }));
   const { ok } = await searchParams;
@@ -40,7 +42,7 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
       quota={{ used: count, max: limits.maxQuizzes, players: limits.maxPlayersPerGame }}
       notice={ok === "cree" ? "created" : ok === "modifie" ? "updated" : ""}
       userId={user.id}
-      firstGame={!played}
+      firstGame={!finished}
     />
   );
 }

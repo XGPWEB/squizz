@@ -2129,3 +2129,116 @@ label.cookie-service {
   font-weight: 800;
   font-size: 15px;
 }
+
+/* Home page: the demo band under « Comment ça marche ? » — a short title, one button, the player's screen. */
+.demo-teaser {
+  display: grid;
+  grid-template-columns: 1fr minmax(260px, 380px);
+  align-items: center;
+  gap: 40px;
+  margin: 10px 0 60px;
+  padding: 36px 44px;
+  background: var(--pink);
+  border: 3px solid var(--ink);
+  border-radius: 26px;
+  box-shadow: 7px 7px 0 var(--ink);
+}
+.demo-teaser .eyebrow {
+  display: inline-block;
+  margin: 0;
+  padding: 6px 10px;
+  background: var(--ink);
+  color: var(--acid);
+  border-radius: 5px;
+  transform: rotate(-2deg);
+}
+.demo-teaser h2 {
+  margin: 16px 0 22px;
+  font-size: clamp(34px, 4.2vw, 52px);
+  line-height: 1.1;
+}
+.demo-shot {
+  position: relative;
+  margin: 0;
+}
+.demo-phone {
+  padding: 16px 14px 6px;
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 28px;
+  box-shadow: 6px 6px 0 var(--ink);
+  transform: rotate(2deg);
+}
+.demo-phone-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ink);
+  font-size: 13px;
+}
+.demo-phone-top .timer {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+.demo-phone-question {
+  margin: 14px 4px 0;
+  text-align: center;
+  font:
+    400 21px/1.25 Anton,
+    Impact,
+    sans-serif;
+}
+.demo-phone .answers {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 14px 0;
+}
+.demo-phone .answer {
+  min-height: 58px;
+  padding: 10px 12px;
+  gap: 8px;
+  font-size: 16px;
+  border-radius: 12px;
+}
+.demo-phone .answer-letter {
+  padding: 4px 6px;
+  font-size: 12px;
+}
+.demo-phone .answer svg {
+  margin-left: auto;
+}
+.demo-board {
+  position: relative;
+  width: 82%;
+  margin: -12px -14px 0 auto;
+  box-shadow: 5px 5px 0 var(--ink);
+  transform: rotate(-2deg);
+}
+.demo-board .score-row {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.demo-board .rank {
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
+  font-size: 13px;
+}
+.demo-board .score-end {
+  gap: 8px;
+  font-size: 12px;
+}
+@media (max-width: 800px) {
+  .demo-teaser {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 26px 18px 30px;
+  }
+  .demo-teaser .button {
+    width: 100%;
+  }
+  .demo-board {
+    margin-right: 0;
+  }
+}

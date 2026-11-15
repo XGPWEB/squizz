@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Building2, GraduationCap, PartyPopper, QrCode, Sparkles, Trophy, Zap } from "lucide-react";
 import { FormatsPreview, MomentsFold } from "@/components/site/features";
 import { JoinBox } from "@/components/site/join-box";
+import { DemoTeaser } from "@/components/site/demo-teaser";
 import { ContactSection } from "@/components/site/contact-section";
 import { Marquee } from "@/components/site/marquee";
 import { JsonLd } from "@/components/site/json-ld";
@@ -162,6 +163,8 @@ export default function HomePage() {
           </li>
         </ol>
       </section>
+
+      <DemoTeaser />
 
       <section id="fonctionnalites" aria-labelledby="features-title">
         <div className="section-heading" data-reveal="left">

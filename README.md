@@ -191,7 +191,7 @@ Intégration : `game-flow`, `rich-game-flow`, `game-live` (plafond de joueurs en
 
 Ils tournent sur le serveur de développement : le préchargement des pages, propre au site de production, n'est pas exercé.
 
-**Charge** (local uniquement, base jetable, build de production à jour) : `LOAD_CLIENTS=3 bash scripts/e2e.sh load-multiclient` (de 1 à 20 salles de 80 joueurs). Conditions dégradées optionnelles : `LOAD_BURST=1` (réponses simultanées), `LOAD_LATENCY_MS=400`, `LOAD_LOSS=0.05` (réponses perdues puis renvoyées), `LOAD_RECONNECT=0.1` (coupures puis retours). Résultats dans `audit/load-<n>x80[-degraded].json` ; voir [AUDIT-CHARGE-2026-11-15.md](AUDIT-CHARGE-2026-11-15.md).
+**Charge** (local uniquement, base jetable, build de production à jour) : `LOAD_CLIENTS=3 bash scripts/e2e.sh load-multiclient` (de 1 à 20 salles de 80 joueurs). Conditions dégradées optionnelles, chacune vérifiée à part : `LOAD_BURST=1` (réponses simultanées), `LOAD_LATENCY_MS=400`, `LOAD_DUPLICATE=0.05` (doublons ignorés), `LOAD_LOSS=0.05` (retour perdu après traitement, relecture de la partie), `LOAD_RECONNECT=0.1` (coupure pendant la vague, réponse comptée une fois au retour), `LOAD_LATE=1` (réponses après fermeture, rejetées). Résultats dans `audit/load-<n>x80[-degraded].json` ; voir [AUDIT-CHARGE-2026-11-15.md](AUDIT-CHARGE-2026-11-15.md).
 
 **Intégration continue** (`.github/workflows/ci.yml`) : à chaque envoi sur `main`/`plateforme` et pour chaque pull request, types, lint, formatage et tests unitaires, puis les scénarios d'intégration et les parcours en navigateur sur un PostgreSQL jetable (traces Playwright gardées 7 jours en cas d'échec).
 
@@ -235,6 +235,6 @@ gunzip -c /opt/backups/squizz-db/pre-deploy-AAAAMMJJ-HHMMSS.sql.gz | psql "$U"  
 tar -xzf /opt/backups/squizz-db/squizz-media-AAAAMMJJ-HHMM.tar.gz -C /opt && chown -R squizz:squizz /opt/squizz-media
 ```
 
-Tester d'abord la restauration dans une base jetable : `bash scripts/restore-drill.sh <sauvegarde.sql.gz>` (depuis une copie du dépôt ; `MEDIA_ARCHIVE=<médias.tar.gz>` pour l'archive des médias) restaure dans `squizz_restore_drill`, vérifie tables, migrations et nombres de lignes, puis supprime cette base. Voir [AUDIT-CHARGE-2026-11-15.md](AUDIT-CHARGE-2026-11-15.md) : l'exercice a réussi en local, pas encore sur une sauvegarde de production.
+Tester d'abord la restauration dans une base jetable : `bash scripts/restore-drill.sh <sauvegarde.sql.gz>` (depuis une copie du dépôt ; `MEDIA_ARCHIVE=<médias.tar.gz>` pour l'archive des médias) restaure dans une base nouvelle au nom unique (jamais une base existante), vérifie tables, migrations par leur nom et, selon `RESTORE_DRILL_COMPARE` (`strict`, `live`, `none`), les nombres de lignes, puis supprime la seule base qu'il a créée. « RÉUSSI » seulement si tout est vérifié ; « PARTIEL » (code 3) sinon. Voir [AUDIT-CHARGE-2026-11-15.md](AUDIT-CHARGE-2026-11-15.md) : l'exercice a réussi en local, pas encore sur une sauvegarde de production.
 
 **Super-admin** : `cd /opt/squizz/app && set -a && . /opt/squizz-secrets.env && set +a && /opt/node24/bin/node create-super-admin.mjs contact@pressweb.fr` affiche un lien valable 1 heure pour choisir le mot de passe.

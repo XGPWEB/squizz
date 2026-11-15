@@ -2,6 +2,22 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.34.2] — 2026-11-15
+
+### Accueil
+
+- La démo a sa bande sous « Comment ça marche ? » : l’écran d’un joueur (question corrigée, classement) et un bouton « Essayer une démo ». Le haut de l’accueil ne change pas.
+- Le code tapé dans « T’es dans la partie ? » avant la fin du chargement de la page est bien envoyé (il arrivait vide sur /jouer).
+
+### Bibliothèque
+
+- Le guide « Premiers pas » ne disparaît plus à la simple création d’une salle : il reste jusqu’à une première partie en direct réellement terminée, ou jusqu’à ce qu’on le masque.
+
+### Fiabilité
+
+- Exercice de restauration sécurisé : entrées vérifiées avant toute commande sur une base, base au nom unique jamais préexistante, seule la base créée est supprimée, migrations comparées par leur nom, comparaison stricte ou déclarée non validée ; « RÉUSSI » seulement si tout est vérifié.
+- Test de charge : doublon, retour de réponse perdu, coupure pendant la vague et réponse tardive testés séparément (3 × 80 joueurs en local, 0 erreur) ; parcours navigateur de coupure réseau sans double score ([AUDIT-CHARGE-2026-11-15.md](AUDIT-CHARGE-2026-11-15.md)).
+
 ## [1.34.1] — 2026-11-15
 
 ### Correctifs

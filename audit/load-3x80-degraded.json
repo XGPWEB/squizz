@@ -7,18 +7,27 @@
   "conditions": {
     "burst": true,
     "latency_ms": 400,
+    "duplicate": 0.05,
     "loss": 0.05,
-    "reconnect": 0.1
+    "reconnect": 0.1,
+    "late": true
   },
   "events": {
-    "lost_answers_resent": 41,
-    "offline_windows": 85
+    "duplicates_sent": 30,
+    "duplicates_ignored": 30,
+    "responses_lost": 36,
+    "lost_found_on_reread": 36,
+    "lost_resent": 0,
+    "offline_windows": 60,
+    "reconnected_answers_counted_once": 60,
+    "late_answers_sent": 18,
+    "late_answers_rejected": 18
   },
   "polling_delay_ms": 900,
-  "load_seconds": 151,
-  "total_seconds": 155,
-  "response_MB": 261,
-  "polling_requests_per_second": 214,
+  "load_seconds": 137,
+  "total_seconds": 140,
+  "response_MB": 220,
+  "polling_requests_per_second": 210.2,
   "summary": {
     "join": {
       "requests": 240,
@@ -28,81 +37,139 @@
         "200": 240
       },
       "p50_ms": 5,
-      "p95_ms": 255,
-      "p99_ms": 318,
-      "max_ms": 347
-    },
-    "player_poll": {
-      "requests": 32005,
-      "ok": 32005,
-      "errors": 0,
-      "statuses": {
-        "200": 32005
-      },
-      "p50_ms": 1,
-      "p95_ms": 6,
-      "p99_ms": 22,
-      "max_ms": 289
+      "p95_ms": 178,
+      "p99_ms": 276,
+      "max_ms": 295
     },
     "library": {
-      "requests": 87,
-      "ok": 87,
+      "requests": 78,
+      "ok": 78,
       "errors": 0,
       "statuses": {
-        "200": 87
+        "200": 78
       },
-      "p50_ms": 13,
-      "p95_ms": 34,
-      "p99_ms": 131,
-      "max_ms": 131
+      "p50_ms": 11,
+      "p95_ms": 23,
+      "p99_ms": 40,
+      "max_ms": 40
+    },
+    "player_poll": {
+      "requests": 28336,
+      "ok": 28336,
+      "errors": 0,
+      "statuses": {
+        "200": 28336
+      },
+      "p50_ms": 1,
+      "p95_ms": 4,
+      "p99_ms": 9,
+      "max_ms": 285
     },
     "host_action": {
-      "requests": 12,
-      "ok": 12,
+      "requests": 21,
+      "ok": 21,
       "errors": 0,
       "statuses": {
-        "200": 12
+        "200": 21
       },
-      "p50_ms": 19,
-      "p95_ms": 49,
-      "p99_ms": 49,
-      "max_ms": 49
+      "p50_ms": 9,
+      "p95_ms": 29,
+      "p99_ms": 35,
+      "max_ms": 35
     },
     "host_poll": {
-      "requests": 408,
-      "ok": 408,
+      "requests": 356,
+      "ok": 356,
       "errors": 0,
       "statuses": {
-        "200": 408
+        "200": 356
       },
       "p50_ms": 2,
-      "p95_ms": 9,
-      "p99_ms": 34,
-      "max_ms": 224
-    },
-    "answer": {
-      "requests": 720,
-      "ok": 720,
-      "errors": 0,
-      "statuses": {
-        "200": 720
-      },
-      "p50_ms": 4,
-      "p95_ms": 21,
-      "p99_ms": 28,
-      "max_ms": 36
-    },
-    "answer_resent": {
-      "requests": 41,
-      "ok": 41,
-      "errors": 0,
-      "statuses": {
-        "200": 41
-      },
-      "p50_ms": 3,
       "p95_ms": 6,
       "p99_ms": 17,
-      "max_ms": 17
+      "max_ms": 220
+    },
+    "answer": {
+      "requests": 606,
+      "ok": 606,
+      "errors": 0,
+      "statuses": {
+        "200": 606
+      },
+      "p50_ms": 4,
+      "p95_ms": 25,
+      "p99_ms": 45,
+      "max_ms": 52
+    },
+    "answer_response_lost": {
+      "requests": 36,
+      "ok": 36,
+      "errors": 0,
+      "statuses": {},
+      "p50_ms": 4,
+      "p95_ms": 27,
+      "p99_ms": 48,
+      "max_ms": 48
+    },
+    "reread_after_loss": {
+      "requests": 36,
+      "ok": 36,
+      "errors": 0,
+      "statuses": {
+        "200": 36
+      },
+      "p50_ms": 1,
+      "p95_ms": 5,
+      "p99_ms": 7,
+      "max_ms": 7
+    },
+    "answer_duplicate": {
+      "requests": 30,
+      "ok": 30,
+      "errors": 0,
+      "statuses": {
+        "200": 30
+      },
+      "p50_ms": 3,
+      "p95_ms": 8,
+      "p99_ms": 12,
+      "max_ms": 12
+    },
+    "reconnect_state": {
+      "requests": 120,
+      "ok": 120,
+      "errors": 0,
+      "statuses": {
+        "200": 120
+      },
+      "p50_ms": 1,
+      "p95_ms": 72,
+      "p99_ms": 216,
+      "max_ms": 259
+    },
+    "answer_after_reconnect": {
+      "requests": 60,
+      "ok": 60,
+      "errors": 0,
+      "statuses": {
+        "200": 60
+      },
+      "p50_ms": 5,
+      "p95_ms": 67,
+      "p99_ms": 272,
+      "max_ms": 272
+    },
+    "answer_late": {
+      "requests": 18,
+      "ok": 18,
+      "errors": 0,
+      "statuses": {
+        "400": 18
+      },
+      "p50_ms": 5,
+      "p95_ms": 12,
+      "p99_ms": 12,
+      "max_ms": 12
     },
     "validation": {
       "requests": 12,

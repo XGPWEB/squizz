@@ -58,9 +58,38 @@ test("démo : depuis l’accueil, une partie complète au clavier, sans aucun ap
   expect(api).toEqual([]);
 });
 
-test("accueil : la carte « T’es dans la partie ? » mène toujours à la partie", async ({ page }) => {
-  await page.goto("/");
+test("accueil : la carte « T’es dans la partie ? » envoie le code tapé, même avant la fin du chargement", async ({
+  page,
+}) => {
+  // The page's scripts arrive late, as on a phone with a weak connection: the code is typed into the field
+  // before React takes over, and sent once it has (what failed in CI on WebKit: « /jouer?code= »).
+  await page.route("**/_next/static/**/*.js", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    await route.fallback();
+  });
+  await page.goto("/", { waitUntil: "commit" });
   await page.getByLabel("Code de la partie").fill("123456");
+  await page.waitForLoadState("load");
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 300))));
+  await expect(page.getByLabel("Code de la partie")).toHaveValue("123456");
   await page.getByRole("button", { name: "Rejoindre la partie" }).click();
   await expect(page).toHaveURL(/\/jouer\?code=123456$/);
+});
+
+test("accueil : la bande « Essayer une démo » montre l’écran du joueur et s’ouvre au clavier", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const band = page.getByRole("region", { name: "Jouez une partie, là, maintenant." });
+  await expect(band.getByRole("img", { name: /Écran d’un joueur/ })).toBeVisible();
+  const button = band.getByRole("link", { name: "Essayer une démo" });
+  await button.focus();
+  await expect(button).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/demo$/);
+  // The first screen keeps its own two calls to action and the join card, unchanged.
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "Rejoindre la partie" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Créer mon espace gratuit" }).first()).toBeVisible();
 });
