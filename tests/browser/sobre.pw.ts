@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { newAccount, plainHttp, signIn, test } from "./helpers";
+import { newAccount, onScreen, plainHttp, signIn, test } from "./helpers";
 
 test("thème sobre : le joueur est vouvoyé, du lobby à son résultat", async ({ page, request, browser }) => {
   const account = await newAccount(request);
@@ -36,13 +36,17 @@ test("thème sobre : le joueur est vouvoyé, du lobby à son résultat", async (
   await expect(player.getByText("Vous êtes bien inscrit·e à la partie.")).toBeVisible();
   await expect(player.getByText("Vous êtes le premier joueur arrivé.")).toBeVisible();
 
+  await onScreen(page);
   await page.getByRole("button", { name: "Lancer le quiz" }).click();
+  await onScreen(player);
   await expect(player.getByText("Sélectionnez une réponse.")).toBeVisible();
   await player.getByRole("button", { name: /Paris/ }).click();
+  await onScreen(page);
   await page
     .getByRole("button", { name: /Voir le podium|Afficher la réponse|Question suivante/ })
     .first()
     .click();
+  await onScreen(player);
   await expect(
     player.getByText(/VOTRE RÉSULTAT|Vous êtes en tête|Vous ouvrez le classement/).first(),
   ).toBeVisible();

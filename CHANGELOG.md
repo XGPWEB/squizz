@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.34.3] — 2026-11-15
+
+### Tests
+
+- Parcours navigateur à deux écrans (animateur et téléphone) fiabilisés : la fenêtre utilisée ou observée reçoit le focus avant chaque action. En CI, WebKit avait figé le téléphone sur « Prêt ? 1 » (plus aucune requête ni décompte) pendant que l’écran de l’animateur avait le focus. Aucun changement dans l’application.
+
 ## [1.34.2] — 2026-11-15
 
 ### Accueil

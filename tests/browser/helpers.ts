@@ -142,3 +142,11 @@ export async function fakeStripePages(page: Page) {
  * refresh asked from now on is cut short, so a page that still refreshes while leaving never gets to Stripe.
  */
 export const cutRefreshes = (page: Page) => page.route(/[?&]_rsc=/, (route) => route.abort());
+
+/**
+ * The host's screen and the phone are two windows of the same browser: before acting on one, or waiting for
+ * it to change, give it the focus, as two real devices each have theirs. WebKit slows the timers of a window
+ * without the focus; in CI the phone once stayed frozen on « Prêt ? 1 », its polling and its countdown
+ * stopped while the host's window went on.
+ */
+export const onScreen = (p: Page) => p.bringToFront();

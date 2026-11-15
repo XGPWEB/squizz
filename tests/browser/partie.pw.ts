@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { newAccount, plainHttp, signIn, test } from "./helpers";
+import { newAccount, onScreen, plainHttp, signIn, test } from "./helpers";
 
 test("une partie complète : l’animateur lance, un joueur rejoint sur téléphone, répond, podium", async ({
   page,
@@ -54,13 +54,18 @@ test("une partie complète : l’animateur lance, un joueur rejoint sur téléph
 
   await page.getByRole("button", { name: "Lancer le quiz" }).click();
   await expect(page.getByRole("heading", { name: "Capitale de la France ?" })).toBeVisible();
+  await onScreen(player);
   await player.getByRole("button", { name: /Paris/ }).click();
+  await onScreen(page);
   await page.getByRole("button", { name: "Question suivante" }).click();
   await expect(page.getByRole("heading", { name: "Capitale des Gaules ?" })).toBeVisible();
+  await onScreen(player);
   await player.getByRole("button", { name: /Lyon/ }).click();
+  await onScreen(page);
   await page.getByRole("button", { name: "Voir le podium" }).click();
 
   await expect(page.getByLabel("Podium final")).toContainText("Capitaine Curieux");
+  await onScreen(player);
   await expect(player.getByLabel("Podium final")).toContainText("Capitaine Curieux");
   await phone.close();
 });
