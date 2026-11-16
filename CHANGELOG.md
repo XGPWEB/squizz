@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.35.1] — 2026-11-16
+
+### Super-admin
+
+- « Trafic du site » dit de quand datent les chiffres : la période couverte (« du 09/11 au 15/11 », la carte s’arrête à hier) et l’heure de la réponse de Google, à l’heure de Paris. Un bandeau prévient si les chiffres ont plus de 30 minutes.
+
 ## [1.35.0] — 2026-11-15
 
 ### Site
