@@ -2301,6 +2301,33 @@ label.cookie-service {
   margin: 0;
   line-height: 1.5;
 }
+/* The moment each quiz is for: a handwritten sticker that wiggles when the card is hovered. */
+.usage-note {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  max-width: 70%;
+  padding: 6px 12px 5px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--cream);
+  box-shadow: 3px 3px 0 var(--ink);
+  font:
+    400 17px/1.15 "Permanent Marker",
+    cursive;
+  color: var(--electric);
+  transform: rotate(3deg);
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1.6);
+}
+.usage-quiz:hover .usage-note,
+.usage-quiz:focus-within .usage-note {
+  transform: rotate(-3deg) scale(1.08);
+}
+@media (prefers-reduced-motion: reduce) {
+  .usage-note {
+    transition: none;
+  }
+}
 .usage-others {
   display: flex;
   flex-wrap: wrap;

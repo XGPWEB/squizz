@@ -17,12 +17,18 @@ test("pages par usage : huit usages, chacun avec des quiz qui existent et une r�
     "agences-evenementielles",
   ]);
   for (const a of AUDIENCES) {
-    expect(a.quizzes.length, a.slug).toBeGreaterThanOrEqual(4);
-    for (const id of a.quizzes)
+    expect(a.quizzes.length, a.slug).toBe(6);
+    expect(a.quizHeading, a.slug).toMatch(/^Six quiz /);
+    for (const [id, note] of a.quizzes) {
       expect(
         demos.some((q) => q.id === id),
         `${a.slug} : ${id}`,
       ).toBe(true);
+      expect(note.length, `${a.slug} : ${id}`).toBeLessThanOrEqual(30);
+    }
+    expect(new Set(a.quizzes.map(([id]) => id)).size, a.slug).toBe(6);
+    // Long-tail questions for search and answer engines, on top of the short answer.
+    expect(a.faq.length, a.slug).toBeGreaterThanOrEqual(4);
     expect(a.title.length, a.slug).toBeLessThanOrEqual(70);
     expect(a.description.length, a.slug).toBeLessThanOrEqual(170);
     expect(a.points).toHaveLength(3);
@@ -30,6 +36,16 @@ test("pages par usage : huit usages, chacun avec des quiz qui existent et une r�
     expect(a.summary, a.slug).toMatch(/^SQuizz est une plateforme française/);
     expect(a.summary.length, a.slug).toBeLessThanOrEqual(600);
   }
+});
+
+test("pages par usage : chaque page a au moins un quiz fait pour elle, qui n’apparaît pas partout", () => {
+  const uses = new Map<string, number>();
+  for (const a of AUDIENCES) for (const [id] of a.quizzes) uses.set(id, (uses.get(id) ?? 0) + 1);
+  for (const a of AUDIENCES)
+    expect(
+      a.quizzes.some(([id]) => (uses.get(id) ?? 0) <= 2),
+      a.slug,
+    ).toBe(true);
 });
 
 test("pages par usage : les chiffres viennent de lib/plans.ts, jamais écrits à la main", () => {

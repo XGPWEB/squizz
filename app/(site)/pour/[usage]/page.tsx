@@ -9,7 +9,7 @@ import { COMPANY_INFO } from "@/lib/company-info";
 import { estimateLabel } from "@/lib/quiz-duration";
 import { demos } from "@/lib/quizzes";
 
-/** Only the four pages of lib/audiences.ts; any other address is a 404. */
+/** Only the pages of lib/audiences.ts; any other address is a 404. */
 export const dynamicParams = false;
 export const generateStaticParams = () => AUDIENCES.map((a) => ({ usage: a.slug }));
 
@@ -32,7 +32,9 @@ export async function generateMetadata({
 export default async function AudiencePage({ params }: { params: Promise<{ usage: string }> }) {
   const a = audienceOf((await params).usage);
   if (!a) notFound();
-  const quizzes = a.quizzes.flatMap((id) => demos.filter((q) => q.id === id));
+  const quizzes = a.quizzes.flatMap(([id, note]) =>
+    demos.filter((q) => q.id === id).map((quiz) => ({ quiz, note })),
+  );
   const others = AUDIENCES.filter((o) => o.slug !== a.slug);
   // The short factual answer first (GEO): visible in the FAQ and in its structured data.
   const faq = [{ q: `SQuizz convient-il aux ${a.name.toLowerCase()} ?`, a: a.summary }, ...a.faq];
@@ -66,16 +68,17 @@ export default async function AudiencePage({ params }: { params: Promise<{ usage
         <div className="section-heading" data-reveal="left">
           <div>
             <p className="eyebrow">PRÊTS À LANCER</p>
-            <h2 id="usage-quizzes">Des quiz qui vous attendent</h2>
+            <h2 id="usage-quizzes">{a.quizHeading}</h2>
           </div>
           <span className="hint">dans votre espace, gratuit</span>
         </div>
         <div className="quiz-grid" data-stagger="up">
-          {quizzes.map((q) => (
-            <article className="quiz-card" key={q.id}>
+          {quizzes.map(({ quiz: q, note }) => (
+            <article className="quiz-card usage-quiz" key={q.id}>
               <div className={`card-art ${q.color}`}>
                 <span aria-hidden="true">{q.symbol}</span>
                 <span className="pill">{q.usage ? "Modèle" : "SQuizz Originals"}</span>
+                <span className="usage-note">{note}</span>
               </div>
               <div className="card-content">
                 <p className="eyebrow">{q.tag}</p>
@@ -132,6 +135,26 @@ export default async function AudiencePage({ params }: { params: Promise<{ usage
             { "@type": "ListItem", position: 1, name: "Accueil", item: COMPANY_INFO.siteUrl },
             { "@type": "ListItem", position: 2, name: a.name, item: url },
           ],
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: a.quizHeading,
+          itemListElement: quizzes.map(({ quiz: q, note }, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            item: {
+              "@type": "Quiz",
+              name: q.title,
+              description: `${note}. ${q.desc}`,
+              about: q.tag.charAt(0) + q.tag.slice(1).toLowerCase(),
+              inLanguage: "fr",
+              audience: { "@type": "Audience", audienceType: a.name },
+              provider: { "@type": "Organization", name: "SQuizz", url: COMPANY_INFO.siteUrl },
+            },
+          })),
         }}
       />
       <JsonLd

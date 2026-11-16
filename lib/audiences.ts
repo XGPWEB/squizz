@@ -1,6 +1,7 @@
 import { EVENT_PASS, PLANS } from "./plans";
 import { QUESTION_COUNT } from "./seo";
 import { MAX_STEPS } from "./question";
+import { demos } from "./quizzes";
 
 /**
  * The pages by usage (/pour/<slug>): who it is for, three short points, the ready-made quizzes that fit
@@ -22,11 +23,16 @@ export type Audience = {
   lead: string;
   summary: string;
   points: { title: string; text: string }[];
-  quizzes: string[];
+  /** Title of the quiz section, in the words of this audience. */
+  quizHeading: string;
+  /** The quizzes that fit (ids of lib/quizzes.ts), each with a handwritten note: the moment it is for. */
+  quizzes: [id: string, note: string][];
   faq: { q: string; a: string }[];
 };
 
 const free = PLANS.FREE;
+/** A quiz title, quoted: taken from lib/quizzes.ts so that the answers follow a renamed quiz. */
+const quiz = (id: string) => `« ${demos.find((q) => q.id === id)?.title ?? id} »`;
 const pass = `${EVENT_PASS.label} (${EVENT_PASS.price} € pour ${EVENT_PASS.days} jours, jusqu’à ${PLANS[EVENT_PASS.plan].maxPlayersPerGame} joueurs)`;
 const seats = `de ${PLANS.STARTER.maxMembers} à ${PLANS.PREMIUM.maxMembers} animateurs selon l’offre`;
 const base =
@@ -51,15 +57,24 @@ export const AUDIENCES: Audience[] = [
       { title: "Des avis sans pression", text: "Réponses anonymes, même dans les résultats gardés." },
       { title: "Toute l’équipe anime", text: `Bibliothèque partagée, ${seats}.` },
     ],
+    quizHeading: "Six quiz pour la vie de l’entreprise",
     quizzes: [
-      "modele-seminaire",
-      "modele-reunion",
-      "modele-accueil",
-      "modele-lancement",
-      "modele-retro",
-      "cybersecurite",
+      ["modele-seminaire", "Pour le séminaire"],
+      ["jargon-bureau", "Pour détendre la réunion"],
+      ["defi-equipes", "Pour le team building"],
+      ["modele-accueil", "Pour l’onboarding"],
+      ["cybersecurite", "Pour sensibiliser"],
+      ["modele-retro", "Pour le bilan"],
     ],
     faq: [
+      {
+        q: "Comment animer un séminaire d’entreprise avec un quiz ?",
+        a: "Ouvrez avec le modèle « Séminaire : ouverture et clôture » (attentes en nuage de mots, énergie du jour, questions anonymes), lancez « Le grand défi des équipes » après la pause, et terminez par la satisfaction (NPS) et le tirage au sort du lot à la roue.",
+      },
+      {
+        q: "Un quiz peut-il sensibiliser les salariés à la cybersécurité ?",
+        a: "Oui : l’Original « Cybersécurité : déjouez les pièges » fait repérer l’arnaque dans un faux courriel, choisir un mot de passe robuste et adopter les bons réflexes, avec une explication après chaque réponse. Vous pouvez y ajouter vos propres consignes.",
+      },
       {
         q: "Le style peut-il être moins festif ?",
         a: "Oui : le style sobre vouvoie les joueurs et reprend le logo et la couleur de votre organisation. Avec une offre payante, la mention « SQuizz » peut être masquée.",
@@ -91,15 +106,24 @@ export const AUDIENCES: Audience[] = [
       },
       { title: "Sobre, à vos couleurs", text: "Vouvoiement, logo et couleur de la collectivité." },
     ],
+    quizHeading: "Six quiz pour la vie locale",
     quizzes: [
-      "republique",
-      "management-fpt",
-      "planete",
-      "cybersecurite",
-      "modele-atelier",
-      "modele-formation",
+      ["modele-concertation", "Pour la réunion publique"],
+      ["republique", "Pour le conseil des jeunes"],
+      ["planete", "Pour la semaine du climat"],
+      ["management-fpt", "Pour les managers"],
+      ["cybersecurite", "Pour les agents"],
+      ["modele-atelier", "Pour l’atelier participatif"],
     ],
     faq: [
+      {
+        q: "Comment consulter les habitants en réunion publique ?",
+        a: "Avec le modèle « Réunion publique : la parole aux habitants » : remplacez le plan d’exemple par celui de votre quartier ; les habitants y placent un pin’s, votent leurs priorités et posent leurs questions aux élus, anonymement. Les résultats se gardent et s’exportent en Excel pour la synthèse.",
+      },
+      {
+        q: "Peut-on animer un conseil municipal des jeunes avec SQuizz ?",
+        a: "Oui : l’Original « La République en questions » révise la devise, le vote, les collectivités et les lieux du pouvoir, puis donne la parole aux jeunes avec un sondage et un nuage de mots anonymes. Chacun joue avec un pseudo, sans compte.",
+      },
       {
         q: "Peut-on recueillir des avis sans savoir qui a répondu ?",
         a: "Oui : une question d’avis marquée anonyme garde ses chiffres, mais personne ne sait qui a répondu quoi, pas même dans les résultats gardés.",
@@ -125,15 +149,24 @@ export const AUDIENCES: Audience[] = [
       { title: "Rien à installer", text: "Un code ou un QR code, un pseudo, et c’est parti." },
       { title: "Une soirée, sans abonnement", text: `Le ${pass}.` },
     ],
+    quizHeading: "Six quiz pour la vie de l’asso",
     quizzes: [
-      "modele-fin-annee",
-      "blind-test-classique",
-      "gastronomie",
-      "modele-accueil",
-      "modele-atelier",
-      "tour-du-monde",
+      ["modele-assemblee-generale", "Pour l’AG"],
+      ["loi-1901", "Pour les nouveaux bénévoles"],
+      ["generations", "Pour la soirée quiz"],
+      ["blind-test-classique", "Pour le repas des adhérents"],
+      ["modele-accueil", "Pour la rentrée"],
+      ["gastronomie", "Pour la fête du village"],
     ],
     faq: [
+      {
+        q: "Comment animer l’assemblée générale d’une association ?",
+        a: "Le modèle « Assemblée générale d’association » ouvre sur l’année en un mot, fait voter les temps forts, recueille les idées de projets et les envies de bénévolat, puis tire la tombola à la roue. Les votes officiels restent ceux de vos statuts : les sondages prennent le pouls de la salle.",
+      },
+      {
+        q: "Comment organiser une soirée quiz dans son association ?",
+        a: `Projetez le quiz : chacun rejoint la partie avec le code ou le QR code, en équipe s’il le souhaite. ${quiz("generations")}, le blind test ou « La France à table » se lancent tels quels ou s’adaptent, et le ${pass} couvre la soirée sans abonnement.`,
+      },
       {
         q: "Combien de personnes peuvent jouer ?",
         a: `Jusqu’à ${free.maxPlayersPerGame} joueurs par partie en gratuit, ${PLANS.STARTER.maxPlayersPerGame} avec Essentiel, ${PLANS.PRO.maxPlayersPerGame} avec Pro et ${PLANS.PREMIUM.maxPlayersPerGame} avec Premium ou le ${EVENT_PASS.label}.`,
@@ -162,8 +195,24 @@ export const AUDIENCES: Audience[] = [
       { title: "Aucun compte", text: "Un pseudo suffit ; rien à installer sur les téléphones." },
       { title: "En équipes", text: "De 2 à 6 équipes, classement des équipes et podium final." },
     ],
-    quizzes: ["cybersecurite", "planete", "corps-humain", "republique", "francais", "blind-test-classique"],
+    quizHeading: "Six quiz pour vos ateliers jeunes",
+    quizzes: [
+      ["ecrans-reseaux", "Pour la prévention numérique"],
+      ["cybersecurite", "Contre les arnaques"],
+      ["planete", "Pour l’éco-citoyenneté"],
+      ["corps-humain", "Pour la prévention santé"],
+      ["republique", "Pour le conseil des jeunes"],
+      ["defi-equipes", "Pour l’accueil de loisirs"],
+    ],
     faq: [
+      {
+        q: "Comment sensibiliser les jeunes au cyberharcèlement ?",
+        a: "L’Original « Réseaux sociaux : les bons réflexes » se joue sur téléphone : repérer une arnaque au concours, connaître le 3018, respecter le droit à l’image, ne pas relayer une moquerie. Une explication suit chaque réponse, et deux questions anonymes ouvrent la discussion.",
+      },
+      {
+        q: "Quel quiz pour un accueil de loisirs ?",
+        a: "« Le grand défi des équipes » : énigmes, estimations et proverbes à résoudre en équipes, avec un podium à la fin. Pour un temps plus calme, « Planète en questions » ou « Le corps humain » mêlent photos, carte à pin’s et questions à relier.",
+      },
       {
         q: "Que garde SQuizz sur les joueurs ?",
         a: "Seulement un pseudo, les réponses et un cookie technique anonyme. La partie est effacée sous 48 heures ; ses résultats sont gardés 12 mois au plus pour l’organisation qui anime. Les données sont hébergées en Europe.",
@@ -198,15 +247,24 @@ export const AUDIENCES: Audience[] = [
         text: "Le même quiz projeté en salle, ou par lien à faire seul.",
       },
     ],
+    quizHeading: "Six quiz pour vos formations",
     quizzes: [
-      "modele-formation",
-      "modele-reunion",
-      "modele-atelier",
-      "cybersecurite",
-      "management-fpt",
-      "francais",
+      ["modele-debut-formation", "Pour la première heure"],
+      ["apprendre", "Pour former les formateurs"],
+      ["modele-formation", "Pour l’évaluation à chaud"],
+      ["modele-atelier", "Pour le travail en groupe"],
+      ["cybersecurite", "Un exemple d’acquis à vérifier"],
+      ["francais", "Pour les savoirs de base"],
     ],
     faq: [
+      {
+        q: "Quel brise-glace pour commencer une formation ?",
+        a: "Le modèle « Brise-glace de début de formation » : attentes en nuage de mots, niveau de départ, raison de la venue, tour de présentation tiré au sort à la roue, puis vos objectifs et vos règles. Les réponses, anonymes, aident à ajuster le rythme.",
+      },
+      {
+        q: "Pourquoi utiliser des quiz en formation ?",
+        a: "Parce que se tester aide à retenir : c’est l’effet test, mesuré par Roediger et Karpicke en 2006. L’Original « Comment apprend-on vraiment ? » présente cette étude et d’autres (courbe de l’oubli, effet d’espacement, neuromythes), sources à l’appui.",
+      },
       {
         q: "Puis-je importer mes questions ?",
         a: "Oui, depuis un fichier Excel ou CSV (une question par ligne, modèle à télécharger). L’IA peut aussi proposer un quiz à partir d’un texte ou d’un PDF, avec la clé API de votre organisation.",
@@ -235,15 +293,24 @@ export const AUDIENCES: Audience[] = [
       },
       { title: "Toute l’équipe aux manettes", text: `Bibliothèque partagée, ${seats}.` },
     ],
+    quizHeading: "Six quiz pour votre équipe",
     quizzes: [
-      "modele-reunion",
-      "modele-accueil",
-      "modele-lancement",
-      "modele-retro",
-      "modele-profils",
-      "modele-fin-annee",
+      ["modele-reunion", "Pour le lundi matin"],
+      ["jargon-bureau", "Pour la pause café"],
+      ["defi-equipes", "Pour la sortie d’équipe"],
+      ["modele-accueil", "Pour accueillir le nouveau"],
+      ["modele-retro", "Pour la rétro"],
+      ["modele-profils", "Pour mieux se connaître"],
     ],
     faq: [
+      {
+        q: "Quel brise-glace pour une réunion d’équipe ?",
+        a: "Le modèle « Brise-glace de réunion » se joue en trois minutes : météo de l’humeur à pin’s, énergie du jour, bonne nouvelle de la semaine et tour de table tiré au sort. Pour rire un peu, « Le jargon du bureau décodé » traduit KPI, OKR et ASAP.",
+      },
+      {
+        q: "Quelle activité pour une sortie d’équipe ?",
+        a: "« Le grand défi des équipes » : énigmes, estimations et proverbes à résoudre ensemble, en 2 à 6 équipes, avec classement et podium. « Quel coéquipier êtes-vous ? » dresse ensuite le portrait du groupe, sans classement.",
+      },
       {
         q: "Faut-il un grand écran ?",
         a: "Non : le quiz s’affiche sur l’écran partagé de votre réunion, y compris en visio, et chacun répond sur son téléphone.",
@@ -272,8 +339,24 @@ export const AUDIENCES: Audience[] = [
       { title: "Un grand jour, sans abonnement", text: `Le ${pass}.` },
       { title: "Des quiz prêts", text: "Blind test, tour du monde, gastronomie : à lancer tels quels." },
     ],
-    quizzes: ["blind-test-classique", "tour-du-monde", "gastronomie", "espace", "inventions", "peinture"],
+    quizHeading: "Six quiz pour vos soirées",
+    quizzes: [
+      ["modele-mariage", "Pour le mariage"],
+      ["generations", "Pour le repas de famille"],
+      ["defi-equipes", "Pour l’anniversaire"],
+      ["blind-test-classique", "Pour l’apéro"],
+      ["gastronomie", "Pour les gourmands"],
+      ["tour-du-monde", "Pour les voyageurs"],
+    ],
     faq: [
+      {
+        q: "Comment faire un quiz pour un mariage ?",
+        a: `Partez du modèle « Le quiz des mariés » : remplacez les prénoms, les lieux et les anecdotes, ajoutez des photos du couple. Les invités votent (« Qui a fait le premier pas ? »), les mariés révèlent les réponses et la roue désigne qui repart avec le centre de table. Le ${pass} couvre le grand jour.`,
+      },
+      {
+        q: "Quel quiz pour un repas de famille ?",
+        a: `${quiz("generations")} fait jouer parents et enfants ensemble : Walkman, Minitel, Game Boy, passage à l’euro, Coupe du monde 1998. La télé affiche les questions, chacun répond sur son téléphone.`,
+      },
       {
         q: "Faut-il créer un compte pour jouer ?",
         a: "Seulement pour la personne qui lance le quiz. Les invités entrent le code ou scannent le QR code et choisissent un pseudo.",
@@ -305,15 +388,24 @@ export const AUDIENCES: Audience[] = [
       },
       { title: "Par événement", text: `Le ${pass}, ou Premium à l’année.` },
     ],
+    quizHeading: "Six quiz pour vos événements",
     quizzes: [
-      "modele-seminaire",
-      "blind-test-classique",
-      "gastronomie",
-      "modele-profils",
-      "tour-du-monde",
-      "modele-fin-annee",
+      ["defi-equipes", "Pour le team building"],
+      ["modele-seminaire", "Pour le séminaire client"],
+      ["generations", "Pour la soirée de gala"],
+      ["modele-mariage", "Pour les mariages"],
+      ["modele-profils", "Pour l’incentive"],
+      ["blind-test-classique", "Pour le cocktail"],
     ],
     faq: [
+      {
+        q: "Comment animer un team building avec un quiz ?",
+        a: "Formez de 2 à 6 équipes sur les téléphones, lancez « Le grand défi des équipes » (énigmes, estimations, proverbes à résoudre ensemble), puis « Quel coéquipier êtes-vous ? » pour dresser le portrait du groupe. La télécommande permet d’animer depuis la scène.",
+      },
+      {
+        q: "Peut-on animer un mariage ou une soirée privée ?",
+        a: `Oui : le modèle « Le quiz des mariés » s’adapte en quelques minutes (prénoms, photos, anecdotes) et ${quiz("generations")} réunit toutes les générations. Les invités rejoignent la partie avec le code ou le QR code, sans application.`,
+      },
       {
         q: "Combien d’invités par partie ?",
         a: `Jusqu’à ${PLANS.PREMIUM.maxPlayersPerGame} joueurs par partie avec Premium ou le ${EVENT_PASS.label}.`,

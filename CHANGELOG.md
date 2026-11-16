@@ -2,6 +2,17 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.36.0] — 2026-11-16
+
+### Site
+
+- Pages par usage plus personnalisées : chaque page présente six quiz choisis pour son public, chacun avec une note manuscrite qui dit à quel moment le lancer (« Pour l’AG », « Pour le repas de famille »…), un titre de section propre (« Six quiz pour la vie de l’asso ») et deux nouvelles questions de FAQ sur les recherches de ce public (animer une AG, consulter les habitants, quiz de mariage, team building…). Les quiz sont décrits en données structurées (`ItemList` de `Quiz`).
+
+### Bibliothèque
+
+- Six nouveaux Originals illustrés : **Le jargon du bureau décodé** (entreprises, petites équipes), **Le grand défi des équipes** (team building, énigmes et estimations), **Années 80, 90, 2000 : le quiz des générations** (soirées, repas de famille), **Association loi 1901 : le quiz**, **Réseaux sociaux : les bons réflexes** (prévention, avec une arnaque au concours à repérer au pin’s) et **Comment apprend-on vraiment ?** (formateurs). Faits sourcés dans les explications.
+- Quatre nouveaux modèles : **Réunion publique : la parole aux habitants** (plan de quartier à pin’s, à remplacer par le vôtre), **Assemblée générale d’association**, **Brise-glace de début de formation** et **Le quiz des mariés**.
+
 ## [1.35.1] — 2026-11-16
 
 ### Super-admin

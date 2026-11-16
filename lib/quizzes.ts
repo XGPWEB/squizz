@@ -12,6 +12,13 @@ import { planete } from "./originals/planete";
 import { corpsHumain } from "./originals/corps-humain";
 import { republique } from "./originals/republique";
 import { seminar } from "./originals/seminaire";
+import { jargon } from "./originals/jargon";
+import { loi1901 } from "./originals/associations";
+import { ecrans } from "./originals/ecrans";
+import { apprendre } from "./originals/apprendre";
+import { generations } from "./originals/generations";
+import { defi } from "./originals/defi";
+import { generalAssembly, publicMeeting, trainingStart, wedding } from "./originals/modeles-publics";
 import {
   kickoff,
   meeting,
@@ -142,6 +149,60 @@ export const demos: Quiz[] = [
     color: "purple",
     desc: "Devise, élections, collectivités, lieux du pouvoir : les classiques du citoyen, puis la parole à la salle.",
     questions: republique,
+  },
+  {
+    id: "jargon-bureau",
+    title: "Le jargon du bureau décodé",
+    tag: "VIE DE BUREAU",
+    symbol: "✉︎",
+    color: "purple",
+    desc: "KPI, OKR, remue-méninges, droit à la déconnexion : sigles à relier et franglais à traduire, sans langue de bois.",
+    questions: jargon,
+  },
+  {
+    id: "defi-equipes",
+    title: "Le grand défi des équipes",
+    tag: "TEAM BUILDING",
+    symbol: "♛",
+    color: "orange",
+    desc: "Énigmes, estimations et proverbes à résoudre ensemble : le quiz pensé pour jouer en équipes.",
+    questions: defi,
+  },
+  {
+    id: "generations",
+    title: "Années 80, 90, 2000 : le quiz des générations",
+    tag: "NOSTALGIE",
+    symbol: "◉",
+    color: "tangerine",
+    desc: "Walkman, Minitel, Game Boy, passage à l’euro : le quiz qui fait jouer parents et enfants ensemble.",
+    questions: generations,
+  },
+  {
+    id: "loi-1901",
+    title: "Association loi 1901 : le quiz",
+    tag: "VIE ASSOCIATIVE",
+    symbol: "§",
+    color: "green",
+    desc: "Création, statuts, bénéfices, numéro RNA, Alsace-Moselle : la loi de 1901 en dix questions sourcées.",
+    questions: loi1901,
+  },
+  {
+    id: "ecrans-reseaux",
+    title: "Réseaux sociaux : les bons réflexes",
+    tag: "PRÉVENTION",
+    symbol: "☏︎",
+    color: "purple",
+    desc: "Arnaque au concours à repérer, 3018, droit à l’image, fausses infos : la prévention qui se joue sur téléphone.",
+    questions: ecrans,
+  },
+  {
+    id: "apprendre",
+    title: "Comment apprend-on vraiment ?",
+    tag: "PÉDAGOGIE",
+    symbol: "✎",
+    color: "green",
+    desc: "Courbe de l’oubli, effet test, styles d’apprentissage : sciences cognitives et neuromythes, études à l’appui.",
+    questions: apprendre,
   },
   {
     id: "general",
@@ -286,6 +347,46 @@ export const demos: Quiz[] = [
     desc: "Attentes en nuage de mots, énergie du jour, questions anonymes, satisfaction (NPS) et tirage au sort du lot.",
     usage: "reunion",
     questions: seminar,
+  },
+  {
+    id: "modele-concertation",
+    title: "Réunion publique : la parole aux habitants",
+    tag: "CONCERTATION",
+    symbol: "⌂",
+    color: "green",
+    desc: "Plan du quartier à pin’s, priorités votées, idées et questions aux élus : une consultation anonyme en direct.",
+    usage: "atelier",
+    questions: publicMeeting,
+  },
+  {
+    id: "modele-assemblee-generale",
+    title: "Assemblée générale d’association",
+    tag: "ASSEMBLÉE GÉNÉRALE",
+    symbol: "☷",
+    color: "orange",
+    desc: "L’année en un mot, temps forts votés, idées de projets, appel aux bénévoles et tombola à la roue.",
+    usage: "reunion",
+    questions: generalAssembly,
+  },
+  {
+    id: "modele-debut-formation",
+    title: "Brise-glace de début de formation",
+    tag: "FORMATION",
+    symbol: "✐",
+    color: "purple",
+    desc: "Attentes, niveau de départ, tour de présentation tiré au sort, objectifs et règles : la formation démarre bien.",
+    usage: "formation",
+    questions: trainingStart,
+  },
+  {
+    id: "modele-mariage",
+    title: "Le quiz des mariés",
+    tag: "MARIAGE",
+    symbol: "♡",
+    color: "tangerine",
+    desc: "Qui a fait le premier pas ? Qui cuisine le mieux ? Les invités votent, les mariés révèlent, la roue offre le centre de table.",
+    usage: "fete",
+    questions: wedding,
   },
   {
     id: "modele-fin-annee",
