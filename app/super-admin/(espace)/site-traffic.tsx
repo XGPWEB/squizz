@@ -1,7 +1,10 @@
 import { CONVERSIONS, type ConversionName } from "@/lib/analytics";
 import {
+  formatFetchedAt,
+  formatPeriod,
   getSiteAnalytics,
   getSiteRealtimeAnalytics,
+  isStale,
   type SiteAnalytics,
   type SiteRealtimeAnalytics,
 } from "@/lib/server/site-analytics";
@@ -28,13 +31,13 @@ const DEVICES: Record<string, string> = {
 
 const fr = (n: number) => n.toLocaleString("fr-FR");
 
-function Heading({ children }: { children?: React.ReactNode }) {
+function Heading({ period = "7 derniers jours", children }: { period?: string; children?: React.ReactNode }) {
   return (
     <div className="traffic-head">
       <h2>
         Trafic <span className="sticker pink-sticker">du site</span>
       </h2>
-      <span className="traffic-period">7 derniers jours</span>
+      <span className="traffic-period">{period}</span>
       {children}
     </div>
   );
@@ -90,9 +93,12 @@ function Ranking({ title, rows }: { title: string; rows: { label: string; value:
 export function SiteTrafficView({
   analytics,
   realtime,
+  stale = false,
 }: {
   analytics: SiteAnalytics | null;
   realtime: SiteRealtimeAnalytics | null;
+  /** The figures are more than 30 min old (worked out by the caller: no Date.now() during render). */
+  stale?: boolean;
 }) {
   const live = realtime !== null && (
     <span className="traffic-live">
@@ -113,7 +119,13 @@ export function SiteTrafficView({
   const recent = realtime?.conversionsLast30min ?? [];
   return (
     <section className="traffic" aria-label="Trafic du site">
-      <Heading>{live}</Heading>
+      <Heading period={formatPeriod(analytics.fetchedAt)}>{live}</Heading>
+      <p className="traffic-fetched">Données Google du {formatFetchedAt(analytics.fetchedAt)}</p>
+      {stale && (
+        <p className="traffic-stale" role="status">
+          Ces chiffres ont plus de 30 minutes. Rechargez la page pour les mettre à jour.
+        </p>
+      )}
       <div className="traffic-counters">
         <Counter label="Visiteurs" value={analytics.activeUsers7d} change={analytics.activeUsersChangePct} />
         <Counter label="Sessions" value={analytics.sessions7d} change={analytics.sessionsChangePct} />
@@ -196,5 +208,11 @@ export function SiteTrafficLoading() {
 
 export async function SiteTraffic() {
   const [analytics, realtime] = await Promise.all([getSiteAnalytics(), getSiteRealtimeAnalytics()]);
-  return <SiteTrafficView analytics={analytics} realtime={realtime} />;
+  return (
+    <SiteTrafficView
+      analytics={analytics}
+      realtime={realtime}
+      stale={analytics !== null && isStale(analytics.fetchedAt)}
+    />
+  );
 }

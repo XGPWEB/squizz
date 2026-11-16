@@ -19,6 +19,8 @@ export type SiteAnalytics = {
   deviceBreakdown: { device: string; sessions: number }[];
   /** ratePct: share of the period's sessions, more telling than a raw count on a small volume. */
   conversions: { name: string; count: number; ratePct: number }[];
+  /** When Google answered (ISO), so the panel can say how old the figures are. */
+  fetchedAt: string;
 };
 
 export type SiteRealtimeAnalytics = {
@@ -27,6 +29,40 @@ export type SiteRealtimeAnalytics = {
 };
 
 const CONVERSION_NAMES = Object.keys(CONVERSIONS);
+
+const PARIS = "Europe/Paris";
+/** Past this, the panel warns that the figures may be behind. */
+export const STALE_AFTER_MS = 30 * 60_000;
+
+const parisDayMonth = (date: Date) =>
+  date.toLocaleDateString("fr-FR", { timeZone: PARIS, day: "2-digit", month: "2-digit" });
+
+/** « 16/11 à 09:12 », Paris time whatever the server's zone. */
+export function formatFetchedAt(iso: string): string {
+  const date = new Date(iso);
+  const time = date.toLocaleTimeString("fr-FR", { timeZone: PARIS, hour: "2-digit", minute: "2-digit" });
+  return `${parisDayMonth(date)} à ${time}`;
+}
+
+/**
+ * The days the figures cover, « du 09/11 au 15/11 »: GA4's « 7daysAgo » to « yesterday », counted from the
+ * Paris day of the call (the property's time zone).
+ */
+export function formatPeriod(iso: string): string {
+  const [y, m, d] = new Date(iso).toLocaleDateString("en-CA", { timeZone: PARIS }).split("-").map(Number);
+  const day = (back: number) =>
+    new Date(Date.UTC(y, m - 1, d - back)).toLocaleDateString("fr-FR", {
+      timeZone: "UTC",
+      day: "2-digit",
+      month: "2-digit",
+    });
+  return `du ${day(7)} au ${day(1)}`;
+}
+
+/** Kept out of the component: React's purity rule refuses Date.now() during render. */
+export function isStale(iso: string, now = Date.now()): boolean {
+  return now - new Date(iso).getTime() > STALE_AFTER_MS;
+}
 
 /**
  * The tag only runs on the public site, but gtag.js can record one last page change on the way out to these
@@ -218,6 +254,7 @@ async function fetchSiteAnalytics(): Promise<SiteAnalytics | null> {
         count: num(r),
         ratePct: sessions7d > 0 ? (num(r) / sessions7d) * 100 : 0,
       })),
+      fetchedAt: new Date().toISOString(),
     };
   } catch (err) {
     console.error("[site-analytics] échec de la requête GA4 Data API", err);

@@ -14,8 +14,11 @@ vi.mock("@google-analytics/data", () => ({
 import {
   GA_CEILING_MS,
   clearSiteAnalyticsCache,
+  formatFetchedAt,
+  formatPeriod,
   getSiteAnalytics,
   getSiteRealtimeAnalytics,
+  isStale,
 } from "@/lib/server/site-analytics";
 
 const row = (dimension: string | null, ...metrics: number[]) => ({
@@ -162,4 +165,33 @@ test("la période s’arrête à hier : Google bloque les rapports qui incluent 
   const ends = runReport.mock.calls.map(([r]) => r.dateRanges[0].endDate);
   expect(ends).not.toContain("today");
   expect(ends.filter((end) => end === "yesterday")).toHaveLength(6);
+});
+
+test("les chiffres portent l’heure de la réponse de Google", async () => {
+  vi.useFakeTimers({ now: new Date("2026-11-16T08:12:00Z"), toFake: ["Date"] });
+  try {
+    answer({ totals: [row(null, 1, 2, 3)] }, []);
+    expect((await getSiteAnalytics())?.fetchedAt).toBe("2026-11-16T08:12:00.000Z");
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+test("l’heure et la période sont celles de Paris, même après minuit à Paris et avant minuit en UTC", () => {
+  expect(formatFetchedAt("2026-11-16T08:12:00Z")).toBe("16/11 à 09:12");
+  expect(formatPeriod("2026-11-16T08:12:00Z")).toBe("du 09/11 au 15/11");
+  // 23:30 UTC on the 15th is already 00:30 on the 16th in Paris: « yesterday » for Google is the 15th.
+  expect(formatFetchedAt("2026-11-15T23:30:00Z")).toBe("16/11 à 00:30");
+  expect(formatPeriod("2026-11-15T23:30:00Z")).toBe("du 09/11 au 15/11");
+  // Summer time (UTC+2), across a month and a year boundary.
+  expect(formatFetchedAt("2026-07-31T22:15:00Z")).toBe("01/08 à 00:15");
+  expect(formatPeriod("2026-07-31T22:15:00Z")).toBe("du 25/07 au 31/07");
+  expect(formatPeriod("2027-01-03T10:00:00Z")).toBe("du 27/12 au 02/01");
+});
+
+test("au-delà de 30 minutes, les chiffres sont signalés comme anciens", () => {
+  const at = "2026-11-16T08:00:00Z";
+  const base = new Date(at).getTime();
+  expect(isStale(at, base + 30 * 60_000)).toBe(false);
+  expect(isStale(at, base + 30 * 60_000 + 1)).toBe(true);
 });
