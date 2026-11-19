@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { turnstileSiteKey } from "@/lib/server/turnstile";
@@ -16,7 +17,11 @@ export function ContactSection() {
           en tête ?
         </h2>
         <p className="lead">
-          Une question, une démonstration pour votre équipe, un devis ? Écrivez-nous, on répond vite.
+          Une question, un devis ? Écrivez-nous, on répond vite. Pour une démonstration,{" "}
+          <Link href="/demo-visio" data-conversion="demo_visio_click">
+            choisissez votre créneau en visio
+          </Link>
+          .
         </p>
         <ul className="contact-facts">
           <li>

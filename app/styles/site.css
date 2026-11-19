@@ -2348,3 +2348,366 @@ label.cookie-service {
 .usage-others a:hover {
   background: var(--acid);
 }
+
+/* Header: the visio demo, a small pink sticker whose camera blinks like a « recording » light. */
+.site-nav a.nav-demo {
+  padding: 4px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--pink);
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: rotate(-2deg);
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1.6),
+    box-shadow 0.2s;
+}
+.site-nav a.nav-demo:hover {
+  text-decoration: none;
+  transform: rotate(2deg) scale(1.06);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.nav-demo svg {
+  animation: rec-blink 1.6s steps(1) infinite;
+}
+/* Phones: the four links of the nav stay on one line (see app.css); Guides and the visio demo are in the
+   footer, the guides, the pages by usage and the contact block. */
+@media (max-width: 700px) {
+  .site-nav a.nav-wide {
+    display: none;
+  }
+}
+@keyframes rec-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Guides (/guides): cards like the quiz cards, and numbered steps with a handwritten moment. */
+.howto-card {
+  display: block;
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1.6),
+    box-shadow 0.2s;
+}
+.howto-card:hover,
+.howto-card:focus-visible {
+  transform: translate(-3px, -3px) rotate(-0.6deg);
+  box-shadow: 9px 10px 0 var(--ink);
+}
+.howto-card:hover .usage-note {
+  transform: rotate(-3deg) scale(1.08);
+}
+.howto-card h2 {
+  font-size: 26px;
+  line-height: 1.15;
+  margin: 0 0 10px;
+}
+.howto-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-decoration-color: var(--pink);
+}
+.howto-grid {
+  margin-bottom: 50px;
+}
+.howto-meta {
+  font: 700 12px/1.5 monospace;
+  letter-spacing: 0.5px;
+}
+.howto-steps {
+  display: grid;
+  gap: 34px;
+  max-width: 780px;
+  margin: 0 auto 60px;
+  padding: 0;
+  list-style: none;
+}
+.howto-step {
+  position: relative;
+  padding: 26px 26px 22px 84px;
+  background: white;
+  border: 3px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: 5px 6px 0 var(--ink);
+}
+.howto-step:nth-child(4n + 1) {
+  --num: var(--acid);
+}
+.howto-step:nth-child(4n + 2) {
+  --num: var(--pink);
+}
+.howto-step:nth-child(4n + 3) {
+  --num: var(--electric);
+  --num-ink: white;
+}
+.howto-step:nth-child(4n + 4) {
+  --num: var(--orange);
+}
+.howto-num {
+  position: absolute;
+  left: 18px;
+  top: 22px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  background: var(--num, var(--acid));
+  color: var(--num-ink, var(--ink));
+  box-shadow: 3px 3px 0 var(--ink);
+  font:
+    400 28px/1 Anton,
+    Impact,
+    sans-serif;
+  transform: rotate(-6deg);
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1.6);
+}
+.howto-step:hover .howto-num {
+  transform: rotate(6deg) scale(1.1);
+}
+.howto-note {
+  position: absolute;
+  right: 18px;
+  top: -16px;
+  padding: 4px 12px 3px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: var(--cream);
+  box-shadow: 3px 3px 0 var(--ink);
+  font:
+    400 16px/1.15 "Permanent Marker",
+    cursive;
+  color: var(--electric);
+  transform: rotate(3deg);
+}
+.howto-step h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.15;
+}
+.howto-step p {
+  margin: 0;
+  line-height: 1.65;
+}
+.howto-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.howto-type {
+  padding: 4px 9px;
+  border-radius: 5px;
+  background: var(--ink);
+  color: var(--acid);
+  font: 700 11px/1.4 monospace;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.howto-quiz {
+  padding: 3px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--cream);
+  font-size: 13px;
+  font-weight: 700;
+}
+.howto-quiz small {
+  margin-right: 4px;
+  font: 700 10px monospace;
+  text-transform: uppercase;
+  color: var(--electric);
+}
+.howto-quiz::before {
+  content: "▶ ";
+  color: var(--pink);
+}
+@media (max-width: 620px) {
+  .howto-step {
+    padding: 70px 18px 18px;
+  }
+  .howto-num {
+    left: 16px;
+    top: 14px;
+  }
+  .howto-step h2 {
+    font-size: 24px;
+  }
+}
+
+/* Visio demo (/demo-visio): the agenda as three stickers, the form with its slots. */
+.demo-visio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 40px;
+  align-items: start;
+  max-width: 1000px;
+  margin: 0 auto 60px;
+}
+.demo-visio-agenda {
+  display: grid;
+  gap: 16px;
+}
+.demo-visio-agenda p {
+  margin: 0;
+  padding: 16px 18px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: white;
+  box-shadow: 4px 4px 0 var(--ink);
+  font-weight: 700;
+  line-height: 1.4;
+}
+.demo-visio-agenda p:nth-child(1) {
+  transform: rotate(-1.5deg);
+}
+.demo-visio-agenda p:nth-child(2) {
+  background: var(--acid);
+  transform: rotate(1deg);
+}
+.demo-visio-agenda p:nth-child(3) {
+  transform: rotate(-0.5deg);
+}
+.demo-visio-agenda b {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: var(--ink);
+  color: var(--acid);
+  font: 700 12px/1.5 monospace;
+}
+.demo-visio-or {
+  font:
+    400 18px/1.3 "Permanent Marker",
+    cursive;
+  color: var(--electric);
+  transform: rotate(-3deg);
+  margin-top: 6px;
+}
+.demo-visio-or a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink);
+}
+.demo-visio-form {
+  padding: 26px;
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  background: white;
+  box-shadow: 7px 7px 0 var(--ink);
+}
+.demo-slots {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.demo-slots legend {
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.demo-slots legend small {
+  font-weight: 400;
+  color: #54504b;
+}
+.demo-slots-loading {
+  height: 150px;
+}
+.demo-days {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(78px, 1fr);
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 4px 8px 2px;
+  scroll-snap-type: x mandatory;
+}
+.demo-day {
+  display: grid;
+  gap: 6px;
+  scroll-snap-align: start;
+}
+.demo-day-name {
+  display: grid;
+  justify-items: center;
+  padding: 6px 0;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--cream);
+  font: 700 11px/1.3 monospace;
+  text-transform: uppercase;
+}
+.demo-day-name b {
+  font:
+    400 24px/1.1 Anton,
+    Impact,
+    sans-serif;
+  color: var(--acid);
+}
+.demo-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 7px 0;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: white;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1.6),
+    background 0.15s;
+}
+.demo-slot:hover:not(:disabled) {
+  background: #ffc4e3;
+  transform: rotate(-3deg);
+}
+.demo-slot.on {
+  background: var(--acid);
+  box-shadow: 2px 2px 0 var(--ink);
+  animation: slot-pop 0.35s cubic-bezier(0.2, 0.7, 0.2, 1.6);
+}
+.demo-slot:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+@keyframes slot-pop {
+  0% {
+    transform: scale(0.85);
+  }
+  60% {
+    transform: scale(1.12) rotate(-4deg);
+  }
+}
+@media (max-width: 800px) {
+  .demo-visio {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .demo-visio-form {
+    padding: 20px 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-demo svg,
+  .demo-slot.on {
+    animation: none;
+  }
+  .howto-card,
+  .howto-num,
+  .site-nav a.nav-demo {
+    transition: none;
+  }
+}

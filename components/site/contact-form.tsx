@@ -7,6 +7,7 @@ import { CONTACT_SUBJECTS } from "@/lib/contact";
 import { PLANS, priceLabel } from "@/lib/plans";
 import { postJson } from "@/lib/client/api";
 import { trackEvent } from "@/lib/analytics";
+import { DemoSlots } from "./demo-slots";
 
 type TurnstileOptions = {
   sitekey: string;
@@ -33,7 +34,19 @@ function offerFromSearch(search: string) {
 
 type Status = { kind: "idle" | "sending" | "sent" } | { kind: "error"; message: string };
 
-export function ContactForm({ siteKey, email }: { siteKey: string; email: string }) {
+/**
+ * The contact form. With `demo`, it books a demo in visio: the subject is fixed, the visitor picks up to three
+ * slots and the message becomes optional (the slots are sent at its top).
+ */
+export function ContactForm({
+  siteKey,
+  email,
+  demo = false,
+}: {
+  siteKey: string;
+  email: string;
+  demo?: boolean;
+}) {
   const [name, setName] = useState(""),
     [from, setFrom] = useState(""),
     [chosenSubject, setSubject] = useState<string | null>(null),
@@ -42,7 +55,8 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
     [website, setWebsite] = useState(""),
     [token, setToken] = useState(""),
     [widgetFailed, setWidgetFailed] = useState(false),
-    [status, setStatus] = useState<Status>({ kind: "idle" });
+    [status, setStatus] = useState<Status>({ kind: "idle" }),
+    [slots, setSlots] = useState<string[]>([]);
   // « Choisir Essentiel » on /tarifs lands here with ?offre=STARTER: the request is filled in until the
   // visitor changes it. Read from the URL after hydration (the server renders the empty form).
   const search = useSyncExternalStore(
@@ -51,12 +65,19 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
     () => "",
   );
   const offer = offerFromSearch(search);
-  const subject = chosenSubject ?? (offer ? "Souscrire à un abonnement" : CONTACT_SUBJECTS[0]);
+  const subject = demo
+    ? "Demande de démonstration"
+    : (chosenSubject ?? (offer ? "Souscrire à un abonnement" : CONTACT_SUBJECTS[0]));
   const message =
     typedMessage ??
     (offer
       ? `Bonjour, je souhaite souscrire à l’offre ${offer.label} (${priceLabel(offer)}, sans engagement). Nom de mon organisation sur SQuizz : `
       : "");
+  const sent = demo
+    ? [`Démo en visio, créneaux souhaités :`, ...slots.map((s) => `- ${s}`), "", message.trim()]
+        .join("\n")
+        .trim()
+    : message;
   // The anti-bot check (Cloudflare) loads only once the visitor starts using the form, not for every
   // visitor of the page.
   const [engaged, setEngaged] = useState(false);
@@ -89,7 +110,8 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
   const missing = [
     !name.trim() && "votre nom",
     !/^\S+@\S+\.\S+$/.test(from) && "une adresse email valide",
-    message.trim().length < 10 && "un message d’au moins 10 caractères",
+    demo && !slots.length && "au moins un créneau",
+    !demo && message.trim().length < 10 && "un message d’au moins 10 caractères",
     !consent && "votre accord sur le traitement de vos données",
     siteKey && !token && "la vérification anti-robot (quelques secondes)",
   ].filter(Boolean) as string[];
@@ -99,9 +121,13 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
   if (status.kind === "sent")
     return (
       <div className="contact-sent" role="status">
-        <p className="eyebrow">— MESSAGE ENVOYÉ —</p>
+        <p className="eyebrow">{demo ? "— DEMANDE ENVOYÉE —" : "— MESSAGE ENVOYÉ —"}</p>
         <h3>Merci !</h3>
-        <p>On revient vers vous rapidement, généralement sous 24 h ouvrées.</p>
+        <p>
+          {demo
+            ? "On vous confirme un de vos créneaux par e-mail, avec le lien de la visio, généralement sous 24 h ouvrées."
+            : "On revient vers vous rapidement, généralement sous 24 h ouvrées."}
+        </p>
       </div>
     );
 
@@ -121,13 +147,13 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
             name,
             email: from,
             subject,
-            message,
+            message: sent,
             consent,
             website,
             turnstileToken: token,
           });
           setStatus({ kind: "sent" });
-          trackEvent("contact_form_submit");
+          trackEvent(demo ? "demo_request_submit" : "contact_form_submit");
         } catch (err) {
           // A Turnstile token works once: get a fresh one before retrying.
           setToken("");
@@ -136,7 +162,7 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
         }
       }}
     >
-      <p className="eyebrow">— ENVOYER UN MESSAGE —</p>
+      <p className="eyebrow">{demo ? "— RÉSERVER UNE DÉMO —" : "— ENVOYER UN MESSAGE —"}</p>
       <label>
         Nom complet
         <input
@@ -161,24 +187,32 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
           autoComplete="email"
         />
       </label>
+      {demo ? (
+        <DemoSlots value={slots} onChange={setSlots} />
+      ) : (
+        <label>
+          Sujet
+          <select value={subject} onChange={(e) => setSubject(e.target.value)}>
+            {CONTACT_SUBJECTS.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
+          </select>
+        </label>
+      )}
       <label>
-        Sujet
-        <select value={subject} onChange={(e) => setSubject(e.target.value)}>
-          {CONTACT_SUBJECTS.map((s) => (
-            <option key={s}>{s}</option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Message (10 caractères minimum)
+        {demo ? "Votre événement, en une phrase (facultatif)" : "Message (10 caractères minimum)"}
         <textarea
-          {...invalid(message.trim().length < 10)}
-          rows={5}
+          {...invalid(!demo && message.trim().length < 10)}
+          rows={demo ? 3 : 5}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Décrivez votre besoin en quelques lignes…"
-          required
-          maxLength={2000}
+          placeholder={
+            demo
+              ? "Séminaire de 60 personnes en mars, formation, soirée d’association…"
+              : "Décrivez votre besoin en quelques lignes…"
+          }
+          required={!demo}
+          maxLength={demo ? 1600 : 2000}
         />
       </label>
       <label className="check-line">
@@ -235,7 +269,8 @@ export function ContactForm({ siteKey, email }: { siteKey: string; email: string
         </div>
       )}
       <button className="button" disabled={status.kind === "sending"}>
-        {status.kind === "sending" ? "Envoi…" : "Envoyer le message"} <Send size={18} />
+        {status.kind === "sending" ? "Envoi…" : demo ? "Demander ma démo" : "Envoyer le message"}{" "}
+        <Send size={18} />
       </button>
     </form>
   );

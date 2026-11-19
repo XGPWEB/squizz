@@ -2,6 +2,7 @@ import { ADVANTAGES, FAQ, FEATURES, QUESTION_COUNT, TYPE_DETAILS, TYPE_FAMILIES,
 import { COMPANY_INFO } from "@/lib/company-info";
 import { EVENT_PASS, PLAN_KEYS, PLANS, limitsSummary, priceLabel } from "@/lib/plans";
 import { AUDIENCES } from "@/lib/audiences";
+import { GUIDES } from "@/lib/guides";
 
 export const dynamic = "force-static";
 
@@ -57,6 +58,9 @@ ${FAQ.map(({ q, a }) => `### ${q}\n\n${a}`).join("\n\n")}
 - [Tarifs](${site}/tarifs) : offres Gratuit, Essentiel, Pro et Premium annuel
 - [Démo jouable](${site}/demo) : une partie d’essai dans le navigateur, sans inscription
 ${AUDIENCES.map((a) => `- [${a.name}](${site}/pour/${a.slug}) : ${a.description}`).join("\n")}
+- [Démo en visio](${site}/demo-visio) : 30 minutes avec Pressweb, créneau confirmé par e-mail
+- [Guides](${site}/guides) : animer avec un quiz interactif, pas à pas
+${GUIDES.map((g) => `- [${g.title}](${site}/guides/${g.slug}) : ${g.description}`).join("\n")}
 - [Rejoindre une partie](${site}/jouer) : saisir le code de la partie
 - [Créer un espace](${site}/inscription)
 - [Confidentialité](${site}/confidentialite) : hébergement et durées de conservation
