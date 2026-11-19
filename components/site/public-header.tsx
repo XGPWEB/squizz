@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Video } from "lucide-react";
 import { getSessionUser } from "@/lib/server/guard";
 import { AnchorLink } from "./anchor-link";
 import { Brand } from "./brand";
@@ -15,6 +16,12 @@ export async function PublicHeader() {
         </Link>
         <Link href="/fonctionnalites">Fonctionnalités</Link>
         <Link href="/tarifs">Tarifs</Link>
+        <Link href="/guides" className="nav-wide">
+          Guides
+        </Link>
+        <Link href="/demo-visio" className="nav-demo nav-wide" data-conversion="demo_visio_click">
+          <Video size={16} aria-hidden /> Démo visio
+        </Link>
         <AnchorLink href="/#contact">Contact</AnchorLink>
       </nav>
       <div className="header-actions">

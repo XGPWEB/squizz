@@ -14,6 +14,7 @@ const columns = [
       { href: "/fonctionnalites", label: "Fonctionnalités" },
       { href: "/tarifs", label: "Tarifs" },
       { href: "/alternative-kahoot", label: "Alternative à Kahoot!" },
+      { href: "/guides", label: "Guides" },
       { href: "/inscription", label: "Créer un compte" },
     ],
   },
@@ -33,6 +34,7 @@ const columns = [
     title: "Contact",
     links: [
       { href: "/#contact", label: "Parlons-en" },
+      { href: "/demo-visio", label: "Démo en visio" },
       { href: "mailto:contact@pressweb.fr", label: "contact@pressweb.fr" },
     ],
   },

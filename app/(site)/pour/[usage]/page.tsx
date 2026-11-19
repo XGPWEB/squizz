@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Play, Sparkles, Timer, Users } from "lucide-react";
+import { Play, Sparkles, Timer, Users, Video } from "lucide-react";
 import { JsonLd } from "@/components/site/json-ld";
 import { Faq } from "@/components/site/seo-sections";
 import { AUDIENCES, audienceOf } from "@/lib/audiences";
 import { COMPANY_INFO } from "@/lib/company-info";
+import { guidesFor } from "@/lib/guides";
 import { estimateLabel } from "@/lib/quiz-duration";
 import { demos } from "@/lib/quizzes";
 
@@ -36,6 +37,7 @@ export default async function AudiencePage({ params }: { params: Promise<{ usage
     demos.filter((q) => q.id === id).map((quiz) => ({ quiz, note })),
   );
   const others = AUDIENCES.filter((o) => o.slug !== a.slug);
+  const guides = guidesFor(a.slug);
   // The short factual answer first (GEO): visible in the FAQ and in its structured data.
   const faq = [{ q: `SQuizz convient-il aux ${a.name.toLowerCase()} ?`, a: a.summary }, ...a.faq];
   const url = `${COMPANY_INFO.siteUrl}/pour/${a.slug}`;
@@ -115,9 +117,22 @@ export default async function AudiencePage({ params }: { params: Promise<{ usage
           <Link className="button" href="/inscription" data-conversion="signup_cta_click">
             <Sparkles size={18} aria-hidden /> Créer mon espace gratuit
           </Link>
+          <Link className="button secondary" href="/demo-visio" data-conversion="demo_visio_click">
+            <Video size={18} aria-hidden /> Démo en visio
+          </Link>
         </div>
       </section>
 
+      {guides.length > 0 && (
+        <nav className="usage-others" aria-label="Guides">
+          <span>À lire :</span>
+          {guides.map((g) => (
+            <Link key={g.slug} href={`/guides/${g.slug}`}>
+              {g.name}
+            </Link>
+          ))}
+        </nav>
+      )}
       <nav className="usage-others" aria-label="Autres usages">
         <span>Aussi pour :</span>
         {others.map((o) => (

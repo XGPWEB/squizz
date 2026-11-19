@@ -5,6 +5,8 @@ export const CONVERSIONS = {
   pricing_cta_click: "Clic sur une offre",
   signup_complete: "Inscription envoyée",
   contact_form_submit: "Message de contact envoyé",
+  demo_visio_click: "Clic « démo en visio »",
+  demo_request_submit: "Démo en visio demandée",
 } as const;
 export type ConversionName = keyof typeof CONVERSIONS;
 

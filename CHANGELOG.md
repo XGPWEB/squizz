@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.37.0] — 2026-11-19
+
+### Site
+
+- Guides pratiques (`/guides`) : **8 idées pour un séminaire qui bouge**, **Le bon format pour chaque question** et **Une soirée quiz réussie en 7 étapes**. Chaque étape a sa note manuscrite (« Dès l’accueil », « Le creux de 14 h »…), les types de questions à utiliser et le quiz prêt à lancer qui le fait. Données structurées (`Article`, `HowTo`, `FAQPage`), sitemap, `/llms.txt`, lien dans le pied de page et le menu, et « À lire » sur les pages par usage concernées.
+- Démo en visio (`/demo-visio`) : 30 minutes, on choisit jusqu’à trois créneaux parmi les huit prochains jours ouvrés (10 h, 14 h, 17 h, heure de Paris, sans week-end ni jour férié fixe). La demande arrive comme un message de contact « Demande de démonstration » ; le créneau est confirmé par e-mail avec le lien de la visio. Pastille rose « Démo visio » dans le menu (ordinateur et tablette), bouton sur les pages par usage et les guides, lien dans le bloc « Parlons-en » et le pied de page. Deux nouvelles conversions suivies : clic « démo en visio » et démo demandée.
+
 ## [1.36.0] — 2026-11-16
 
 ### Site

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { AUDIENCES } from "@/lib/audiences";
+import { GUIDES } from "@/lib/guides";
 
 // Fixed address: these files are generated at build time, where APP_URL may point to localhost.
 const SITE = COMPANY_INFO.siteUrl;
@@ -20,6 +21,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/inscription", 0.7, "monthly"),
     page("/demo", 0.7, "monthly"),
     ...AUDIENCES.map((a) => page(`/pour/${a.slug}`, 0.8, "monthly")),
+    page("/guides", 0.7, "monthly"),
+    ...GUIDES.map((g) => page(`/guides/${g.slug}`, 0.7, "monthly")),
+    page("/demo-visio", 0.6, "monthly"),
     page("/jouer", 0.6, "monthly"),
     page("/mentions-legales", 0.2, "yearly"),
     page("/cgu", 0.2, "yearly"),
