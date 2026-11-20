@@ -157,6 +157,9 @@ a.button {
   text-decoration: none;
   overflow-wrap: anywhere;
 }
+.site-footer .footer-column a.footer-email {
+  overflow-wrap: normal;
+}
 .site-footer .footer-column a:hover,
 .site-footer .footer-column a:focus-visible {
   text-decoration: underline;

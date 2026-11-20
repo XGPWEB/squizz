@@ -68,7 +68,11 @@ export function Footer() {
               {column.links.map((link) => (
                 <li key={link.href}>
                   {link.href.startsWith("mailto:") ? (
-                    <a href={link.href}>{link.label}</a>
+                    // An address breaks after the « @ », never in the middle of the domain.
+                    <a href={link.href} className="footer-email">
+                      {link.label.split("@")[0]}@<wbr />
+                      {link.label.split("@")[1]}
+                    </a>
                   ) : link.href.startsWith("/#") ? (
                     <AnchorLink href={link.href}>{link.label}</AnchorLink>
                   ) : (
