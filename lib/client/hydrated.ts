@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { cloneElement, isValidElement, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
 
 /**
  * False on the server and until the page's script has started. What is typed before that stays on screen
@@ -10,4 +10,17 @@ export function useHydrated() {
     () => true,
     () => false,
   );
+}
+
+/**
+ * The button that opens a dialog, closed until the page's script has started: a click before that would
+ * open nothing, without a word. `data-starting` keeps it from looking greyed out for that moment.
+ */
+export function useReadyTrigger(trigger: ReactNode): ReactNode {
+  const ready = useHydrated();
+  if (ready || !isValidElement(trigger)) return trigger;
+  return cloneElement(trigger as ReactElement<Record<string, unknown>>, {
+    disabled: true,
+    "data-starting": "",
+  });
 }

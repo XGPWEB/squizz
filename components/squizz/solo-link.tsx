@@ -4,6 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import { Check, Copy, X } from "lucide-react";
 import { onRadioKeys } from "@/lib/client/radio-group";
+import { useReadyTrigger } from "@/lib/client/hydrated";
 
 /**
  * A self-paced link, once made: its address, a QR code to scan and a copy button. `days` offers the
@@ -24,6 +25,7 @@ export function SoloLinkDialog({
   className?: string;
   style?: React.CSSProperties;
 }) {
+  const readyTrigger = useReadyTrigger(trigger);
   const [open, setOpen] = useState(false),
     [span, setSpan] = useState(7),
     [link, setLink] = useState(""),
@@ -50,7 +52,7 @@ export function SoloLinkDialog({
         if (o && !days && !link) void make();
       }}
     >
-      <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
+      <Dialog.Trigger asChild>{readyTrigger}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className={`host-overlay ${className}`} />
         <Dialog.Content

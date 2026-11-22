@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CircleAlert, Dices, Play, User, Users, X } from "lucide-react";
 import { MAX_TEAM_NAME, MAX_TEAMS, randomTeamNames, TEAMS } from "@/lib/teams";
 import { onRadioKeys } from "@/lib/client/radio-group";
+import { useReadyTrigger } from "@/lib/client/hydrated";
 
 export type LaunchChoice = { teams: number; teamNames: string[] };
 
@@ -24,6 +25,7 @@ export function LaunchDialog({
   busy: boolean;
   onLaunch: (choice: LaunchChoice) => Promise<void>;
 }) {
+  const readyTrigger = useReadyTrigger(trigger);
   const [open, setOpen] = useState(false),
     [teamMode, setTeamMode] = useState(false),
     [names, setNames] = useState<string[]>([]),
@@ -60,7 +62,7 @@ export function LaunchDialog({
         }
       }}
     >
-      <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
+      <Dialog.Trigger asChild>{readyTrigger}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="host-overlay" />
         <Dialog.Content className="host-modal launch-modal" aria-describedby="launch-help">

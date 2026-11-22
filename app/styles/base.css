@@ -41,6 +41,11 @@ button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
+/* Closed only while the page's script starts (lib/client/hydrated.ts): not greyed out for that moment. */
+button[data-starting]:disabled {
+  opacity: 1;
+  cursor: inherit;
+}
 button:focus-visible,
 a:focus-visible {
   outline: 3px solid var(--electric);

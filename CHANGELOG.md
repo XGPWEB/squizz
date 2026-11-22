@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.37.3] — 2026-11-22
+
+### Bibliothèque
+
+- Les boutons « Lancer » et « Lien en autonomie » attendent que la page ait fini de démarrer avant de répondre. Un clic trop rapide, sur un téléphone ou une connexion lente, n’ouvrait jusqu’ici aucune fenêtre, sans un mot. Rien ne change à l’écran.
+
 ## [1.37.2] — 2026-11-22
 
 ### Site
