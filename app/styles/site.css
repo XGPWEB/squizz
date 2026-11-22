@@ -457,6 +457,20 @@ a.card-action {
 .page-heading h1 {
   font-size: clamp(40px, 6vw, 72px);
 }
+/* The surtitle inside the H1 (search engines read it as part of the title): drawn exactly like the
+   .eyebrow it replaces, in place of the pink sticker every « h1 span » gets. */
+.page-heading h1 .h1-kicker {
+  display: block;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  transform: none;
+  font: 700 12px/1.5 monospace;
+  letter-spacing: 1px;
+  margin: -18px 0 18px;
+}
 .price-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

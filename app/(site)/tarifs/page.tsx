@@ -87,8 +87,10 @@ export default function PricingPage() {
   return (
     <>
       <div className="page-heading" data-reveal="up">
-        <p className="eyebrow">TARIFS</p>
-        <h1>Simple comme un quiz.</h1>
+        <h1>
+          <span className="h1-kicker">TARIFS DU QUIZ INTERACTIF</span>
+          Simple comme un quiz.
+        </h1>
         <p className="lead">
           Démarrez gratuitement, puis choisissez l’offre qui suit le rythme de vos parties.
         </p>

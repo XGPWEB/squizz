@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.37.2] — 2026-11-22
+
+### Site
+
+- Tarifs : le titre principal commence par « Tarifs du quiz interactif », à la place du petit « Tarifs » posé au-dessus. Même aspect à l’écran ; les moteurs de recherche lisent désormais le sujet de la page dans son titre.
+
 ## [1.37.1] — 2026-11-22
 
 ### Site
