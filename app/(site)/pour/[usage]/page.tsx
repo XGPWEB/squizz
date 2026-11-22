@@ -8,6 +8,7 @@ import { AUDIENCES, audienceOf } from "@/lib/audiences";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { guidesFor } from "@/lib/guides";
 import { estimateLabel } from "@/lib/quiz-duration";
+import { shareGraph } from "@/lib/seo";
 import { demos } from "@/lib/quizzes";
 
 /** Only the pages of lib/audiences.ts; any other address is a 404. */
@@ -25,7 +26,7 @@ export async function generateMetadata({
     alternates: { canonical: `/pour/${a.slug}` },
     title: { absolute: `${a.title} · SQuizz` },
     description: a.description,
-    openGraph: { title: a.h1, description: a.description, url: `/pour/${a.slug}` },
+    openGraph: shareGraph({ title: a.h1, description: a.description, url: `/pour/${a.slug}` }),
   };
 }
 

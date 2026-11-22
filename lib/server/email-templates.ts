@@ -3,6 +3,7 @@ import { COMPANY_INFO } from "@/lib/company-info";
 import type { Plan } from "@prisma/client";
 import { EVENT_PASS, PASS_OFFER, PLANS, isPaid, limitsSummary, offerOf, priceLabel } from "@/lib/plans";
 import { alertLabel } from "@/lib/monitoring";
+import { QUESTION_COUNT } from "@/lib/seo";
 import { appUrl } from "./mail";
 
 /**
@@ -178,7 +179,7 @@ export function welcomeEmail(o: { name: string; organization: string }): Email {
   const site = appUrl();
   return {
     subject: `Bienvenue sur SQuizz, ${o.name} !`,
-    text: `Bonjour ${o.name},\n\nVotre espace « ${o.organization} » est prêt sur SQuizz.\n\n1. Créez votre premier quiz (14 types de questions, images, vidéos).\n2. Lancez une partie : un code et un QR code s’affichent à l’écran.\n3. Vos participants jouent depuis leur téléphone, sans application.\n\nCommencer : ${site}/app\n\nUne question ? Répondez simplement à cet email.`,
+    text: `Bonjour ${o.name},\n\nVotre espace « ${o.organization} » est prêt sur SQuizz.\n\n1. Créez votre premier quiz (${QUESTION_COUNT} types de questions, images, vidéos).\n2. Lancez une partie : un code et un QR code s’affichent à l’écran.\n3. Vos participants jouent depuis leur téléphone, sans application.\n\nCommencer : ${site}/app\n\nUne question ? Répondez simplement à cet email.`,
     html: layout({
       preheader: `Votre espace ${o.organization} est prêt : créez votre premier quiz.`,
       eyebrow: "Bienvenue",
@@ -186,7 +187,7 @@ export function welcomeEmail(o: { name: string; organization: string }): Email {
       highlight: o.name,
       body: `<p style="margin:0">Votre espace <strong>${esc(o.organization)}</strong> est prêt. Trois étapes et c’est parti :</p>
              ${steps([
-               "<strong>Créez votre premier quiz</strong> : 14 types de questions, images, vidéos et diapos.",
+               `<strong>Créez votre premier quiz</strong> : ${QUESTION_COUNT} types de questions, images, vidéos et diapos.`,
                "<strong>Lancez une partie</strong> : un code et un QR code s’affichent sur votre écran.",
                "<strong>Faites jouer la salle</strong> : chacun répond depuis son téléphone, sans application.",
              ])}`,

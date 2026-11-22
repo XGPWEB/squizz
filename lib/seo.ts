@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { EVENT_PASS, PLAN_KEYS, PLANS, limitsSummary, priceLabel } from "@/lib/plans";
 import { questionGroups, questionTypes, slideLayouts, type QuestionType } from "@/lib/question";
@@ -7,6 +8,25 @@ import { questionGroups, questionTypes, slideLayouts, type QuestionType } from "
  * search engines and AI assistants read exactly what visitors read. Keep every claim verifiable.
  */
 const SITE = COMPANY_INFO.siteUrl;
+
+/**
+ * The Open Graph block of a public page. A page that sets `openGraph` replaces the layout's whole block,
+ * share image included (LinkedIn, WhatsApp then show a bare link): every page goes through this.
+ */
+export function shareGraph(og: {
+  title: string;
+  description: string;
+  url: string;
+  type?: "website" | "article";
+}): NonNullable<Metadata["openGraph"]> {
+  return {
+    siteName: "SQuizz",
+    locale: "fr_FR",
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630, type: "image/png" }],
+    ...og,
+    type: og.type ?? "website",
+  };
+}
 const free = PLANS.FREE;
 const top = PLANS.PREMIUM;
 

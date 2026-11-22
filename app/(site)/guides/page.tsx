@@ -4,13 +4,16 @@ import { ArrowRight } from "lucide-react";
 import { JsonLd } from "@/components/site/json-ld";
 import { GUIDES, readingMinutes } from "@/lib/guides";
 import { COMPANY_INFO } from "@/lib/company-info";
+import { shareGraph } from "@/lib/seo";
+
+const DESCRIPTION =
+  "Guides pratiques pour animer avec un quiz interactif : séminaire d’entreprise, choix du format de question, soirée quiz entre amis ou en association.";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/guides" },
-  title: "Guides : animer un séminaire, une formation, une soirée quiz",
-  description:
-    "Guides pratiques pour animer avec un quiz interactif : séminaire d’entreprise, choix du format de question, soirée quiz entre amis ou en association.",
-  openGraph: { title: "Les guides SQuizz", url: "/guides" },
+  title: "Guides : animer un séminaire ou une soirée quiz",
+  description: DESCRIPTION,
+  openGraph: shareGraph({ title: "Les guides SQuizz", description: DESCRIPTION, url: "/guides" }),
 };
 
 /** The guides, as cards in the style of the quiz cards. */

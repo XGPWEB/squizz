@@ -4,7 +4,7 @@ import { Check, Users } from "lucide-react";
 import { Faq } from "@/components/site/seo-sections";
 import { EVENT_PASS, PLAN_KEYS, PLANS, seatsLabel, sizeLabel, type PlanLimits } from "@/lib/plans";
 import { MAX_STEPS } from "@/lib/question";
-import { QUESTION_COUNT } from "@/lib/seo";
+import { QUESTION_COUNT, shareGraph } from "@/lib/seo";
 import { AI_PREREQUISITE } from "@/lib/ai-quiz";
 
 export const metadata: Metadata = {
@@ -12,12 +12,12 @@ export const metadata: Metadata = {
   title: { absolute: "Tarifs SQuizz : quiz interactif gratuit ou dès 15 €/mois" },
   description:
     "SQuizz gratuit, Essentiel à 15 € / mois, Pro à 30 € / mois, Premium à 310 € / an, ou Pack Événement à 29 € pour 7 jours sans abonnement.",
-  openGraph: {
+  openGraph: shareGraph({
     title: "Tarifs de SQuizz",
     description:
       "Gratuit pour essayer, offres sans engagement dès 15 € / mois, ou Pack Événement sans abonnement.",
     url: "/tarifs",
-  },
+  }),
 };
 
 const euros = (n: number) => n.toLocaleString("fr-FR", { maximumFractionDigits: 2 });

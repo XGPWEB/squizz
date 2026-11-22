@@ -7,6 +7,7 @@ import { Faq } from "@/components/site/seo-sections";
 import { AUDIENCES } from "@/lib/audiences";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { GUIDES, guideOf, guideQuiz, readingMinutes } from "@/lib/guides";
+import { shareGraph } from "@/lib/seo";
 
 /** Only the guides of lib/guides.ts; any other address is a 404. */
 export const dynamicParams = false;
@@ -23,7 +24,12 @@ export async function generateMetadata({
     alternates: { canonical: `/guides/${g.slug}` },
     title: { absolute: `${g.title} · SQuizz` },
     description: g.description,
-    openGraph: { type: "article", title: g.title, description: g.description, url: `/guides/${g.slug}` },
+    openGraph: shareGraph({
+      type: "article",
+      title: g.title,
+      description: g.description,
+      url: `/guides/${g.slug}`,
+    }),
   };
 }
 

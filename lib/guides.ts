@@ -126,7 +126,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "quel-format-de-question",
     name: "Choisir le bon format",
-    title: "Quiz, sondage, nuage de mots : quel format pour quelle question ?",
+    title: "Quiz, sondage ou nuage de mots : quel format choisir ?",
     description:
       "Vérifier des connaissances, recueillir des avis, faire émerger des idées : le bon format de question interactive pour chaque objectif, avec exemples.",
     eyebrow: "GUIDE · FORMATS",

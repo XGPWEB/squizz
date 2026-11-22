@@ -107,7 +107,7 @@ app/app/           espace organisation : bibliothèque, éditeur, équipe, compt
 app/super-admin/   super-admin : organisations, détail, journal
 app/api/           game (jeu + quiz), media, account, invitations, org, admin, auth, health
 lib/server/        guard (droits), game, quiz-store, accounts, rate-limit, audit, mail
-lib/question.ts    14 types de questions, 6 diapos, validation et correction
+lib/question.ts    16 types de questions, 6 diapos, validation et correction
 prisma/            schéma, migrations, seed
 deploy/            scripts serveur (préparation, HTTPS, Nginx, super-admin)
 ```

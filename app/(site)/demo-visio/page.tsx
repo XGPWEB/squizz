@@ -4,13 +4,20 @@ import { Play } from "lucide-react";
 import { ContactForm } from "@/components/site/contact-form";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { turnstileSiteKey } from "@/lib/server/turnstile";
+import { shareGraph } from "@/lib/seo";
+
+const DESCRIPTION =
+  "30 minutes en visio pour découvrir SQuizz avec votre cas : séminaire, formation, réunion publique. Gratuit et sans engagement, vous jouez depuis votre téléphone.";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/demo-visio" },
   title: "Réserver une démo de SQuizz en visio",
-  description:
-    "30 minutes en visio pour découvrir SQuizz avec votre cas : séminaire, formation, réunion publique. Gratuit et sans engagement, vous jouez depuis votre téléphone.",
-  openGraph: { title: "Une démo de SQuizz en visio", url: "/demo-visio" },
+  description: DESCRIPTION,
+  openGraph: shareGraph({
+    title: "Une démo de SQuizz en visio",
+    description: DESCRIPTION,
+    url: "/demo-visio",
+  }),
 };
 
 /** What the visio covers: three short stickers, no more. */

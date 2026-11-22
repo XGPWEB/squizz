@@ -4,7 +4,7 @@ import { Sparkles } from "lucide-react";
 import { JsonLd } from "@/components/site/json-ld";
 import { FAMILY_ANCHOR, MomentCatalog, TypeCatalog } from "@/components/site/features";
 import { COMPANY_INFO } from "@/lib/company-info";
-import { FEATURES, QUESTION_COUNT, TYPE_FAMILIES } from "@/lib/seo";
+import { FEATURES, QUESTION_COUNT, TYPE_FAMILIES, shareGraph } from "@/lib/seo";
 
 const DESCRIPTION = `${QUESTION_COUNT} types de questions, diapos et roue de tirage : découvrez tout ce que SQuizz propose pour animer vos quiz. Essayez gratuitement.`;
 
@@ -12,7 +12,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/fonctionnalites" },
   title: `Fonctionnalités : ${QUESTION_COUNT} types de questions, diapos et roue`,
   description: DESCRIPTION,
-  openGraph: { title: "Fonctionnalités de SQuizz", description: DESCRIPTION, url: "/fonctionnalites" },
+  openGraph: shareGraph({
+    title: "Fonctionnalités de SQuizz",
+    description: DESCRIPTION,
+    url: "/fonctionnalites",
+  }),
 };
 
 const breadcrumbLd = {

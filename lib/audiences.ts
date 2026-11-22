@@ -42,7 +42,7 @@ export const AUDIENCES: Audience[] = [
   {
     slug: "entreprises",
     name: "Entreprises",
-    title: "Quiz interactif pour entreprise : séminaire, réunion, onboarding",
+    title: "Quiz interactif pour entreprise : séminaire, réunion",
     description:
       "Quiz interactifs pour l’entreprise : séminaire, réunion, onboarding, formation. Style sobre à vos couleurs, réponses anonymes, données en Europe.",
     eyebrow: "ENTREPRISES",
@@ -88,7 +88,7 @@ export const AUDIENCES: Audience[] = [
   {
     slug: "collectivites",
     name: "Collectivités",
-    title: "Quiz interactif pour collectivités : concertation, citoyenneté, agents",
+    title: "Quiz interactif pour collectivités : concertation",
     description:
       "Quiz et consultations en direct pour les collectivités : citoyenneté, concertation des habitants, formation des agents. Outil français, données en Europe.",
     eyebrow: "COLLECTIVITÉS",
@@ -137,7 +137,7 @@ export const AUDIENCES: Audience[] = [
   {
     slug: "associations",
     name: "Associations",
-    title: "Quiz pour association : soirée quiz, AG, accueil des bénévoles",
+    title: "Quiz pour association : soirée quiz, AG, bénévoles",
     description:
       "Animez votre association avec des quiz projetés : soirée quiz, assemblée générale, accueil des bénévoles. Les joueurs répondent sur leur téléphone, sans compte.",
     eyebrow: "ASSOCIATIONS",
@@ -180,7 +180,7 @@ export const AUDIENCES: Audience[] = [
   {
     slug: "services-jeunesse",
     name: "Services jeunesse",
-    title: "Quiz pour les jeunes : animation, prévention, accueil de loisirs",
+    title: "Quiz pour les jeunes : animation, prévention, loisirs",
     description:
       "Quiz interactifs pour les services jeunesse : prévention (cybersécurité, environnement, santé), citoyenneté, ateliers. Les jeunes jouent sur téléphone.",
     eyebrow: "SERVICES JEUNESSE",
@@ -226,7 +226,7 @@ export const AUDIENCES: Audience[] = [
   {
     slug: "formateurs",
     name: "Formateurs",
-    title: "Quiz pour formateurs : brise-glace, acquis et évaluation de formation",
+    title: "Quiz pour formateurs : brise-glace et évaluation",
     description:
       "Des quiz interactifs pour vos formations : brise-glace, vérification des acquis, évaluation de fin de formation. En direct ou en autonomie, résultats exportables.",
     eyebrow: "FORMATEURS",
@@ -370,7 +370,7 @@ export const AUDIENCES: Audience[] = [
   {
     slug: "agences-evenementielles",
     name: "Agences événementielles",
-    title: "Quiz interactif pour l’événementiel : séminaire, soirée, team building",
+    title: "Quiz pour l’événementiel : séminaire, team building",
     description:
       "Animez séminaires, soirées et team buildings avec un quiz en direct aux couleurs du client : équipes, télécommande, tirage au sort, sans appli pour les invités.",
     eyebrow: "AGENCES ÉVÉNEMENTIELLES",

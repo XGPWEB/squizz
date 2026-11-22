@@ -3,7 +3,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/site/json-ld";
 import { Advantages, Faq } from "@/components/site/seo-sections";
 import { PLANS } from "@/lib/plans";
-import { PAID_PLANS_TEXT, QUESTION_COUNT } from "@/lib/seo";
+import { PAID_PLANS_TEXT, QUESTION_COUNT, shareGraph } from "@/lib/seo";
 import { COMPANY_INFO } from "@/lib/company-info";
 
 export const metadata: Metadata = {
@@ -11,11 +11,11 @@ export const metadata: Metadata = {
   title: "Alternative française à Kahoot! — comparatif",
   description:
     "Comparatif SQuizz, Kahoot!, Mentimeter et Wooclap : prix, participants et hébergement des données. Essai gratuit, sans engagement.",
-  openGraph: {
+  openGraph: shareGraph({
     title: "SQuizz, l’alternative française à Kahoot!",
     description: "Comparatif avec Kahoot!, Mentimeter et Wooclap : prix, participants, hébergement, langue.",
     url: "/alternative-kahoot",
-  },
+  }),
 };
 
 const free = PLANS.FREE;

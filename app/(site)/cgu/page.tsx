@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Legal, Mail } from "@/components/site/legal";
 import { COMPANY_INFO } from "@/lib/company-info";
 import { EVENT_PASS, PLAN_KEYS, PLANS, priceLabel } from "@/lib/plans";
+import { slideLayouts } from "@/lib/question";
+import { QUESTION_COUNT } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Conditions générales d’utilisation et de vente",
@@ -35,7 +37,8 @@ export default function CGUPage() {
       </p>
       <ul>
         <li>
-          La création de quiz, sondages et diapositives (14 types de questions et 6 mises en page de diapo)
+          La création de quiz, sondages et diapositives ({QUESTION_COUNT} types de questions et{" "}
+          {slideLayouts.length} mises en page de diapo)
         </li>
         <li>L’animation de parties en direct, rejointes par les participants via un code ou un QR code</li>
         <li>Le classement en temps réel et le podium final</li>
