@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.37.4] — 2026-11-22
+
+### Partie
+
+- Le téléphone d’un joueur qui revient sur la partie (après être passé sur une autre appli ou un autre onglet) reprend dans la seconde, même si le navigateur ne signale pas son retour. Il pouvait jusqu’ici rester figé, par exemple sur le décompte « Prêt ? ».
+
 ## [1.37.3] — 2026-11-22
 
 ### Bibliothèque

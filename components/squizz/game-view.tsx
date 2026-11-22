@@ -58,7 +58,10 @@ export function GameView({ code }: { code: string }) {
       if (active) timer = setTimeout(poll, ms);
     };
     async function poll() {
-      if (!active || document.hidden) return; // resumed by the visibility listener
+      if (!active) return;
+      // Hidden: no request, but a look again in a second. The visibility listener resumes at once; if a
+      // browser misses that event (seen in WebKit with two windows), the phone must not stay frozen.
+      if (document.hidden) return schedule(1000);
       let next = 900;
       try {
         // A phone switching networks can hang a request: give up after 5 s and try again.
