@@ -2,6 +2,16 @@
 
 Toutes les évolutions notables de SQuizz. Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/), numérotation [SemVer](https://semver.org/lang/fr/). Le récit détaillé est dans [JOURNAL.md](JOURNAL.md).
 
+## [1.37.1] — 2026-11-22
+
+### Site
+
+- Image de partage sur toutes les pages publiques : les pages par usage, les guides, les tarifs, les fonctionnalités, le comparatif et la démo en visio s’affichaient sans visuel sur LinkedIn, Facebook ou WhatsApp. Elles ont aussi leur description, le nom du site et la langue.
+- Titres des pages par usage et du guide sur les formats de question raccourcis vers 60 caractères, pour que Google ne les coupe plus.
+- Sitemap : chaque page a sa vraie date de dernière modification, au lieu d’une date unique pour toutes.
+- Les CGU et l’e-mail de bienvenue annoncent 16 types de questions, comme le reste du site (ils en annonçaient 14).
+- Pied de page : l’adresse e-mail ne se coupe plus qu’après le « @ » dans une colonne étroite.
+
 ## [1.37.0] — 2026-11-19
 
 ### Site
